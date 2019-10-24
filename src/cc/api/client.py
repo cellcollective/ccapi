@@ -23,7 +23,7 @@ from cc.constant   import (
 )
 from cc.model      import (
     Model,
-    BooleanModel, Species,
+    BooleanModel, Species, Regulator,
     User
 )
 from cc.log        import get_logger
@@ -45,9 +45,9 @@ def _model_get_by_id_response_object_to_model_object(client, response):
     if "score" in data:
         model.score = data["score"]["score"]
 
-    model.species       = [
-        Species(
-            id_     = id_,
+    for species_id, species_data in data["speciesMap"].items():
+        species = Species(
+            id_     = species_id,
             name    = species_data["name"],
             created = _cc_datetime_to_python_datetime(
                 species_data["creationDate"]
@@ -55,8 +55,23 @@ def _model_get_by_id_response_object_to_model_object(client, response):
             updated = _cc_datetime_to_python_datetime(
                 species_data["updateDate"]
             ) if species_data.get("updateDate")   else None,
-        ) for id_, species_data in data["speciesMap"].items()
-    ]
+        )
+
+        # knowledge base
+        page_id_found = None
+        for page_id, page_data in data["pageMap"].items():
+            if page_data["speciesId"] == species_id:
+                page_id_found = page_id
+
+        sections = dict()
+        if page_id_found:
+            for section_id, section_data in data["sectionMap"].items():
+                if section_data["pageId"] == page_id_found:
+                    section_type = section_data.get("type")
+                    if section_type:
+                        pass
+
+        model.species.append(species)
 
     return model
 
@@ -111,7 +126,22 @@ def _user_get_profile_response_object_to_user_object(response):
     return user
 
 class Client:
+    """
+    The :class:`Client` class provides a convenient access to the 
+    Cell Collective API. Instances of this class are a gateway to interacting 
+    with Cell Collective's API through the CCPy.
+
+    Usage::
+
+        >>> import cc
+        >>> client = cc.Client()
+    """
+
     def __init__(self, base_url = DEFAULT_URL, proxies = [ ]):
+        """
+
+        """
+
         self.base_url       = base_url
         self._session       = requests.Session()
         self._proxies       = proxies

@@ -8,6 +8,9 @@ class BooleanModel(Resource):
     def __init__(self):
         self.species = [ ]
 
+    def save(self):
+        pass
+
     def draw(self, *args, **kwargs):
         labels = kwargs.get("labels", True)
 
