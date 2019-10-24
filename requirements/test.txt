@@ -1,0 +1,7 @@
+pytest
+pytest-cov
+pytest-xdist
+pytest-sugar
+pytest-travis-fold
+tox-travis
+coveralls
