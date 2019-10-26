@@ -2,6 +2,7 @@
 import re
 
 _REGEX_ANSI_ESCAPE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
+_REGEX_HTML        = re.compile("<.*?>")
 
 def strip(string):
     string = string.lstrip()
@@ -42,3 +43,11 @@ def safe_decode(obj, encoding = "utf-8"):
         pass
     
     return obj
+
+def sanitize_html(html):
+    sanitized = re.sub(_REGEX_HTML, "", html)
+    return sanitized
+
+def sanitize_text(text):
+    text = text.replace("&nbsp;", " ")
+    return text

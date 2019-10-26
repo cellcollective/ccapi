@@ -1,10 +1,9 @@
 from cc.model.resource import Resource
 
-class Model(Resource):
+class SubCondition(Resource):
     def __init__(self, *args, **kwargs):
         self.id         = kwargs.get("id")
-        self.versions   = kwargs.get("versions", [ ])
-        
+
     def __repr__(self):
-        repr_ = "<Model id=%s>" % (self.id)
+        repr_ = "<SubCondition id=%s>" % (self.id)
         return repr_

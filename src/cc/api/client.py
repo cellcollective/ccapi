@@ -1,32 +1,37 @@
 # imports - standard imports
 import datetime as dt
 import collections
+import re
 
 # imports - third-party imports
 import requests
 
 # imports - module imports
-from cc.util.types import (
+from cc.util.types  import (
     sequencify,
     squash,
     merge_dict
 )
-from cc.exception  import (
+from cc.util.string import (
+    sanitize_html,
+    sanitize_text
+)
+from cc.exception   import (
     ValueError,
     AuthenticationError
 )
-from cc.constant   import (
+from cc.constant    import (
     DEFAULT_URL,
     HEADER_AUTHENTICATION,
     USER_AGENT,
     MAXIMUM_API_RESOURCE_FETCH
 )
-from cc.model      import (
+from cc.model       import (
+    User,
     Model,
-    BooleanModel, Species, Regulator,
-    User
+    BooleanModel, Species, Regulator, Condition, SubCondition
 )
-from cc.log        import get_logger
+from cc.log         import get_logger
 
 logger = get_logger()
 
@@ -37,6 +42,12 @@ def _cc_datetime_to_python_datetime(datetime_):
     )
     return datetime_object
 
+def _section_type_to_dict_key(section_type):
+    splits  = re.findall("[A-Z][^A-Z]*", section_type)
+    key     = "_".join([s.lower() for s in splits])
+
+    return key
+
 def _model_get_by_id_response_object_to_model_object(client, response):
     _, data             = next(iter(response.items()))
 
@@ -45,10 +56,12 @@ def _model_get_by_id_response_object_to_model_object(client, response):
     if "score" in data:
         model.score = data["score"]["score"]
 
+    species_map = dict()
     for species_id, species_data in data["speciesMap"].items():
         species = Species(
-            id_     = species_id,
+            id_     = int(species_id),
             name    = species_data["name"],
+            type    = "external" if species_data["external"] else "internal",
             created = _cc_datetime_to_python_datetime(
                 species_data["creationDate"]
             ) if species_data.get("creationDate") else None,
@@ -60,8 +73,8 @@ def _model_get_by_id_response_object_to_model_object(client, response):
         # knowledge base
         page_id_found = None
         for page_id, page_data in data["pageMap"].items():
-            if page_data["speciesId"] == species_id:
-                page_id_found = page_id
+            if page_data["speciesId"] == species.id:
+                page_id_found = int(page_id)
 
         sections = dict()
         if page_id_found:
@@ -69,9 +82,63 @@ def _model_get_by_id_response_object_to_model_object(client, response):
                 if section_data["pageId"] == page_id_found:
                     section_type = section_data.get("type")
                     if section_type:
-                        pass
+                        for content_id, content_data in data["contentMap"].items():
+                            if content_data["sectionId"] == int(section_id):
+                                text = sanitize_html(content_data["text"])
+                                text = sanitize_text(text)
+                                key  = _section_type_to_dict_key(section_type)
+                                sections[key] = text
+
+        species.information     = sections
+
+        species_map[species.id] = species 
 
         model.species.append(species)
+
+    sub_condition_map   = dict()
+    for sub_condition_id, sub_condition_data in data["subConditionMap"].items():
+        sub_condition   = SubCondition(
+            id          = int(sub_condition_id)
+        )
+
+        sub_condition_map[sub_condition.id] = dict({
+            "condition_id":     sub_condition_data["conditionId"],
+            "sub_condition":    sub_condition
+        })
+
+    condition_map       = dict()
+    for condition_id, condition_data in data["conditionMap"].items():
+        condition           = Condition(
+            id              = int(condition_id),
+            sub_conditions  = [data["sub_condition"]
+                for _, data in sub_condition_map.items()
+                    if data["condition_id"] == int(condition_id)
+            ] 
+        )
+
+        condition_map[condition.id] = dict({
+            "regulator_id": condition_data["regulatorId"],
+            "condition":    condition
+        })
+
+    regulator_map       = dict()
+    for regulator_id, regulator_data in data["regulatorMap"].items():
+        regulator           = Regulator(
+            id              = int(regulator_id),
+            type            = regulator_data["regulationType"].lower(),
+            species         = species_map[regulator_data["speciesId"]],
+            of              = species_map[regulator_data["regulatorSpeciesId"]],
+            conditions      = [data["condition"]
+                for _, data in condition_map.items()
+                    if data["regulator_id"] == int(regulator_id)
+            ]
+        )
+
+        regulator_map[regulator.id] = regulator
+
+        model.regulators.append(regulator)
+
+    model.permissions = data.get("permissions")
 
     return model
 
@@ -85,6 +152,9 @@ def _model_get_response_object_to_model_object(client, response):
     model.description   = data["description"]
     model.author        = data["author"]
     model.tags          = data["tags"] and data["tags"].split(", ")
+
+    model.domain        = data["type"]
+    model.ncitations    = data["cited"]
     
     model.created       = _cc_datetime_to_python_datetime(
         data["creationDate"]
@@ -104,13 +174,18 @@ def _model_get_response_object_to_model_object(client, response):
     model.user          = client.get("user", id_ = data["userId"])
     model.public        = data["published"]
 
-    model.versions      = [
-        client.get("model",
+    model.hash          = data.get("hash")
+
+    model.permissions   = response["modelPermissions"]
+    
+    for version in data["modelVersionMap"].keys():
+        model_version = client.get("model",
             id_     = model.id,
             version = version,
-            hash_   = data.get("hash")
-        ) for version in data["modelVersionMap"].keys()
-    ]
+            hash_   = model.hash,
+        )
+
+        model.versions.append(model_version)
 
     return model
 
@@ -141,7 +216,6 @@ class Client:
         """
 
         """
-
         self.base_url       = base_url
         self._session       = requests.Session()
         self._proxies       = proxies
@@ -225,6 +299,7 @@ class Client:
         resources   = [ ]
 
         id_         = kwargs.get("id_")
+        query       = kwargs.get("query")
 
         size        = min(
             kwargs.get("size", MAXIMUM_API_RESOURCE_FETCH),
@@ -250,6 +325,14 @@ class Client:
 
                 if version:
                     params = { "version": str(version) + ("&%s" % hash_ if hash_ else "") }
+
+            if query:
+                url     = self._build_url(url, prefix = False)
+                params  = [
+                    ("search", "species"),
+                    ("search", "knowledge"),
+                    ("name",   query)
+                ]
 
             response    = self._request("GET", url, params = params)
             content     = response.json()
@@ -298,3 +381,6 @@ class Client:
             content)
 
         return model
+
+    def search(self, resource, query, *args, **kwargs):
+        return self.get(resource, query = query, *args, **kwargs)

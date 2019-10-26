@@ -38,4 +38,9 @@ True
 [<Species id=-1026 name='MMP3'>,
  <Species id=-1028 name='MMP1'>,
  <Species id=-1030 name='MMP1'>]
+
+>>> model.regulators[:3]
+[<Regulator id=190254 type='positive'>,
+ <Regulator id=190255 type='positive'>,
+ <Regulator id=190252 type='positive'>]
 ```
