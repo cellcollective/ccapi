@@ -1,6 +1,3 @@
-# imports - third-party imports
-import networkx as nx
-
 # imports - module imports
 from cc.model.resource  import Resource
 from cc.util.types      import squash
@@ -23,12 +20,25 @@ class BooleanModel(Resource):
         pass
 
     def draw(self, *args, **kwargs):
+        engine = kwargs.get("engine",  "networkx")
         labels = kwargs.get("labels", True)
 
-        graph = nx.Graph()
-        graph.add_nodes_from([s.name for s in self.species])
+        if engine == "networkx":
+            try:
+                import networkx as nx
+                
+                graph = nx.Graph()
+                graph.add_nodes_from([s.name for s in self.species])
 
-        nx.draw(graph, with_labels = labels)
+                for species in self.species:
+                    for regulator in species.regulators:
+                        graph.add_edge(regulator.of.name, regulator.species.name)
+
+                nx.draw(graph, with_labels = labels)
+            except ImportError:
+                raise ImportError("Unable to draw using networkx. Please install networkx.")
+        elif engine == "cytoscape":
+            pass
 
     def __repr__(self):
         repr_ = "<BooleanModel>"
