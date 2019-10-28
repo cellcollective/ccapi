@@ -15,7 +15,6 @@ from cc.util.types  import (
 from cc.util.string import (
     sanitize_html,
     sanitize_text,
-    strip,
     lower
 )
 from cc.exception   import (
@@ -84,7 +83,7 @@ def _model_get_by_id_response_object_to_model_object(client, response):
                 if section_data["pageId"] == page_id_found:
                     section_type = section_data.get("type")
                     if section_type:
-                        for content_id, content_data in data["contentMap"].items():
+                        for _, content_data in data["contentMap"].items():
                             if content_data["sectionId"] == int(section_id):
                                 text = sanitize_html(content_data["text"])
                                 text = sanitize_text(text)
@@ -112,8 +111,19 @@ def _model_get_by_id_response_object_to_model_object(client, response):
 
     sub_condition_map   = dict()
     for sub_condition_id, sub_condition_data in data["subConditionMap"].items():
+        species         = [ ]
+        for _, sub_condition_species_data in data["subConditionSpeciesMap"].items():
+            if sub_condition_species_data["subConditionId"] == int(sub_condition_id):
+                species_id = sub_condition_species_data["speciesId"]
+                species.append(species_map[species_id])
+
         sub_condition   = SubCondition(
-            id          = int(sub_condition_id)
+            id          = int(sub_condition_id),
+            type        = lower(sub_condition_data["type"]),
+            operator    = lower(sub_condition_data["speciesRelation"])
+                if sub_condition_data.get("speciesRelation") else None,
+            state       = lower(sub_condition_data["state"]),
+            species     = species
         )
 
         sub_condition_map[sub_condition.id] = dict({
@@ -121,15 +131,27 @@ def _model_get_by_id_response_object_to_model_object(client, response):
             "sub_condition":    sub_condition
         })
 
-    condition_map       = dict()
+    condition_map   = dict()
     for condition_id, condition_data in data["conditionMap"].items():
-        condition           = Condition(
-            id              = int(condition_id),
-            state           = lower(condition_data["state"]),
-            sub_conditions  = [data["sub_condition"]
+        species     = [ ]
+        for _, condition_species_data in data["conditionSpeciesMap"].items():
+            if condition_species_data["conditionId"] == int(condition_id):
+                species_id = condition_species_data["speciesId"]
+                species.append(species_map[species_id])
+
+        condition   = Condition(
+            id                      = int(condition_id),
+            sub_conditions          = [data["sub_condition"]
                 for _, data in sub_condition_map.items()
                     if data["condition_id"] == int(condition_id)
-            ] 
+            ],
+            type                    = lower(condition_data["type"]),
+            operator                = lower(condition_data["speciesRelation"])
+                if condition_data.get("speciesRelation") else None,
+            sub_condition_operator  = lower(condition_data["subConditionRelation"])
+                if condition_data.get("subConditionRelation") else None,
+            state                   = lower(condition_data["state"]),
+            species                 = species
         )
 
         condition_map[condition.id] = dict({
@@ -158,6 +180,11 @@ def _model_get_by_id_response_object_to_model_object(client, response):
                 model.species[i].regulators.append(regulator)
 
     model.permissions = data.get("permissions")
+
+    model.users = [ ]
+    for _, share_data in data["shareMap"].items():
+        user = client.get("user", id_ = share_data["userId"])
+        model.users.append(user)
 
     return model
 
@@ -403,6 +430,7 @@ class Client:
 
         model       = _model_get_by_id_response_object_to_model_object(self,
             content)
+        model.dirty = True
 
         return model
 
