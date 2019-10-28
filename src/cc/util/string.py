@@ -50,4 +50,9 @@ def sanitize_html(html):
 
 def sanitize_text(text):
     text = text.replace("&nbsp;", " ")
+    text = strip(text)
+    return text
+
+def lower(text):
+    text = text.lower()
     return text

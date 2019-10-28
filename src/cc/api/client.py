@@ -14,7 +14,9 @@ from cc.util.types  import (
 )
 from cc.util.string import (
     sanitize_html,
-    sanitize_text
+    sanitize_text,
+    strip,
+    lower
 )
 from cc.exception   import (
     ValueError,
@@ -87,8 +89,21 @@ def _model_get_by_id_response_object_to_model_object(client, response):
                                 text = sanitize_html(content_data["text"])
                                 text = sanitize_text(text)
                                 key  = _section_type_to_dict_key(section_type)
-                                sections[key] = text
+                                
+                                if not key in sections:
+                                    sections[key] = [ ]
+                                
+                                sections[key].append({
+                                    "position": content_data["position"],
+                                    "text":     text
+                                })
 
+            sections_formatted = dict()
+            for key, section in sections.items():
+                sections_formatted[key] = "\n".join([i["text"]
+                    for i in sorted(section, key = lambda s: s["position"])])
+            sections = sections_formatted
+                
         species.information     = sections
 
         species_map[species.id] = species 
@@ -110,6 +125,7 @@ def _model_get_by_id_response_object_to_model_object(client, response):
     for condition_id, condition_data in data["conditionMap"].items():
         condition           = Condition(
             id              = int(condition_id),
+            state           = lower(condition_data["state"]),
             sub_conditions  = [data["sub_condition"]
                 for _, data in sub_condition_map.items()
                     if data["condition_id"] == int(condition_id)
@@ -126,8 +142,8 @@ def _model_get_by_id_response_object_to_model_object(client, response):
         regulator           = Regulator(
             id              = int(regulator_id),
             type            = regulator_data["regulationType"].lower(),
-            species         = species_map[regulator_data["speciesId"]],
-            of              = species_map[regulator_data["regulatorSpeciesId"]],
+            species         = species_map[regulator_data["regulatorSpeciesId"]],
+            of              = species_map[regulator_data["speciesId"]],
             conditions      = [data["condition"]
                 for _, data in condition_map.items()
                     if data["regulator_id"] == int(regulator_id)
@@ -136,7 +152,10 @@ def _model_get_by_id_response_object_to_model_object(client, response):
 
         regulator_map[regulator.id] = regulator
 
-        model.regulators.append(regulator)
+    for i, species in enumerate(model.species):
+        for regulator_id, regulator in regulator_map.items():
+            if regulator.of == species:
+                model.species[i].regulators.append(regulator)
 
     model.permissions = data.get("permissions")
 
@@ -257,6 +276,11 @@ class Client:
 
         return response
 
+    def post(self, url, *args, **kwargs):
+        url             = self._build_url(url)
+        response        = self._request("POST", url, *args, **kwargs)
+        return response
+
     def auth(self, *args, **kwargs):
         email           = kwargs.get("email",    None)
         password        = kwargs.get("password", None)
@@ -363,7 +387,7 @@ class Client:
                     merge_dict({ "id": user_id }, user_data)
                 )
                 resources.append(user)
-
+        
         return squash(resources)
 
     def read(self, filename, save = False):

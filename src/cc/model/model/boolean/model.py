@@ -2,12 +2,22 @@
 import networkx as nx
 
 # imports - module imports
-from cc.model.resource import Resource
+from cc.model.resource  import Resource
+from cc.util.types      import squash
 
 class BooleanModel(Resource):
     def __init__(self, *args, **kwargs):
-        self.species    = kwargs.get("species",     [ ])
-        self.regulators = kwargs.get("regulators",  [ ])
+        self.name    = kwargs.get("name")
+        self.species = kwargs.get("species", [ ])
+
+    def get_species(self, *names, **params):
+        species = [ ]
+
+        if names:
+            found = squash(list(filter(lambda x: x.name in names, self.species)))
+            species.append(found)
+
+        return squash(species)
 
     def save(self):
         pass
