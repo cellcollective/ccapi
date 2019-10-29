@@ -21,7 +21,15 @@ copyright = "%s %s" % (NOW.year, cc.__author__)
 version   = cc.__version__
 release   = cc.__version__
 
-source_suffix  = ".md"
+source_suffix  = [".rst", ".md"]
 source_parsers = { ".md": "recommonmark.parser.CommonMarkParser" }
 
-master_doc     = "index"
+master_doc  = "index"
+
+extensions  = [
+    'sphinx.ext.autodoc',
+
+    # IPython directive
+    'IPython.sphinxext.ipython_console_highlighting',
+    'IPython.sphinxext.ipython_directive'
+]

@@ -9,6 +9,25 @@ class Species(Resource):
         self.updated    = kwargs.get("updated")
         self.regulators = kwargs.get("regulators", [ ])
 
+    @property
+    def positive_regulators(self):
+        regulators = [regulator
+            for regulator in self.regulators
+                if regulator.type == "positive"
+        ]
+
+        return regulators
+
+    @property
+    def negative_regulators(self):
+        regulators = [regulator
+            for regulator in self.regulators
+                if regulator.type == "negative"
+        ]
+
+        return regulators
+
+
     def __repr__(self):
         repr_ = "<Species id=%s name='%s'>" % (self.id, self.name)
         return repr_

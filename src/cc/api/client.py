@@ -2,6 +2,7 @@
 import datetime as dt
 import collections
 import re
+import random
 
 # imports - third-party imports
 import requests
@@ -266,22 +267,46 @@ class Client:
     Cell Collective API. Instances of this class are a gateway to interacting 
     with Cell Collective's API through the CCPy.
 
+    :param base_url: Base URL to use.
+    :param proxies: A dictionary/list of proxies to use. If a list is passed,
+        each element in the list should be a dictionary of the format 
+        ``{ protocol: ip }``.
+    :param test: Attempt to test the connection to the base url.
+
     Usage::
 
         >>> import cc
         >>> client = cc.Client()
+        >>> client
+        <Client url='https://cellcollective.org'>
     """
 
-    def __init__(self, base_url = DEFAULT_URL, proxies = [ ]):
-        """
-        
-        """
+    def __init__(self,
+        base_url = DEFAULT_URL, proxies = [ ], test = True):
         self.base_url       = base_url
-        self._session       = requests.Session()
-        self._proxies       = proxies
         self._auth_token    = None
+        self._session       = requests.Session()
 
-        self.ping()
+        if proxies and (
+                not isinstance(proxies, collections.Mapping) or \
+                not isinstance(proxies, (list, tuple))
+            ):
+                raise TypeError((
+                    "proxies %s are not of valid type. You must "
+                    "either a dictionary of a list of dictionaries of the "
+                    "following format { protocol: ip }."))
+
+        if isinstance(proxies, collections.Mapping):
+            proxies = [proxies]
+
+        self._proxies       = proxies
+
+        if test:
+            self.ping()
+
+    def __repr__(self):
+        repr_ = "<Client url='%s'>" % (self.base_url)
+        return repr_
 
     def _build_url(self, *args, **kwargs):
         prefix = kwargs.get("prefix", True)
@@ -300,11 +325,18 @@ class Client:
         proxies         = kwargs.pop("proxies", self._proxies)
         data            = kwargs.get("params", kwargs.get("data"))
 
+        headers.update({
+            "User-Agent": USER_AGENT
+        })
+
         if self._auth_token:
             headers.update({
-                "User-Agent": USER_AGENT,
                 HEADER_AUTHENTICATION: self._auth_token
             })
+
+        if proxies:
+            proxies     = random.choice(proxies)
+            logger.info("Using proxy %s to dispatch request." % proxies)
 
         logger.info("Dispatching a %s Request to URL: %s with Arguments - %s" \
             % (method, url, kwargs))
@@ -360,21 +392,25 @@ class Client:
 
         if auth_token:
             self._auth_token    = auth_token
-
-            url                 = self._build_url("_api", "user", "getProfile")
-            response            = self._request("GET", url)
-            
-            content             = response.json()
-
-            self.profile        = _user_get_profile_response_object_to_user_object(content)
         else:
-            raise AuthenticationError("Unable to login into Cell Collective \
-                with credentials provided.")
+            raise AuthenticationError((
+                "Unable to login into Cell Collective "
+                "with credentials provided."))
 
     @property
     def authenticated(self):
         _authenticated = bool(self._auth_token)
         return _authenticated
+
+    def me(self):
+        url         = self._build_url("_api", "user", "getProfile")
+        response    = self._request("GET", url)
+        
+        content     = response.json()
+
+        user        = _user_get_profile_response_object_to_user_object(content)
+
+        return user
 
     def get(self, resource, *args, **kwargs):
         _resource   = resource.lower()

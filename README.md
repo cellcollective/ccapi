@@ -2,7 +2,7 @@
     <h1>
       CCPy
     </h1>
-    <h4>Python Client Library for the <a href="https://cellcollective.org">Cell Collective</a> API</h4>
+    <h4>A Python Client Library for the <a href="https://cellcollective.org">Cell Collective</a> API</h4>
 </div>
 
 <p align="center">
