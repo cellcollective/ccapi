@@ -30,7 +30,8 @@ from cc.constant    import (
 from cc.model       import (
     User,
     Model,
-    BooleanModel, Species, Regulator, Condition, SubCondition
+    BooleanModel, Species, Regulator, Condition, SubCondition,
+    Document
 )
 from cc.log         import get_logger
 
@@ -105,7 +106,7 @@ def _model_get_by_id_response_object_to_model_object(client, response):
                 
         species.information     = sections
 
-        species_map[species.id] = species 
+        species_map[species.id] = species
 
         model.species.append(species)
 
@@ -181,7 +182,7 @@ def _model_get_by_id_response_object_to_model_object(client, response):
 
     model.permissions = data.get("permissions")
 
-    model.users = [ ]
+    model.users     = [ ]
     for _, share_data in data["shareMap"].items():
         user = client.get("user", id_ = share_data["userId"])
         model.users.append(user)
@@ -233,6 +234,19 @@ def _model_get_response_object_to_model_object(client, response):
 
         model.versions.append(model_version)
 
+    if response["uploadMap"]:
+        for _, upload_data in response["uploadMap"].items():
+            document        = Document(
+                name        = upload_data["uploadName"],
+                user        = client.get("user", id_ = upload_data["userId"]),
+                created     = _cc_datetime_to_python_datetime(
+                    upload_data["uploadDate"]
+                ),
+                token       = upload_data["token"],
+                client      = client
+            )
+            model.documents.append(document)
+
     return model
 
 def _user_get_profile_response_object_to_user_object(response):
@@ -260,12 +274,14 @@ class Client:
 
     def __init__(self, base_url = DEFAULT_URL, proxies = [ ]):
         """
-
+        
         """
         self.base_url       = base_url
         self._session       = requests.Session()
         self._proxies       = proxies
         self._auth_token    = None
+
+        self.ping()
 
     def _build_url(self, *args, **kwargs):
         prefix = kwargs.get("prefix", True)
@@ -307,6 +323,21 @@ class Client:
         url             = self._build_url(url)
         response        = self._request("POST", url, *args, **kwargs)
         return response
+
+    def ping(self, *args, **kwargs):
+        """
+        Check if the URL is alive.
+        """
+
+        url             = self._build_url("api", "ping")
+        response        = self._request("GET", url, *args, **kwargs)
+
+        content         = response.json()
+
+        if content["data"] == "pong":
+            return "pong"
+        else:
+            raise ValueError("Unable to ping to URL %s." % self.base_url)
 
     def auth(self, *args, **kwargs):
         email           = kwargs.get("email",    None)
@@ -414,7 +445,7 @@ class Client:
                     merge_dict({ "id": user_id }, user_data)
                 )
                 resources.append(user)
-        
+
         return squash(resources)
 
     def read(self, filename, save = False):
