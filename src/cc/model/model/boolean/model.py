@@ -1,13 +1,20 @@
+# imports - standard imports
+import os.path as osp
+import re
+
 # imports - module imports
 from cc.core.querylist  import QueryList
+from cc.core.mixins     import JupyterViewMixin
 from cc.model.resource  import Resource
 from cc.util.types      import squash
 from cc.util.system     import read
 from cc.table           import Table
-from cc.constant        import TEMPLATES_DIRECTORY
+from cc.template        import render_template
 
-class BooleanModel(Resource):
+class BooleanModel(Resource, JupyterViewMixin):
     def __init__(self, *args, **kwargs):
+        self.id      = kwargs.get("id")
+        self.version = kwargs.get("version")
         self.name    = kwargs.get("name")
         self.species = kwargs.get("species", QueryList())
         self._client = kwargs.get("client")
@@ -88,12 +95,25 @@ class BooleanModel(Resource):
         repr_ = "<BooleanModel>"
         return repr_
 
-    def _repr_html_(self):
-        rendered = render_template("model")
-        return rendered
+    def _repr_html(self):
+        repr_ = render_template("model")
+        return repr_
 
-    def export(self, path, type_ = "sbml"):
+    def export(self, path = None, type_ = "sbml", **kwargs):
         url         = self._client._build_url("_api", "model", "export", self.id)
-        params      = { "version": self.version_id, "type": type_ }
+        params      = { "version": self.version, "type": type_ }
 
         response    = self._client._request(url, params = params)
+
+        if not path:
+            header  = response.headers["content-disposition"]
+            name    = re.findall("filename=(.+)", header)[0]
+
+            path    = osp.abspath(name)
+
+        nchunk      = kwargs.get("nchunk", 1024)
+
+        with open(path, "wb") as f:
+            for chunk in response.iter_content(chunk_size = nchunk):
+                if chunk:
+                    f.write(chunk)

@@ -1,6 +1,7 @@
 # imports - standard imports
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 
-class JupyterViewMixin(ABCMeta):
+class JupyterViewMixin(metaclass = ABCMeta):
+    @abstractmethod
     def _repr_html(self):
         pass

@@ -320,7 +320,7 @@ class Client:
         if prefix:
             parts.append(self.base_url)
 
-        url = "/".join([*parts, *args])
+        url = "/".join([])
 
         return url
 

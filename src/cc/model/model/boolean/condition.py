@@ -2,6 +2,7 @@
 from cc.core.querylist  import QueryList
 from cc.model.resource  import Resource
 from cc.core.mixins     import JupyterViewMixin
+from cc.template        import render_template
 
 class Condition(Resource, JupyterViewMixin):
     def __init__(self, *args, **kwargs):
@@ -18,4 +19,5 @@ class Condition(Resource, JupyterViewMixin):
         return repr_
 
     def _repr_html(self):
-        repr_ = render_template
+        repr_ = render_template("condition")
+        return repr_
