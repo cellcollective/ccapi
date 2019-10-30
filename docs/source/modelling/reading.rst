@@ -1,17 +1,7 @@
-.. _modelling:
-
-Modelling
-=========
+.. _reading:
 
 Reading a Model
----------------
-
-This simple example demonstrates how to read a model from an SBML file.
-
-First, :ref:`create a Client object with CCPy <instantize_client>` as follows.
-
-    >>> import cc
-    >>> client = cc.Client()
+===============
 
 CCPy supports reading and writing models in the SBML, JSON, YAML, and pickle 
 formats. The JSON and YAML formats may be more useful for CCPy-specific 
@@ -26,7 +16,7 @@ purposes.
 SBML
 ----
 
-The `Systems Biology Markup Language <http://sbml.org>` is an XML-based 
+The `Systems Biology Markup Language <http://sbml.org>`_ is an XML-based 
 standard format for distributing models.
 
-    >>> model = client.read(join(DATA_DIRECTORY, "sample.sbml"))
+    >>> model = client.read(join(DATA_DIRECTORY, "fibroblasts.sbml"))

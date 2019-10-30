@@ -9,4 +9,6 @@ USER_AGENT                  = "Python CCAPI / %s" % (__version__)
 
 MAXIMUM_API_RESOURCE_FETCH  = 5
 
-DATA_DIRECTORY              = osp.abspath(osp.join(osp.dirname(__file__), "data"))
+_BASE_DIRECTORY             = osp.abspath(osp.dirname(__file__))
+DATA_DIRECTORY              = osp.join(_BASE_DIRECTORY, "data")
+TEMPLATES_DIRECTORY         = osp.join(DATA_DIRECTORY, "templates")

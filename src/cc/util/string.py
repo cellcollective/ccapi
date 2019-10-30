@@ -56,3 +56,13 @@ def sanitize_text(text):
 def lower(text):
     text = text.lower()
     return text
+
+def ellipsis(string, threshold = 50, pattern = "..."):
+    length      = len(string)
+    expected    = threshold + len(pattern) 
+
+    if length > expected:
+        string = string[:expected]
+        string = "%s%s" % (string, pattern)
+
+    return string

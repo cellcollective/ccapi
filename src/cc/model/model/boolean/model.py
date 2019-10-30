@@ -1,12 +1,16 @@
 # imports - module imports
+from cc.core.querylist  import QueryList
 from cc.model.resource  import Resource
 from cc.util.types      import squash
+from cc.util.system     import read
 from cc.table           import Table
+from cc.constant        import TEMPLATES_DIRECTORY
 
 class BooleanModel(Resource):
     def __init__(self, *args, **kwargs):
         self.name    = kwargs.get("name")
-        self.species = kwargs.get("species", [ ])
+        self.species = kwargs.get("species", QueryList())
+        self._client = kwargs.get("client")
 
     def get_species(self, *names, **params):
         def _find(filter_):
@@ -51,7 +55,7 @@ class BooleanModel(Resource):
             pass
 
     def summary(self):
-        table    = Table(header = ["INTERNAL (+, -)", "EXTERNAL"])
+        table    = Table(header = ["Internal Components (+, -)", "External Components"])
 
         internal = self.get_species(key = lambda x: x.type == "internal")
         external = self.get_species(key = lambda x: x.type == "external")
@@ -83,3 +87,13 @@ class BooleanModel(Resource):
     def __repr__(self):
         repr_ = "<BooleanModel>"
         return repr_
+
+    def _repr_html_(self):
+        rendered = render_template("model")
+        return rendered
+
+    def export(self, path, type_ = "sbml"):
+        url         = self._client._build_url("_api", "model", "export", self.id)
+        params      = { "version": self.version_id, "type": type_ }
+
+        response    = self._client._request(url, params = params)

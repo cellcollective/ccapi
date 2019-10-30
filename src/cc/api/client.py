@@ -181,12 +181,14 @@ def _model_get_by_id_response_object_to_model_object(client, response):
             if regulator.of == species:
                 model.species[i].regulators.append(regulator)
 
-    model.permissions = data.get("permissions")
+    model.permissions   = data.get("permissions")
 
-    model.users     = [ ]
+    model.users         = [ ]
     for _, share_data in data["shareMap"].items():
         user = client.get("user", id_ = share_data["userId"])
         model.users.append(user)
+
+    model._client       = client
 
     return model
 
@@ -232,6 +234,9 @@ def _model_get_response_object_to_model_object(client, response):
             version = version,
             hash_   = model.hash,
         )
+
+        model_version.id            = model.id
+        model_version.version_id    = version
 
         model.versions.append(model_version)
 

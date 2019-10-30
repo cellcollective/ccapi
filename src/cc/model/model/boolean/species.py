@@ -1,3 +1,5 @@
+# imports - module imports
+from cc.core.querylist import QueryList
 from cc.model.resource import Resource
 
 class Species(Resource):
@@ -7,7 +9,7 @@ class Species(Resource):
         self.type       = kwargs.get("type")
         self.created    = kwargs.get("created")
         self.updated    = kwargs.get("updated")
-        self.regulators = kwargs.get("regulators", [ ])
+        self.regulators = kwargs.get("regulators", QueryList())
 
     @property
     def positive_regulators(self):

@@ -1,3 +1,5 @@
+# imports - module imports
+from cc.core.querylist import QueryList
 from cc.model.resource import Resource
 
 class SubCondition(Resource):
@@ -6,7 +8,7 @@ class SubCondition(Resource):
         self.type       = kwargs.get("type")
         self.operator   = kwargs.get("operator")
         self.state      = kwargs.get("state")
-        self.species    = kwargs.get("species", [ ])
+        self.species    = kwargs.get("species", QueryList())
 
     def __repr__(self):
         repr_ = "<SubCondition id=%s>" % (self.id)

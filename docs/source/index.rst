@@ -59,7 +59,8 @@ The User Guide
    :maxdepth: 2
 
    user/quickstart
-   user/modelling
+   modelling/loading
+   modelling/reading
 
 The API Guide
 -------------
