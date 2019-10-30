@@ -4,14 +4,15 @@ import re
 
 # imports - module imports
 from cc.core.querylist  import QueryList
-from cc.core.mixins     import JupyterViewMixin
+from cc.core.mixins     import JupyterHTMLViewMixin
 from cc.model.resource  import Resource
 from cc.util.types      import squash
 from cc.util.system     import read
 from cc.table           import Table
 from cc.template        import render_template
+from cc.constant        import MODEL_EXPORT_TYPE_MAP
 
-class BooleanModel(Resource, JupyterViewMixin):
+class BooleanModel(Resource, JupyterHTMLViewMixin):
     def __init__(self, *args, **kwargs):
         self.id      = kwargs.get("id")
         self.version = kwargs.get("version")
@@ -41,7 +42,7 @@ class BooleanModel(Resource, JupyterViewMixin):
         pass
 
     def draw(self, *args, **kwargs):
-        engine = kwargs.get("engine",  "networkx")
+        engine = kwargs.get("engine", "networkx")
         labels = kwargs.get("labels", True)
 
         if engine == "networkx":
@@ -95,17 +96,29 @@ class BooleanModel(Resource, JupyterViewMixin):
         repr_ = "<BooleanModel>"
         return repr_
 
-    def _repr_html(self):
-        repr_ = render_template("model")
+    def _repr_html_(self):
+        repr_ = render_template("boolean.html", args = dict({
+            "id":                   self.id,
+            "version":              self.version,
+            "name":                 self.name,
+            "memory_address":       "0x0%x" % id(self),
+            "number_of_species":    len(self.species),
+            "species":              ", ".join([s.name for s in self.species])
+        }))
         return repr_
 
     def export(self, path = None, type_ = "sbml", **kwargs):
-        url         = self._client._build_url("_api", "model", "export", self.id)
-        params      = { "version": self.version, "type": type_ }
+        url             = self._client._build_url("_api", "model", "export", self.id)
+        type_           = MODEL_EXPORT_TYPE_MAP[type_]
+        params          = { "version": self.version, "type": type_ }
 
-        response    = self._client._request(url, params = params)
+        response        = self._client._request("GET", url, params = params)
+
+        default_path    = False
 
         if not path:
+            default_path = True
+
             header  = response.headers["content-disposition"]
             name    = re.findall("filename=(.+)", header)[0]
 
@@ -117,3 +130,7 @@ class BooleanModel(Resource, JupyterViewMixin):
             for chunk in response.iter_content(chunk_size = nchunk):
                 if chunk:
                     f.write(chunk)
+
+        if default_path:
+            return path
+        

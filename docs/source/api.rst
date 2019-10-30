@@ -11,3 +11,4 @@ Main Interface
 All of CCPy's functionality can be accessed by the Client object.
 
 .. autoclass:: cc.Client
+    :members:

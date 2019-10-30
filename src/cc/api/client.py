@@ -20,13 +20,15 @@ from cc.util.string import (
 )
 from cc.exception   import (
     ValueError,
-    AuthenticationError
+    AuthenticationError,
+    HTTPError
 )
 from cc.constant    import (
     DEFAULT_URL,
     HEADER_AUTHENTICATION,
     USER_AGENT,
-    MAXIMUM_API_RESOURCE_FETCH
+    MAXIMUM_API_RESOURCE_FETCH,
+    _AUTHENTICATION_ERROR_STRING
 )
 from cc.model       import (
     User,
@@ -34,7 +36,8 @@ from cc.model       import (
     BooleanModel, Species, Regulator, Condition, SubCondition,
     Document
 )
-from cc.log         import get_logger
+from cc.core.querylist  import QueryList
+from cc.log             import get_logger
 
 logger = get_logger()
 
@@ -236,7 +239,8 @@ def _model_get_response_object_to_model_object(client, response):
         )
 
         model_version.id            = model.id
-        model_version.version_id    = version
+        model_version.version       = version
+        model_version.name          = model.name
 
         model.versions.append(model_version)
 
@@ -288,9 +292,9 @@ class Client:
 
     def __init__(self,
         base_url = DEFAULT_URL, proxies = [ ], test = True):
-        self.base_url       = base_url
-        self._auth_token    = None
-        self._session       = requests.Session()
+        self.base_url    = base_url
+        self._auth_token = None
+        self._session    = requests.Session()
 
         if proxies and (
                 not isinstance(proxies, collections.Mapping) or \
@@ -304,7 +308,7 @@ class Client:
         if isinstance(proxies, collections.Mapping):
             proxies = [proxies]
 
-        self._proxies       = proxies
+        self._proxies = proxies
 
         if test:
             self.ping()
@@ -320,32 +324,38 @@ class Client:
         if prefix:
             parts.append(self.base_url)
 
-        url = "/".join([])
+        url = "/".join(map(str, [*parts, *args]))
 
         return url
 
     def _request(self, method, url, *args, **kwargs):
-        raise_error     = kwargs.pop("raise_error", True)
-        headers         = kwargs.pop("headers", { })
-        proxies         = kwargs.pop("proxies", self._proxies)
-        data            = kwargs.get("params", kwargs.get("data"))
+        raise_error = kwargs.pop("raise_error", True)
+        token       = kwargs.pop("token",   None)
+        headers     = kwargs.pop("headers", { })
+        proxies     = kwargs.pop("proxies", self._proxies)
+        data        = kwargs.get("params",  kwargs.get("data"))
 
         headers.update({
             "User-Agent": USER_AGENT
         })
 
-        if self._auth_token:
+        if token:
             headers.update({
-                HEADER_AUTHENTICATION: self._auth_token
+                HEADER_AUTHENTICATION: token
             })
+        else:
+            if self._auth_token:
+                headers.update({
+                    HEADER_AUTHENTICATION: self._auth_token
+                })
 
         if proxies:
-            proxies     = random.choice(proxies)
+            proxies = random.choice(proxies)
             logger.info("Using proxy %s to dispatch request." % proxies)
 
         logger.info("Dispatching a %s Request to URL: %s with Arguments - %s" \
             % (method, url, kwargs))
-        response        = self._session.request(method, url,
+        response = self._session.request(method, url,
             headers = headers, proxies = proxies, *args, **kwargs)
 
         if not response.ok and raise_error:
@@ -357,19 +367,45 @@ class Client:
         return response
 
     def post(self, url, *args, **kwargs):
-        url             = self._build_url(url)
-        response        = self._request("POST", url, *args, **kwargs)
+        """
+        Dispatch a POST request to the server.
+
+        :param url: URL part (does not include the base URL).
+        :param args: Arguments provided to ``client._request``
+        :param kwargs: Keyword Arguments provided to ``client._request``
+
+        Usage::
+
+            >>> import cc
+            >>> client   = cc.Client()
+            >>> response = client.post("api/module/12345/report")
+            >>> response.content
+            b'"First Name","Last Name","Email","Institution","Last Updated Date"\n'
+        """
+
+        url      = self._build_url(url)
+        response = self._request("POST", url, *args, **kwargs)
         return response
 
     def ping(self, *args, **kwargs):
         """
         Check if the URL is alive.
+
+        :param args: Arguments provided to ``client._request``
+        :param kwargs: Keyword Arguments provided to ``client._request``
+
+        Usage::
+
+            >>> import cc
+            >>> client = cc.Client()
+            >>> client.ping()
+            'pong'
         """
 
-        url             = self._build_url("api", "ping")
-        response        = self._request("GET", url, *args, **kwargs)
+        url      = self._build_url("api", "ping")
+        response = self._request("GET", url, *args, **kwargs)
 
-        content         = response.json()
+        content  = response.json()
 
         if content["data"] == "pong":
             return "pong"
@@ -377,43 +413,77 @@ class Client:
             raise ValueError("Unable to ping to URL %s." % self.base_url)
 
     def auth(self, *args, **kwargs):
-        email           = kwargs.get("email",    None)
-        password        = kwargs.get("password", None)
+        """
+        Authenticate client.
 
-        if not email:
-            raise ValueError("email not provided.")
+        Usage::
 
-        if not password:
-            raise ValueError("password not provided.")
+            >>> import cc
+            >>> client = cc.Client()
+            >>> client.auth(email = "test@cellcollective.org", password = "test")
+            >>> client.authenticated
+            True
 
-        url             = self._build_url("_api", "login")
-        data            = dict(
-            username    = email,
-            password    = password
-        )
-        response        = self._request("POST", url, data = data)
-        
-        auth_token      = response.headers.get(HEADER_AUTHENTICATION)
+            >>> client.auth(token = "<YOUR_AUTH_TOKEN>")
+            >>> client.authenticated
+            True
+        """
+        token = kwargs.get("token", None)
 
-        if auth_token:
-            self._auth_token    = auth_token
+        if not token:
+            email    = kwargs.get("email",    None)
+            password = kwargs.get("password", None)
+
+            if not email:
+                raise ValueError("email not provided.")
+
+            if not password:
+                raise ValueError("password not provided.")
+
+            url             = self._build_url("_api", "login", prefix = False)
+            data            = dict(
+                username    = email,
+                password    = password
+            )
+            response        = self.post(url, data = data)
+            
+            auth_token      = response.headers.get(HEADER_AUTHENTICATION)
+
+            if auth_token:
+                self._auth_token = auth_token
+            else:
+                raise AuthenticationError(_AUTHENTICATION_ERROR_STRING)
         else:
-            raise AuthenticationError((
-                "Unable to login into Cell Collective "
-                "with credentials provided."))
+            try:
+                self.me(token = token)
+                self._auth_token = token
+            except HTTPError:
+                raise AuthenticationError(_AUTHENTICATION_ERROR_STRING)
 
     @property
     def authenticated(self):
         _authenticated = bool(self._auth_token)
         return _authenticated
 
-    def me(self):
-        url         = self._build_url("_api", "user", "getProfile")
-        response    = self._request("GET", url)
-        
-        content     = response.json()
+    def me(self, *args, **kwargs):
+        """
+        Get the user profile of the authenticated client.
 
-        user        = _user_get_profile_response_object_to_user_object(content)
+        Usage::
+
+            >>> import cc
+            >>> client = cc.Client()
+            >>> client.auth(email = "test@cellcollective.org", password = "test")
+            >>> client.me()
+            <User id=10887 name='Test Test'>
+        """
+
+        url      = self._build_url("_api", "user", "getProfile")
+        response = self._request("GET", url, *args, **kwargs)
+        
+        content  = response.json()
+
+        user     = _user_get_profile_response_object_to_user_object(content)
 
         return user
 
@@ -461,15 +531,15 @@ class Client:
             content     = response.json()
 
             if id_:
-                resources = [
+                resources = QueryList([
                     _model_get_by_id_response_object_to_model_object(self, content)
-                ]
+                ])
             else:
                 content   = content[since - 1 : since - 1 + size]
-                resources = [
+                resources = QueryList([
                     _model_get_response_object_to_model_object(self, obj)
                         for obj in content
-                ]
+                ])
         elif _resource == "user":
             if not id_:
                 raise ValueError("id required.")
@@ -490,13 +560,13 @@ class Client:
         return squash(resources)
 
     def read(self, filename, save = False):
-        url         = self._build_url("_api", "model", "import")
+        url         = self._build_url("_api", "model", "import", prefix = False)
         
         files       = dict({
             "upload": (filename, open(filename, "rb"))
         })
 
-        response    = self._request("POST", url, files = files)
+        response    = self.post(url, files = files)
 
         content     = response.json()
 

@@ -1,10 +1,10 @@
 # imports - module imports
 from cc.core.querylist  import QueryList
 from cc.model.resource  import Resource
-from cc.core.mixins     import JupyterViewMixin
+from cc.core.mixins     import JupyterHTMLViewMixin
 from cc.template        import render_template
 
-class Condition(Resource, JupyterViewMixin):
+class Condition(Resource, JupyterHTMLViewMixin):
     def __init__(self, *args, **kwargs):
         self.id                     = kwargs.get("id")
         self.state                  = kwargs.get("state")
@@ -18,6 +18,6 @@ class Condition(Resource, JupyterViewMixin):
         repr_ = "<Condition id=%s>" % self.id
         return repr_
 
-    def _repr_html(self):
-        repr_ = render_template("condition")
+    def _repr_html_(self):
+        repr_ = render_template("condition.html")
         return repr_

@@ -10,8 +10,8 @@ functionality.
 The package also ships with test models in various formats for testing 
 purposes.
 
-    >>> from os.path import join
-    >>> from cc.constant import DATA_DIRECTORY
+    >>> from os.path    import join
+    >>> from cc.config  import PATH
 
 SBML
 ----
@@ -19,4 +19,4 @@ SBML
 The `Systems Biology Markup Language <http://sbml.org>`_ is an XML-based 
 standard format for distributing models.
 
-    >>> model = client.read(join(DATA_DIRECTORY, "fibroblasts.sbml"))
+    >>> model = client.read(join(PATH["DATA"], "fibroblasts.sbml"))

@@ -47,7 +47,7 @@ the application.
 
 With this information, authorizing is as simple as:
 
-    >>> client.auth(email = "test@cellcollective.org", password = "foobar@123")
+    >>> client.auth(email = "test@cellcollective.org", password = "test")
 
 To verify that you are authenticated as the correct user, run:
 

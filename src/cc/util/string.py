@@ -57,6 +57,10 @@ def lower(text):
     text = text.lower()
     return text
 
+def capitalize(text):
+    text = text.capitalize()
+    return text
+
 def ellipsis(string, threshold = 50, pattern = "..."):
     length      = len(string)
     expected    = threshold + len(pattern) 

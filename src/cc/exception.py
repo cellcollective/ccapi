@@ -1,3 +1,5 @@
+from requests.exceptions import HTTPError
+
 class CCError(Exception):
     pass
 
