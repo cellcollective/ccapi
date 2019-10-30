@@ -2,10 +2,18 @@
 from cc.model.resource import Resource
 
 class User(Resource):
-    def __init__(self):
-        self.id         = None
-        self.first_name = None
-        self.last_name  = None
+    """
+    A User resource object.
+    """
+
+    def __init__(self,
+        id          = None,
+        first_name  = None,
+        last_name   = None,
+    ):
+        self.super.__init__(self, id)
+        self.first_name = first_name
+        self.last_name  = last_name
 
     @property
     def name(self):
@@ -19,6 +27,5 @@ class User(Resource):
 
         return _name
 
-    def __repr__(self):
-        repr_ = "<User id=%s name='%s'>" % (self.id, self.name)
-        return repr_
+    def save(self):
+        pass

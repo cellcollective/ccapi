@@ -257,6 +257,8 @@ def _model_get_response_object_to_model_object(client, response):
             )
             model.documents.append(document)
 
+    model._client       = client
+
     return model
 
 def _user_get_profile_response_object_to_user_object(response):

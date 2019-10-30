@@ -27,7 +27,3 @@ class Document(Resource):
             for chunk in response.iter_content(chunk_size = nchunk):
                 if chunk:
                     f.write(chunk)
-
-    def __repr__(self):
-        repr_ = "<Document name='%s'>" % (self.name)
-        return repr_
