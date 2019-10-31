@@ -1,5 +1,5 @@
 # imports - module imports
-from cc.model.resource import Resource
+from cc.model.resource import Resource, ResourceAttribute as RAttr
 
 class User(Resource):
     """
@@ -7,13 +7,38 @@ class User(Resource):
     """
 
     def __init__(self,
-        id          = None,
-        first_name  = None,
-        last_name   = None,
+        id         = None,
+        first_name = None,
+        last_name  = None,
     ):
-        self.super.__init__(self, id)
-        self.first_name = first_name
-        self.last_name  = last_name
+        self._first_name = RAttr("firstName", first_name)
+        self._last_name  = RAttr("lastName",  last_name)
+
+        Resource.__init__(self, id, self.name)
+
+    @property
+    def first_name(self):
+        first_name = getattr(self, "_first_name", None)
+        return first_name
+    
+    @first_name.setter
+    def first_name(self, value):
+        if self.first_name == value:
+            pass
+        elif not isinstance(value, RAttr):
+            self._first_name = RAttr("firstName", value)
+
+    @property
+    def last_name(self):
+        last_name = getattr(self, "_last_name", None)
+        return last_name
+    
+    @last_name.setter
+    def last_name(self, value):
+        if self.last_name == value:
+            pass
+        elif not isinstance(value, RAttr):
+            self._last_name = RAttr("lastName", value)
 
     @property
     def name(self):
