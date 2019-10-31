@@ -233,7 +233,7 @@ def _model_get_response_object_to_model_object(client, response):
     
     for version in data["modelVersionMap"].keys():
         model_version = client.get("model",
-            id_     = model.id,
+            id      = model.id,
             version = version,
             hash_   = model.hash,
         )
@@ -261,13 +261,11 @@ def _model_get_response_object_to_model_object(client, response):
 
     return model
 
-def _user_get_profile_response_object_to_user_object(response):
-    user             = User()
+def _user_response_object_to_user_object(client, response):
+    user = User(id = int(response["id"]), first_name = response["firstName"],
+        last_name = response["lastName"], client = client)
 
-    user.id          = response["id"]
     user.email       = response.get("email")
-    user.first_name  = response["firstName"]
-    user.last_name   = response["lastName"]
     user.institution = response.get("institution")
 
     return user
@@ -485,7 +483,7 @@ class Client:
         
         content  = response.json()
 
-        user     = _user_get_profile_response_object_to_user_object(content)
+        user     = _user_response_object_to_user_object(self, content)
 
         return user
 
@@ -554,7 +552,7 @@ class Client:
             content     = response.json()
 
             for user_id, user_data in content.items():
-                user = _user_get_profile_response_object_to_user_object(
+                user = _user_response_object_to_user_object(self, 
                     merge_dict({ "id": user_id }, user_data)
                 )
                 resources.append(user)
@@ -580,3 +578,7 @@ class Client:
 
     def search(self, resource, query, *args, **kwargs):
         return self.get(resource, query = query, *args, **kwargs)
+
+    def raise_for_authentication(self):
+        if not self.authenticated:
+            raise AuthenticationError("Client is not authenticated.")  

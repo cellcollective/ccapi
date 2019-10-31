@@ -1,14 +1,30 @@
 # imports - standard imports
-from cc.util.string import ellipsis
+from cc.util.string     import ellipsis
+from cc._compat         import iteritems
+from cc.util.datetime   import now
 
 class Resource:
     """
     Defines common behaviour of all objects in the CC API
     """
 
-    def __init__(self, id=None, name=""):
-        self._id    = id
-        self.name   = name
+    def __init__(self, id=None, name="", autosave=False, client=None):
+        """
+        A resource object with an identifier and/or name.
+
+        :param id: An integer or None. An identifier associated with the resource.
+        :param name: A string or None. A name associated with the resource.
+        :param client: A :class:`cc.Client` object. A reference to the client
+            object used to fetch this resource.
+        """
+        
+        self._id      = id
+        self._name    = name
+        self.autosave = autosave 
+        self._client  = client
+
+        self.created  = now()
+        self.updated  = now()
 
     @property
     def id(self):
@@ -24,6 +40,19 @@ class Resource:
         else:
             self._id = value
 
+    @property
+    def name(self):
+        return getattr(self, "_name", None)
+
+    @id.setter
+    def name(self, value):
+        if self.name == value:
+            pass
+        elif not isinstance(value, str):
+            raise TypeError("ID must be a string.")
+        else:
+            self._name = value
+
     def __repr__(self):
         klass   = self.__class__.__name__
         id_     = self.id
@@ -35,27 +64,49 @@ class Resource:
         return repr_
 
     def __eq__(self, other):
-        return self.id == other.id
+        equals = False
 
-class ResourceAttribute:
-    """
-    An attribute of a resource.
-    """
+        if self.id and other.id:
+            equals = self.id == other.id
+            
+        return equals
 
-    def __init__(self, key, value):
-        self.key   = key
-        self.value = value
-
-    def __repr__(self):
-        repr_ = self.value
-        return repr_
-
-    def __eq__(self, other):
-        equal = False
+    def _prepare_save_data(self, resource):
+        """
+        Prepares the data to be dispatched to save this resource object.
+        """
         
-        if isinstance(other, ResourceAttribute):
-            equal = self.key == other.key and self.value == other.value
-        else:
-            equal = self.value = other
+        name   = resource.__class__.__name__
+        fields = resource.FIELDS
         
-        return equal
+        data       = dict()
+
+        for attr, info in iteritems(fields):
+            value = getattr(resource, attr, None)
+            if value == None and not fields["none"]:
+                raise ValueError("%s cannot be None for resource %s." % 
+                    (attr, name)
+                )
+            elif not isinstance(value, info["type"]):
+                raise ValueError("%s cannot be of type %s for resource %s." %
+                    (attr, type(value), name)
+                )
+            else:
+                target       = info["target"]
+                data[target] = value
+
+        return data
+
+    def _before_save(self):
+        self._client.raise_for_authentication()
+
+    def save(self):
+        self._before_save()
+        raise NotImplementedError
+
+    def _before_delete(self):
+        self._client.raise_for_authentication()
+
+    def delete(self):
+        self._before_delete()
+        raise NotImplementedError

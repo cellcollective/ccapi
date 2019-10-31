@@ -1,44 +1,64 @@
 # imports - module imports
-from cc.model.resource import Resource, ResourceAttribute as RAttr
+from cc.model.resource import Resource
+
+# TODO: Auto Save
 
 class User(Resource):
     """
     A User resource object.
+
+    Usage::
+
+        >>> import cc
+        >>> client = cc.Client()
+        >>> client.auth(email = "test@cellcollective.org", password = "test")
+        >>> user   = client.me()
+        >>> user
+        <User id=10887 name='Test Test'>
+        >>> user.name
+        'Test Test'
     """
 
+    FIELDS = {
+        "first_name": {
+            "target":   "firstName",
+            "type":     (str,),
+            "none":     True
+        },
+        "last_name": {
+            "target":   "lastName",
+            "type":     (str,),
+            "none":     True
+        },
+        "email": {
+            "target":   "email",
+            "type":     (str,),
+            "none":     True
+        },
+        "institution": {
+            "target":   "institution",
+            "type":     (str,),
+            "none":     True 
+        }
+    }
+
     def __init__(self,
-        id         = None,
-        first_name = None,
-        last_name  = None,
+        id          = None,
+        first_name  = None,
+        last_name   = None,
+        email       = None,
+        institution = None,
+        autosave    = False,
+        client      = None
     ):
-        self._first_name = RAttr("firstName", first_name)
-        self._last_name  = RAttr("lastName",  last_name)
+        self.first_name     = first_name
+        self.last_name      = last_name
 
-        Resource.__init__(self, id, self.name)
+        Resource.__init__(self, id = id, name = self.name, autosave = autosave,
+            client = client)
 
-    @property
-    def first_name(self):
-        first_name = getattr(self, "_first_name", None)
-        return first_name
-    
-    @first_name.setter
-    def first_name(self, value):
-        if self.first_name == value:
-            pass
-        elif not isinstance(value, RAttr):
-            self._first_name = RAttr("firstName", value)
-
-    @property
-    def last_name(self):
-        last_name = getattr(self, "_last_name", None)
-        return last_name
-    
-    @last_name.setter
-    def last_name(self, value):
-        if self.last_name == value:
-            pass
-        elif not isinstance(value, RAttr):
-            self._last_name = RAttr("lastName", value)
+        self.email          = email
+        self.institution    = institution
 
     @property
     def name(self):
@@ -53,4 +73,20 @@ class User(Resource):
         return _name
 
     def save(self):
-        pass
+        """
+        Save user details.
+
+        Usage::
+
+            >>> user.first_name = 'foobar'
+            >>> user.save()
+        """
+
+        data = self._prepare_save_data(self)
+
+        self._client.raise_for_authentication()
+        me   = self._client.me()
+        if not me == self:
+            raise ValueError("User %s cannot save for user %s" % (me, self))
+        else:
+            self._client.post("_api/user/saveProfile", json = data)

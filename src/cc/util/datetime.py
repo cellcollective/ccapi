@@ -14,3 +14,6 @@ def get_timestamp_str(format_ = _DEFAULT_TIMESTAMP_FORMAT):
     string    = datetime_.strftime(format_)
 
     return string
+
+def now():
+    return dt.datetime.now()

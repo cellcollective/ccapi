@@ -2,6 +2,17 @@ import os.path as osp
 
 from cc.__attr__ import __version__
 
+MODEL_TYPE                      = dict({
+    "BOOLEAN": {
+        "value": "boolean"
+    }
+})
+MODEL_DOMAIN_TYPE               = dict({
+    "RESEARCH": {
+        "value": "research"
+    }
+})
+
 DEFAULT_URL                     = "https://cellcollective.org"
 HEADER_AUTHENTICATION           = "X-AUTH-TOKEN"
 
