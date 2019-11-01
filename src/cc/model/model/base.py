@@ -116,6 +116,7 @@ class Model(Resource, JupyterHTMLViewMixin):
             
             # NOTE: components, interactions are something that need to be
             # refactored when extending to other model types.
+            
             # components              = 0
             # interactions            = 0
             # data["components"]      = components

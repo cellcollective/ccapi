@@ -29,12 +29,14 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
         >>> model.add_version(bool)
         >>> model.save()
     """
-    def __init__(self, id=None, name="", version=None):
+    def __init__(self, id=None, name="", version=None, base_model=None):
         ModelVersion.__init__(self, id = id, name = name,
             version = version
         )
 
-        self.components = QueryList()
+        self._base_model = base_model
+
+        self.components  = QueryList()
 
     def _repr_html_(self):
         repr_ = render_template(join("boolean", "model.html"), args = dict({

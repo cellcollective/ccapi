@@ -12,9 +12,9 @@ MODEL_DOMAIN_TYPE               = dict({
         "value": "research"
     }
 })
+HEADER_AUTHENTICATION           = "X-AUTH-TOKEN"
 
 DEFAULT_URL                     = "https://cellcollective.org"
-HEADER_AUTHENTICATION           = "X-AUTH-TOKEN"
 
 USER_AGENT                      = "Python CCAPI / %s" % (__version__)
 

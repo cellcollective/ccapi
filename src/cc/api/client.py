@@ -23,8 +23,8 @@ from cc.exception   import (
     AuthenticationError,
     HTTPError
 )
+from cc.config      import DEFAULT
 from cc.constant    import (
-    DEFAULT_URL,
     HEADER_AUTHENTICATION,
     USER_AGENT,
     MAXIMUM_API_RESOURCE_FETCH,
@@ -291,7 +291,7 @@ class Client:
     """
 
     def __init__(self,
-        base_url = DEFAULT_URL, proxies = [ ], test = True):
+        base_url = DEFAULT["URL"], proxies = [ ], test = True):
         self.base_url    = base_url
         self._auth_token = None
         self._session    = requests.Session()
@@ -307,6 +307,12 @@ class Client:
 
         if isinstance(proxies, collections.Mapping):
             proxies = [proxies]
+
+        for proxy in proxies:
+            if "protocol" not in proxy:
+                raise TypeError("proxy %s is not of the format { proticol: ip }."
+                    % proxy
+                )
 
         self._proxies = proxies
 
@@ -334,6 +340,7 @@ class Client:
         headers     = kwargs.pop("headers", { })
         proxies     = kwargs.pop("proxies", self._proxies)
         data        = kwargs.get("params",  kwargs.get("data"))
+        prefix      = kwargs.get("prefix",  True)
 
         headers.update({
             "User-Agent": USER_AGENT
@@ -352,6 +359,9 @@ class Client:
         if proxies:
             proxies = random.choice(proxies)
             logger.info("Using proxy %s to dispatch request." % proxies)
+
+        if prefix:
+            url  = self._build_url(url)
 
         logger.info("Dispatching a %s Request to URL: %s with Arguments - %s" \
             % (method, url, kwargs))
@@ -382,8 +392,6 @@ class Client:
             >>> response.content
             b'"First Name","Last Name","Email","Institution","Last Updated Date"\n'
         """
-
-        url      = self._build_url(url)
         response = self._request("POST", url, *args, **kwargs)
         return response
 
@@ -401,13 +409,10 @@ class Client:
             >>> client.ping()
             'pong'
         """
-
-        url      = self._build_url("api", "ping")
-        response = self._request("GET", url, *args, **kwargs)
-
+        response = self._request("GET", "api/ping", *args, **kwargs)
         content  = response.json()
 
-        if content["data"] == "pong":
+        if content.get("data") == "pong":
             return "pong"
         else:
             raise ValueError("Unable to ping to URL %s." % self.base_url)
@@ -440,14 +445,9 @@ class Client:
             if not password:
                 raise ValueError("password not provided.")
 
-            url             = self._build_url("_api", "login", prefix = False)
-            data            = dict(
-                username    = email,
-                password    = password
-            )
-            response        = self.post(url, data = data)
-            
-            auth_token      = response.headers.get(HEADER_AUTHENTICATION)
+            data = dict(username = email, password = password)
+            response   = self.post("_api/login", data = data)
+            auth_token = response.headers.get(HEADER_AUTHENTICATION)
 
             if auth_token:
                 self._auth_token = auth_token
@@ -460,10 +460,24 @@ class Client:
             except HTTPError:
                 raise AuthenticationError(_AUTHENTICATION_ERROR_STRING)
 
+    def logout(self):
+        """
+        Logout client.
+        """
+        self._auth_token = None
+
     @property
     def authenticated(self):
         _authenticated = bool(self._auth_token)
         return _authenticated
+
+    def raise_for_authentication(self):
+        """
+        Raise AuthenticationError in case the client hasn't been authenticated.
+        """
+        
+        if not self.authenticated:
+            raise AuthenticationError("Client is not authenticated.")  
 
     def me(self, *args, **kwargs):
         """
@@ -477,21 +491,20 @@ class Client:
             >>> client.me()
             <User id=10887 name='Test Test'>
         """
-
-        url      = self._build_url("_api", "user", "getProfile")
-        response = self._request("GET", url, *args, **kwargs)
-        
+        response = self._request("GET", "_api/user/getProfile", *args, **kwargs)
         content  = response.json()
-
         user     = _user_response_object_to_user_object(self, content)
 
         return user
 
     def get(self, resource, *args, **kwargs):
+        """
+
+        """
         _resource   = resource.lower()
         resources   = [ ]
 
-        id_         = kwargs.get("id_")
+        id_         = kwargs.get("id")
         query       = kwargs.get("query")
 
         size        = min(
@@ -507,7 +520,7 @@ class Client:
             id_ = sequencify(id_)
 
         if   _resource == "model":
-            url     = self._build_url("_api", "model", "get")
+            url     = self._build_url("_api","model","get", prefix = False)
             params  = None
 
             version = kwargs.get("version")
@@ -544,8 +557,7 @@ class Client:
             if not id_:
                 raise ValueError("id required.")
 
-            url         = self._build_url("_api", "user", "lookupUsers")
-            response    = self._request("GET", url,
+            response    = self._request("GET", "_api/user/lookupUsers",
                 params = [("id", i) for i in id_]
             )
 
@@ -560,25 +572,28 @@ class Client:
         return squash(resources)
 
     def read(self, filename, save = False):
-        url         = self._build_url("_api", "model", "import", prefix = False)
-        
+        """
+        Read an SBML file.
+        """
+
         files       = dict({
             "upload": (filename, open(filename, "rb"))
         })
 
-        response    = self.post(url, files = files)
+        response    = self.post("_api/model/import", files = files)
 
         content     = response.json()
 
         model       = _model_get_by_id_response_object_to_model_object(self,
             content)
-        model.dirty = True
 
         return model
 
     def search(self, resource, query, *args, **kwargs):
-        return self.get(resource, query = query, *args, **kwargs)
+        """
+        Search a resource.
 
-    def raise_for_authentication(self):
-        if not self.authenticated:
-            raise AuthenticationError("Client is not authenticated.")  
+        :param resource: Name of the resource.
+        :param query: Search query string.
+        """
+        return self.get(resource, query = query, *args, **kwargs)

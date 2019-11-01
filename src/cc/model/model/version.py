@@ -5,8 +5,8 @@ from cc.model.model.util import get_temporary_id
 class ModelVersion(Resource):
     def __init__(self, id=None, name="", version=None
     ):
-        Model.__init__(self, id = id, name = name)
-        
+        Resource.__init__(self, id = id, name = name)
+
         self._version = version or get_temporary_id()
         
     @property
