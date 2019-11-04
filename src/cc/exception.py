@@ -9,5 +9,8 @@ class CCError(Exception):
 class ValueError(CCError, ValueError):
     pass
 
+class TypeError(CCError, TypeError):
+    pass
+
 class AuthenticationError(CCError):
     pass

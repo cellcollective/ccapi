@@ -1,5 +1,5 @@
 # imports - compatibility imports
-from cc._compat     import zip_longest
+from cc._compat import zip_longest
 
 # imports - module imports
 from cc.util.string import strip_ansi
@@ -56,7 +56,7 @@ class Table:
             if header:
                 tabulated.insert(1, " ".join(map(lambda x: "-" * x, sizes)))
 
-            string  = "\n".join(tabulated)
+            string = "\n".join(tabulated)
 
         return string
     

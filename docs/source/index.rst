@@ -1,7 +1,7 @@
 CCPy
 ====
 
-A Python Client Library for the `Cell Collective <https://cellcollective.org>`_ API
+A Python Library to interact with the `Cell Collective <https://cellcollective.org>`_ API
 
 .. image:: https://img.shields.io/pypi/v/ccpy.svg?style=flat-square
     :target: https://pypi.org/project/ccpy/

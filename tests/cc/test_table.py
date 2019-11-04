@@ -1,5 +1,5 @@
 # imports - module imports
-from cc       import cli
+from cc import cli
 from cc.table import _sanitize_string, Table
 
 def test__sanitize_string():

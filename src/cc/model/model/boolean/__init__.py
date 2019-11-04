@@ -17,14 +17,14 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
 
     Usage::
 
-        >>> from cc.model import Model, BooleanModel, Component
+        >>> from cc.model import Model, BooleanModel, InternalComponent
         >>> model    = Model('Cortical Area Development')
         >>> bool     = BooleanModel()
-        >>> Coup_fti = Component('Coup_fti')
-        >>> Sp8      = Component('Sp8')
-        >>> Pax6     = Component('Pax6')
-        >>> Fgf8     = Component('Fgf8')
-        >>> Emx2     = Component('Emx2')
+        >>> Coup_fti = InternalComponent('Coup_fti')
+        >>> Sp8      = InternalComponent('Sp8')
+        >>> Pax6     = InternalComponent('Pax6')
+        >>> Fgf8     = InternalComponent('Fgf8')
+        >>> Emx2     = InternalComponent('Emx2')
         >>> bool.add_components(Coup_fti, Sp8, Pax6, Fgf8, Emx2)
         >>> model.add_version(bool)
         >>> model.save()
