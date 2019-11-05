@@ -71,6 +71,8 @@ if PY2:
 
     from itertools import izip         as zip
     from itertools import izip_longest as zip_longest
+
+    string_types = basestring
 else:
     # moves
     from urllib.request import urlopen, Request
@@ -88,6 +90,8 @@ else:
     from itertools import zip_longest
 
     zip = zip
+
+    string_types = str
 
 if platform.system() in ['Linux', 'Darwin']:
     EX_OK      = os.EX_OK

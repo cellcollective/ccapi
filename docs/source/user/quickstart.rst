@@ -67,3 +67,12 @@ that that the email address and password you passed are valid.
 .. code:: shell
 
     AuthenticationError: Unable to login into Cell Collective with credentials provided.
+
+Authenticating via Authorization Token
+--------------------------------------
+
+You can also authenticate by passing an already available authorization token.
+
+    >>> client.auth(token = "<YOUR_AUTHORIZATION_TOKEN>")
+    >>> client.authenticated
+    True

@@ -2,11 +2,12 @@
 from os.path import join
 
 # imports - module imports
-from cc.core.querylist  import QueryList
-from cc.model.resource  import Resource
-from cc.core.mixins     import JupyterHTMLViewMixin
-from cc.template        import render_template
-from cc.util.string     import capitalize
+from cc.core.querylist      import QueryList
+from cc.model.resource      import Resource
+from cc.model.model         import Species
+from cc.core.mixins         import JupyterHTMLViewMixin
+from cc.template            import render_template
+from cc.util.string         import capitalize
 
 class Component(Species, JupyterHTMLViewMixin):
     """

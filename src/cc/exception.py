@@ -18,3 +18,6 @@ class ResponseError(CCError):
 
 class AuthenticationError(CCError):
     pass
+
+class TemplateNotFoundError(CCError):
+    pass

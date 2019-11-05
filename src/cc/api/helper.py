@@ -1,45 +1,39 @@
 # imports - standard imports
 import datetime as dt
-import collections
-import re
-import random
+# import collections
+# import re
+# import random
 
-# imports - third-party imports
-import requests
+# # imports - third-party imports
+# import requests
 
-# imports - module imports
-from cc.util.types  import (
-    sequencify,
-    squash,
-    merge_dict
-)
-from cc.util.string import (
-    sanitize_html,
-    sanitize_text,
-    lower
-)
-from cc.exception   import (
-    ValueError,
-    AuthenticationError,
-    HTTPError
-)
-from cc.config      import DEFAULT
-from cc.constant    import (
-    HEADER_AUTHENTICATION,
-    USER_AGENT,
-    MAXIMUM_API_RESOURCE_FETCH,
-    _AUTHENTICATION_ERROR_STRING
-)
+# from cc.util.string import (
+#     sanitize_html,
+#     sanitize_text,
+#     lower
+# )
+# from cc.exception   import (
+#     ValueError,
+#     AuthenticationError,
+#     HTTPError
+# )
+# from cc.config      import DEFAULT
+# from cc.constant    import (
+#     HEADER_AUTHENTICATION,
+#     USER_AGENT,
+#     MAXIMUM_API_RESOURCE_FETCH,
+#     _AUTHENTICATION_ERROR_STRING
+# )
 from cc.model       import (
     Model,
-    BooleanModel, Species, Regulator, Condition, SubCondition,
-    # InternalComponent, ExternalComponent,
+    BooleanModel, InternalComponent, ExternalComponent,
+    Regulator, Condition, SubCondition,
     Document
 )
-from cc.core.querylist  import QueryList
-
-# imports - standard imports
-import datetime as dt
+from cc.util.types  import (
+    squash
+)
+# from cc.core.querylist  import QueryList
 
 # imports - third-party imports
 from cc.model import User
@@ -83,33 +77,19 @@ def _model_version_response_object_to_model_object(client, response):
     if "score" in data:
         model.score = data["score"]["score"]
 
-    species_map = dict()
+    component_map = dict()
     for species_id, species_data in data["speciesMap"].items():
-        # component_class = InternalComponent
-        #     if species_data["external"] else ExternalComponent
+        component_class = InternalComponent \
+            if species_data["external"] else ExternalComponent
 
-        # component = component_class(id = int(species_id), name = species_data["name"],
-        #     created = _cc_datetime_to_python_datetime(
-        #         species_data["creationDate"]
-        #     )
-        # )
-
-        species = Species(
-            id      = int(species_id),
-            name    = species_data["name"],
-            type    = "external" if species_data["external"] else "internal",
-            created = _cc_datetime_to_python_datetime(
-                species_data["creationDate"]
-            ) if species_data.get("creationDate") else None,
-            updated = _cc_datetime_to_python_datetime(
-                species_data["updateDate"]
-            ) if species_data.get("updateDate")   else None,
-        )
+        component = component_class(id = int(species_id), name = species_data["name"])
+        component.created = cc_datetime_to_python_datetime(species_data["creationDate"])
+        component.updated = cc_datetime_to_python_datetime(species_data["updateDate"])
 
         # knowledge base
         page_id_found = None
         for page_id, page_data in data["pageMap"].items():
-            if page_data["speciesId"] == species.id:
+            if page_data["speciesId"] == component.id:
                 page_id_found = int(page_id)
 
         sections = dict()
@@ -138,11 +118,11 @@ def _model_version_response_object_to_model_object(client, response):
                     for i in sorted(section, key = lambda s: s["position"])])
             sections = sections_formatted
                 
-        species.information     = sections
+        component.information       = sections
 
-        species_map[species.id] = species
+        component_map[component.id] = component
 
-        model.species.append(species)
+        model.add_component(component)
 
     sub_condition_map   = dict()
     for sub_condition_id, sub_condition_data in data["subConditionMap"].items():

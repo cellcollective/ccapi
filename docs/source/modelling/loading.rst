@@ -48,8 +48,8 @@ Each model provides you a list of species objects:
 When using `Jupyter Notebook <https://jupyter.org/>`_, this type of information 
 is rendered as follows:
 
-Species
--------
+Components
+----------
 
 Regulators
 ----------

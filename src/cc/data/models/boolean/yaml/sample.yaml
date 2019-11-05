@@ -1,0 +1,6 @@
+name: Sample Model
+components:
+  - name: A
+    type: internal
+  - name: B
+    type: external

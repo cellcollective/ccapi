@@ -1,34 +1,48 @@
+# import random
+#     squash,
+#     merge_dict
+# )
+# from cc.util.string import (
+#     sanitize_html,
+#     sanitize_text,
+#     lower
+# )
+# from cc.exception   import (
+#     ValueError,
+#     TypeError,
+#     ResponseError,
+#     JSONDecodeError,
+#     AuthenticationError,
+#     HTTPError
+# )
+# from cc.exception   import (
+#     TypeError
+# )
+
 # imports - standard imports
 import collections
-import random
 
 # imports - third-party imports
 import requests
 
 # imports - module imports
-from cc.util.types  import (
+from cc.api.helper      import (
+    _model_response_object_to_model_object,
+    _model_version_response_object_to_model_object,
+    _user_response_object_to_user_object
+)
+from cc.core.querylist  import QueryList
+from cc.config          import DEFAULT
+from cc.constant        import (
+    AUTHENTICATION_HEADER
+)
+from cc._compat         import string_types
+from cc.util.types      import (
     sequencify,
-    squash,
-    merge_dict
+    merge_dict,
+    squash
 )
-from cc.util.string import (
-    sanitize_html,
-    sanitize_text,
-    lower
-)
-from cc.exception   import (
-    ValueError,
-    TypeError,
-    ResponseError,
-    JSONDecodeError,
-    AuthenticationError,
-    HTTPError
-)
-from cc.config      import DEFAULT
-from cc.log         import get_logger
-from cc.exception   import (
-    TypeError
-)
+from cc.log             import get_logger
 
 logger = get_logger()
 
@@ -86,7 +100,7 @@ class Client:
         if prefix:
             parts.append(self.base_url)
 
-        url = "/".join(map(str, parts + args))
+        url = "/".join(map(str, sequencify(parts) + sequencify(args)))
 
         return url
 
@@ -97,19 +111,20 @@ class Client:
         proxies     = kwargs.pop("proxies",     self._proxies)
         data        = kwargs.get("params",      kwargs.get("data"))
         prefix      = kwargs.get("prefix",      True)
+        user_agent  = kwargs.get("user_agent",  DEFAULT["USER_AGENT"])
 
         headers.update({
-            "User-Agent": USER_AGENT
+            "User-Agent": user_agent
         })
 
         if token:
             headers.update({
-                HEADER_AUTHENTICATION: token
+                AUTHENTICATION_HEADER: token
             })
         else:
             if self._auth_token:
                 headers.update({
-                    HEADER_AUTHENTICATION: self._auth_token
+                    AUTHENTICATION_HEADER: self._auth_token
                 })
 
         if proxies:
@@ -206,9 +221,9 @@ class Client:
             if not password:
                 raise ValueError("password not provided.")
 
-            data = dict(username = email, password = password)
+            data       = dict(username = email, password = password)
             response   = self.post("_api/login", data = data)
-            auth_token = response.headers.get(HEADER_AUTHENTICATION)
+            auth_token = response.headers.get(AUTHENTICATION_HEADER)
 
             if auth_token:
                 self._auth_token = auth_token
@@ -278,7 +293,7 @@ class Client:
         since     = kwargs.get("since", 1)
 
         if id_:
-            if isinstance(id_, str) and id_.isdigit():
+            if isinstance(id_, string_types) and id_.isdigit():
                 id_ = int(id_)
             id_ = sequencify(id_)
 
@@ -293,9 +308,9 @@ class Client:
                 url = self._build_url(url, str(id_[0]), prefix = False)
 
                 if version:
-                    params = {
+                    params = dict({
                         "version": str(version) + ("&%s" % hash_ if hash_ else "")
-                    }
+                    })
 
             if query:
                 url     = self._build_url(url, prefix = False)
@@ -310,7 +325,10 @@ class Client:
             
             if id_:
                 resources = QueryList([
-                    _model_version_response_object_to_model_object(self, content)
+                    _model_version_response_object_to_model_object(
+                        self,
+                        content
+                    )
                 ])
             else:
                 content   = content[since - 1 : since - 1 + size]

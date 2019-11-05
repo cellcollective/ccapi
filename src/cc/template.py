@@ -4,8 +4,13 @@ import os.path as osp
 # imports - module imports
 from cc.util.system import read
 from cc.config      import PATH
+from cc.util.types  import sequencify
+from cc.log         import get_logger
+from cc.exception   import TemplateNotFoundError
 
-def render_template(template, *args, **kwargs):
+logger = get_logger()
+
+def render_template(template, dirs = [ ], context = None, **kwargs):
     """
     Renders a template. The template must be of the string format. For more 
     details, see 
@@ -23,13 +28,34 @@ def render_template(template, *args, **kwargs):
         >>> from cc.template import render_template
         >>> render_template("test.html", context = dict(name = "Test"))
         'Hello, Test!'
+        >>> render_template("test.html", name = "Test")
+        'Hello, Test!'
+        >>> render_template("foobar.html", dirs = "templates", bar = "baz")
+        'foobaz'
     """
-    
+    dirs = sequencify(dirs)
+    if PATH["TEMPLATES"] not in dirs:
+        dirs.append(PATH["TEMPLATES"])
 
-    path = osp.join(PATH["TEMPLATES"], template)
-    html = read(path)
+    dirs = [osp.abspath(dir_) for dir_ in dirs]
+
+    logger.info("Searching for templates within directories: %s" % dirs)
+
+    path = None
+    for dir_ in dirs:
+        temp = osp.join(dir_, template)
+        if osp.exists(temp):
+            path = temp
+            break
     
+    if not path:
+        raise TemplateNotFoundError("Template %s not found." % template)
+    
+    html     = read(path)
     rendered = html
+
+    if not context:
+        context  = kwargs
 
     if context:
         rendered = html.format(**context)
