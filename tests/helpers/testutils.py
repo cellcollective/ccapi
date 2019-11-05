@@ -1,30 +1,20 @@
-# imports - compatibility imports
-from cc._compat     import StringIO, input
-from cc.util.string import safe_decode
-
 # imports - standard imports
-import sys
-from   contextlib import contextmanager
+import requests
 
-__STDIN__ = sys.stdin
+# imports - third-party imports
+from cc.util.string import safe_decode, strip
 
-@contextmanager
-def mock_input(args):
-    # https://stackoverflow.com/a/36491341
-    sys.stdin = args
-    yield
-    sys.stdin = __STDIN__
+_URL_PROXY_LIST = "https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt"
 
-def assert_stdout(capfd, output):
-    stdout, _ = capfd.readouterr()
-    assert safe_decode(output) == safe_decode(stdout)
+def get_random_proxies():
+    lines = [ ]
 
-def assert_input(capfd, text, output, expected = None, input_ = None, stdout = None, input_args = { }):
-    if expected == None:
-        expected = output
-    input_ = input_ or input
-    stdout = stdout or text
-    
-    with mock_input(StringIO(output)):
-        assert input_(text, *input_args) == expected
-        assert_stdout(capfd, stdout)
+    response = requests.get(_URL_PROXY_LIST)
+    if response.ok:
+        content = strip(safe_decode(response.content))
+        lines   = content.split("\n")
+        lines   = [{ "http": line } for line in lines]
+    else:
+        response.raise_for_status()
+
+    return lines

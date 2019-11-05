@@ -1,9 +1,12 @@
 # imports - module imports
 import cc
 from   cc.exception import (
+    TypeError,
     ConnectionError,
-    AuthenticationError
+    AuthenticationError,
+    ResponseError
 )
+from   testutils import get_random_proxies
 
 # imports - standard imports
 import pytest
@@ -11,6 +14,7 @@ import pytest
 _INVALID_URL    = "http://thisisaninvalidurl.com"
 _TEST_EMAIL     = "test@cellcollective.org"
 _TEST_PASSWORD  = "test"
+_AUTH_TOKEN     = None
 
 _BASE_CLIENT    = cc.Client()
 
@@ -18,12 +22,8 @@ def test_client():
     # Check proxy definitions.
     with pytest.raises(TypeError):
         cc.Client(proxies = "foobar")
-    with pytest.raises(TypeError):
-        cc.Client(proxies = [{ "foobar": "barbaz" }])
-    with pytest.raises(TypeError):
-        cc.Client(proxies = [{ "foobar": "barbaz" }, { "protocol": "barbaz" }])
 
-    with pytest.raises(ConnectionError):
+    with pytest.raises((ConnectionError, ResponseError)):
         cc.Client(base_url = _INVALID_URL)
 
     cc.Client(base_url = _INVALID_URL, test = False)
@@ -52,15 +52,6 @@ def test__build_url():
     parts  = ["bar", "baz"]
     _test(parts)
 
-def test__request():
-    raise NotImplementedError
-
-def test_post():
-    raise NotImplementedError
-
-def test_ping():
-    assert _BASE_CLIENT.ping() == "pong"
-
 def test_auth():
     with pytest.raises(ValueError):
         _BASE_CLIENT.auth()
@@ -82,6 +73,17 @@ def test_auth():
     with pytest.raises(AuthenticationError):
         _BASE_CLIENT.auth(email = "thisisaninvalidemail.org",
             password = "invalid")
+
+def test__request():
+    proxies  = get_random_proxies()
+    client   = cc.Client(proxies = proxies)
+    response = client._request("GET", "api/ping")
+
+def test_post():
+    raise NotImplementedError
+
+def test_ping():
+    assert _BASE_CLIENT.ping() == "pong"
 
 def test_raise_for_authentication():
     with pytest.raises(AuthenticationError):

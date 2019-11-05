@@ -1,10 +1,29 @@
 # imports - standard imports
 import collections
+import random
 
 # imports - third-party imports
 import requests
 
 # imports - module imports
+from cc.util.types  import (
+    sequencify,
+    squash,
+    merge_dict
+)
+from cc.util.string import (
+    sanitize_html,
+    sanitize_text,
+    lower
+)
+from cc.exception   import (
+    ValueError,
+    TypeError,
+    ResponseError,
+    JSONDecodeError,
+    AuthenticationError,
+    HTTPError
+)
 from cc.config      import DEFAULT
 from cc.log         import get_logger
 from cc.exception   import (
@@ -41,11 +60,12 @@ class Client:
         self._auth_token = None
         self._session    = requests.Session()
 
-        if proxies and not isinstance(proxies, (collections.Mapping, list, tuple)):
+        if proxies and \
+            not isinstance(proxies, (collections.Mapping, list, tuple)):
             raise TypeError((
                 "proxies %s are not of valid type. You must "
                 "either a dictionary of a list of dictionaries of the "
-                "following format { protocol: ip }." % proxies))
+                "following format { protocol: ip }."))
 
         if isinstance(proxies, collections.Mapping):
             proxies = [proxies]
@@ -99,7 +119,7 @@ class Client:
         if prefix:
             url = self._build_url(url)
 
-        logger.info("Dispatching a %s Request to URL: %s with Arguments - %s" \
+        logger.info("Dispatching a %s request to URL: %s with Arguments - %s" \
             % (method, url, kwargs))
         response = self._session.request(method, url,
             headers = headers, proxies = proxies, *args, **kwargs)
@@ -146,12 +166,14 @@ class Client:
             'pong'
         """
         response = self._request("GET", "api/ping", *args, **kwargs)
-        content  = response.json()
-
-        if content.get("data") == "pong":
-            return "pong"
-        else:
-            raise ValueError("Unable to ping to URL %s." % self.base_url)
+        try:
+            content = response.json()
+            if content.get("data") == "pong":
+                return "pong"
+            else:
+                raise ValueError("Unable to ping to URL %s." % self.base_url)
+        except JSONDecodeError:
+            raise ResponseError("Unable to decode JSON.")
 
     def auth(self, *args, **kwargs):
         """
