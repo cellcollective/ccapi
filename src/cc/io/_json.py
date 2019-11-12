@@ -1,2 +1,2 @@
-def read():
+def read(filename):
     pass
