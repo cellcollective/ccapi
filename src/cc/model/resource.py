@@ -2,6 +2,7 @@
 from cc.util.string     import ellipsis
 from cc._compat         import iteritems
 from cc.util.datetime   import now
+from cc.model.util      import get_temporary_id
 
 class Resource:
     """
@@ -28,7 +29,7 @@ class Resource:
 
     @property
     def id(self):
-        _id = getattr(self, "_id", None)
+        _id = getattr(self, "_id", get_temporary_id())
         return _id
 
     @id.setter
@@ -44,7 +45,7 @@ class Resource:
     def name(self):
         return getattr(self, "_name", None)
 
-    @id.setter
+    @name.setter
     def name(self, value):
         if self.name == value:
             pass
@@ -52,6 +53,22 @@ class Resource:
             raise TypeError("ID must be a string.")
         else:
             self._name = value
+
+    @property
+    def client(self):
+        client = getattr(self, "_client", None)
+        if not client:
+            raise ValueError("%s has no client instance." % 
+                self.__class__.__name__
+            )
+        return client
+
+    @client.setter
+    def client(self, value):
+        if self.client == value:
+            pass
+        else:
+            self._client = value
 
     def __repr__(self):
         klass   = self.__class__.__name__
@@ -98,14 +115,14 @@ class Resource:
         return data
 
     def _before_save(self):
-        self._client.raise_for_authentication()
+        self.client.raise_for_authentication()
 
     def save(self):
         self._before_save()
         raise NotImplementedError
 
     def _before_delete(self):
-        self._client.raise_for_authentication()
+        self.client.raise_for_authentication()
 
     def delete(self):
         self._before_delete()

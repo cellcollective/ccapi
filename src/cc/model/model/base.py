@@ -2,19 +2,18 @@
 from cc.model.resource      import Resource
 from cc.core.querylist      import QueryList
 from cc.core.mixins         import JupyterHTMLViewMixin
-from cc.model.model         import BooleanModel
+from cc.model.model         import BooleanModel, InternalComponent
 from cc.config              import DEFAULT
 from cc.constant            import MODEL_TYPE
 from cc.template            import render_template
 from cc.util.string         import ellipsis
-from cc.model.model.util    import get_temporary_id
 from cc._compat             import itervalues
 
 _MODEL_TYPE_CLASS       = dict({
     "boolean": BooleanModel
 })
-_ACCEPTED_MODEL_TYPES   = list([t["value"] for t in itervalues(MODEL_TYPE)])
-_ACCEPTED_MODEL_CLASSES = list(itervalues(_MODEL_TYPE_CLASS))
+_ACCEPTED_MODEL_TYPES   = tuple([t["value"] for t in itervalues(MODEL_TYPE)])
+_ACCEPTED_MODEL_CLASSES = tuple(itervalues(_MODEL_TYPE_CLASS))
 
 class Model(Resource, JupyterHTMLViewMixin):
     """
@@ -70,7 +69,7 @@ class Model(Resource, JupyterHTMLViewMixin):
         List of model versions.
         """
         class_ = _MODEL_TYPE_CLASS[self.default_type]
-        return getattr(self, "_versions", QueryList(class_(base_model = self)))
+        return getattr(self, "_versions", QueryList([class_(base_model = self)]))
 
     @versions.setter
     def versions(self, value):
@@ -99,33 +98,49 @@ class Model(Resource, JupyterHTMLViewMixin):
         else:
             self.versions.append(version)
 
+    def add_versions(self, *versions):
+        for version in versions:
+            if not isinstance(version, _ACCEPTED_MODEL_CLASSES):
+                raise TypeError("Model must be of type %s, found %s." %
+                    (_ACCEPTED_MODEL_CLASS, type(version))
+                )
+                
+        for version in versions:
+            self.versions.append(version)
+
     def save(self):
         self._before_save()
 
+        me   = self.client.me()
         data = dict()
 
-        if not self.id:
-            id_   = get_temporary_id()
+        for version in self.versions:
+            key       = "%s/%s" % (self.id, version.version)
+            data[key] = dict({
+                "name":     self.name,
+                "type":     self._domain_type,
+                "userId":   me.id,
+                "modelVersionMap": dict({
+                    version.version: dict({
+                        "name": version.name
+                    })
+                })
+            })
 
-            type_ = self._domain_type
-            data["type"] = type_
+            if isinstance(version, BooleanModel):
+                species_map  = dict()
+                for component in version.components:
+                    external = not isinstance(component, InternalComponent)
+                    species_map[component.id] = dict({
+                            "name": component.name, 
+                        "external": external,
+                    })
 
-            if self.versions:
-                for model in self.versions:
-                    pass
-            
-            # NOTE: components, interactions are something that need to be
-            # refactored when extending to other model types.
-            
-            # components              = 0
-            # interactions            = 0
-            # data["components"]      = components
-            # data["interactions"]    = interactions 
-
-            me                  = self._client.me()
-            data["userId"]      = me.id
+                data[key]["speciesMap"] = species_map
 
         response = self._client.post("_api/model/save", json = data)
+
+        return self
 
     def delete(self):
         data = dict(("%s/%s" % (self.id, model.version), None)
@@ -133,3 +148,4 @@ class Model(Resource, JupyterHTMLViewMixin):
         )
         self._client.post("_api/model/save", json = data)
         
+        return self

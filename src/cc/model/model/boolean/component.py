@@ -19,7 +19,7 @@ class Component(Species, JupyterHTMLViewMixin):
         object used to fetch this resource.
     """
 
-    def __init__(self, id=None, name="", autosave=False, client=None):
+    def __init__(self, name="", id=None, autosave=False, client=None):
         Species.__init__(self, id = id, name = name, autosave = autosave,
             client = client)
 

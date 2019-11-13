@@ -34,13 +34,17 @@ from cc.api.helper      import (
 from cc.core.querylist  import QueryList
 from cc.config          import DEFAULT
 from cc.constant        import (
-    AUTHENTICATION_HEADER
+    AUTHENTICATION_HEADER,
+    _AUTHENTICATION_ERROR_STRING
 )
 from cc._compat         import string_types
 from cc.util.types      import (
     sequencify,
     merge_dict,
     squash
+)
+from cc.exception   import (
+    AuthenticationError
 )
 from cc.log             import get_logger
 
@@ -92,6 +96,21 @@ class Client:
     def __repr__(self):
         repr_ = "<Client url='%s'>" % (self.base_url)
         return repr_
+
+    def __eq__(self, other):
+        equals = False
+
+        if isinstance(other, Client):
+            if self.base_url == other.base_url:
+                if not self.authenticated and not other.authenticated:
+                    equals = True
+                else:
+                    if self.authenticated:
+                        if other.authenticated:
+                            if self._auth_token == other._auth_token:
+                                equals = True
+
+        return equals
 
     def _build_url(self, *args, **kwargs):
         prefix = kwargs.get("prefix", True)

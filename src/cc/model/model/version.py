@@ -1,6 +1,6 @@
 # imports - module imports
-from cc.model.resource   import Resource
-from cc.model.model.util import get_temporary_id
+from cc.model.resource import Resource
+from cc.model.util     import get_temporary_id
 
 class ModelVersion(Resource):
     def __init__(self, id=None, name="", version=None
@@ -21,3 +21,6 @@ class ModelVersion(Resource):
             raise TypeError("Version number must be an integer.")
         else:
             self._version = value
+
+    def export(self):
+        raise NotImplementedError
