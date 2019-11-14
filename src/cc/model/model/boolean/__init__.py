@@ -16,9 +16,9 @@ from cc.model.model.boolean.component import (
     Component,
     InternalComponent, ExternalComponent
 )
-from cc.model.model.boolean.regulator       import Regulator
-from cc.model.model.boolean.condition       import Condition
-from cc.model.model.boolean.subcondition    import SubCondition
+from cc.model.model.boolean.regulator    import Regulator
+from cc.model.model.boolean.condition    import Condition
+from cc.model.model.boolean.subcondition import SubCondition
 
 class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
     """
@@ -38,13 +38,11 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
         >>> model.add_version(bool)
         >>> model.save()
     """
-    def __init__(self, id=None, name="", version=None, base_model=None):
+    def __init__(self, id=None, name="", version=None, client=None, base_model=None):
         ModelVersion.__init__(self, id = id, name = name,
-            version = version
+            version = version, client = client
         )
-
         self._base_model = base_model
-
         self._components = QueryList()
 
     @property
@@ -59,30 +57,45 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
         elif not isinstance(value, (list, tuple, QueryList)):
             raise TypeError("ID must be an integer.")
         else:
-            self._components = components
+            self._components = value
         
-        if not isinstance(components, QueryList):
+        if not isinstance(value, QueryList):
             raise TypeError("Components must be of type (list, tuple, QueryList).")
         else:
-            for component in components:
+            for component in value:
                 if not isinstance(component, Component):
-                    raise TypeError("Element must be of type Component, InternalComponent or ExternalComponent.")
+                    raise TypeError("Element must be of type Component, \
+                        InternalComponent or ExternalComponent.")
 
-            self._components = components
+            self._components = value
 
     @property
     def internal_components(self):
-        pass
+        for c in self.components:
+            if isinstance(c, InternalComponent):
+                yield c
 
     @property
     def external_components(self):
-        pass
+        for c in self.components:
+            if isinstance(c, ExternalComponent):
+                yield c
 
-    def add_component(self):
-        pass
+    def add_component(self, value):
+        if not isinstance(value, Component):
+            raise TypeError("Value must be of type Component, InternalComponent \
+                or ExternalComponent.")
+
+        self.components.append(value)
 
     def add_components(self, *args):
-        pass
+        for arg in args:
+            if not isinstance(arg, Component):
+                raise TypeError("Value must be of type Component, InternalComponent \
+                    or ExternalComponent.")
+
+        for arg in args:
+            self.add_component(arg)
 
     def _repr_html_(self):
         repr_ = render_template(join("boolean", "model.html"), args = dict({

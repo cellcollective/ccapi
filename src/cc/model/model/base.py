@@ -13,8 +13,8 @@ from cc._compat             import itervalues
 _MODEL_TYPE_CLASS       = dict({
     "boolean": BooleanModel
 })
-_ACCEPTED_MODEL_TYPES   = list([t["value"] for t in itervalues(MODEL_TYPE)])
-_ACCEPTED_MODEL_CLASSES = list(itervalues(_MODEL_TYPE_CLASS))
+_ACCEPTED_MODEL_TYPES   = tuple([t["value"] for t in itervalues(MODEL_TYPE)])
+_ACCEPTED_MODEL_CLASSES = tuple(itervalues(_MODEL_TYPE_CLASS))
 
 class Model(Resource, JupyterHTMLViewMixin):
     """
@@ -57,9 +57,9 @@ class Model(Resource, JupyterHTMLViewMixin):
     def default_type(self, value):
         if self.default_type == value:
             pass
-        elif not default_type in _ACCEPTED_MODEL_TYPES:
+        elif not value in _ACCEPTED_MODEL_TYPES:
             raise TypeError("%s is not a valid model type. Accepted types are %s."
-                % (default_type, _ACCEPTED_MODEL_TYPES)
+                % (value, _ACCEPTED_MODEL_TYPES)
             )
         else:
             self._default_type = value
@@ -70,7 +70,8 @@ class Model(Resource, JupyterHTMLViewMixin):
         List of model versions.
         """
         class_ = _MODEL_TYPE_CLASS[self.default_type]
-        return getattr(self, "_versions", QueryList(class_(base_model = self)))
+        return getattr(self, "_versions",
+            QueryList([class_(base_model = self)]))
 
     @versions.setter
     def versions(self, value):
@@ -86,6 +87,20 @@ class Model(Resource, JupyterHTMLViewMixin):
         else:
             self._versions = versions
 
+    @property
+    def client(self):
+        """
+
+        """
+        return getattr(self, "_client", None)
+
+    @client.setter
+    def client(self):
+        """
+
+        """
+        pass
+
     def _repr_html_(self):
         # TODO: Check model details.
         html = render_template("model.html")
@@ -94,7 +109,7 @@ class Model(Resource, JupyterHTMLViewMixin):
     def add_version(self, version):
         if not isinstance(version, _ACCEPTED_MODEL_CLASSES):
             raise TypeError("Model must be of type %s, found %s." % 
-                (_ACCEPTED_MODEL_CLASS, type(version))
+                (_ACCEPTED_MODEL_CLASSES, type(version))
             )
         else:
             self.versions.append(version)
@@ -113,14 +128,14 @@ class Model(Resource, JupyterHTMLViewMixin):
             if self.versions:
                 for model in self.versions:
                     pass
-            
+
             # NOTE: components, interactions are something that need to be
             # refactored when extending to other model types.
-            
+
             # components              = 0
             # interactions            = 0
             # data["components"]      = components
-            # data["interactions"]    = interactions 
+            # data["interactions"]    = interactions
 
             me                  = self._client.me()
             data["userId"]      = me.id
@@ -132,4 +147,3 @@ class Model(Resource, JupyterHTMLViewMixin):
             for model in self.versions
         )
         self._client.post("_api/model/save", json = data)
-        

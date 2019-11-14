@@ -2,12 +2,15 @@
 from os.path import join
 
 # imports - module imports
-from cc.core.querylist      import QueryList
-from cc.model.resource      import Resource
-from cc.model.model         import Species
-from cc.core.mixins         import JupyterHTMLViewMixin
-from cc.template            import render_template
-from cc.util.string         import capitalize
+from cc.core.querylist                  import QueryList
+from cc.model.resource                  import Resource
+from cc.model.model.species             import Species
+from cc.model.model.boolean.regulator   import Regulator
+from cc.core.mixins                     import JupyterHTMLViewMixin
+from cc.template                        import render_template
+from cc.util.string                     import capitalize
+
+_COMPONENT_TYPES = ("internal", "external")
 
 class Component(Species, JupyterHTMLViewMixin):
     """
@@ -18,37 +21,61 @@ class Component(Species, JupyterHTMLViewMixin):
     :param client: A :class:`cc.Client` object. A reference to the client
         object used to fetch this resource.
     """
-
     def __init__(self, id=None, name="", autosave=False, client=None):
         Species.__init__(self, id = id, name = name, autosave = autosave,
             client = client)
 
+        self._model = None
+
     def _repr_html_(self):
         repr_ = render_template(join("boolean", "component.html"), dict({
-            "id":               self.id,
-            "name":             self.name,
+            "id": self.id,
+            "name": self.name,
             "memory_address": "0x0%x" % id(self)
         }))
         return repr_
 
 class InternalComponent(Component):
+    def __init__(self, *args, **kwargs):
+        self.super = super(InternalComponent, self)
+        self.super.__init__(*args, **kwargs)
+
+        self._regulators = QueryList()
+
+    @property
+    def regulators(self):
+        regulators = getattr(self, "_regulators", QueryList())
+        return regulators
+
+    @regulators.setter
+    def regulators(self, value):
+        if self.regulators == value:
+            pass
+        elif not isinstance(value, (list, tuple, QueryList)):
+            raise TypeError("ID must be an integer.")
+        else:
+            self._regulators = value
+        
+        if not isinstance(value, QueryList):
+            raise TypeError("Components must be of type (list, tuple, QueryList).")
+        else:
+            for regulator in value:
+                if not isinstance(regulator, Regulator):
+                    raise TypeError("Element must be of type Regulator.")
+
+            self._regulators = value
+
     @property
     def positive_regulators(self):
-        regulators = [regulator
-            for regulator in self.regulators
-                if regulator.type == "positive"
-        ]
-
-        return regulators
+        for regulator in self.regulators:
+            if regulator.type == "positive":
+                yield regulator
 
     @property
     def negative_regulators(self):
-        regulators = [regulator
-            for regulator in self.regulators
-                if regulator.type == "negative"
-        ]
-
-        return regulators
+        for regulator in self.regulators:
+            if regulator.type == "negative":
+                yield regulator
 
 class ExternalComponent(Component):
     pass

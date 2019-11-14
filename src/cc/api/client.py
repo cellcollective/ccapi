@@ -1,25 +1,5 @@
-# import random
-#     squash,
-#     merge_dict
-# )
-# from cc.util.string import (
-#     sanitize_html,
-#     sanitize_text,
-#     lower
-# )
-# from cc.exception   import (
-#     ValueError,
-#     TypeError,
-#     ResponseError,
-#     JSONDecodeError,
-#     AuthenticationError,
-#     HTTPError
-# )
-# from cc.exception   import (
-#     TypeError
-# )
-
 # imports - standard imports
+import random
 import collections
 
 # imports - third-party imports
@@ -34,7 +14,16 @@ from cc.api.helper      import (
 from cc.core.querylist  import QueryList
 from cc.config          import DEFAULT
 from cc.constant        import (
-    AUTHENTICATION_HEADER
+    AUTHENTICATION_HEADER,
+    _AUTHENTICATION_ERROR_STRING
+)
+from cc.exception       import (
+    ValueError,
+    TypeError,
+    HTTPError,
+    ResponseError,
+    AuthenticationError,
+    JSONDecodeError
 )
 from cc._compat         import string_types
 from cc.util.types      import (
@@ -253,7 +242,7 @@ class Client:
         """
         
         if not self.authenticated:
-            raise AuthenticationError("Client is not authenticated.")  
+            raise AuthenticationError("Client is not authenticated.")
 
     def me(self, *args, **kwargs):
         """
@@ -302,7 +291,7 @@ class Client:
             params  = None
 
             version = kwargs.get("version")
-            hash_   = kwargs.get("hash_")
+            hash_   = kwargs.get("hash")
 
             if id_:
                 url = self._build_url(url, str(id_[0]), prefix = False)

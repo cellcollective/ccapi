@@ -17,10 +17,10 @@ class Resource:
         :param client: A :class:`cc.Client` object. A reference to the client
             object used to fetch this resource.
         """
-        
+
         self._id      = id
         self._name    = name
-        self.autosave = autosave 
+        self.autosave = autosave
         self._client  = client
 
         self.created  = now()
@@ -44,12 +44,12 @@ class Resource:
     def name(self):
         return getattr(self, "_name", None)
 
-    @id.setter
+    @name.setter
     def name(self, value):
         if self.name == value:
             pass
         elif not isinstance(value, str):
-            raise TypeError("ID must be a string.")
+            raise TypeError("Name must be a string.")
         else:
             self._name = value
 
@@ -68,18 +68,17 @@ class Resource:
 
         if self.id and other.id:
             equals = self.id == other.id
-            
+
         return equals
 
     def _prepare_save_data(self, resource):
         """
         Prepares the data to be dispatched to save this resource object.
         """
-        
         name   = resource.__class__.__name__
         fields = resource.FIELDS
         
-        data       = dict()
+        data   = dict()
 
         for attr, info in iteritems(fields):
             value = getattr(resource, attr, None)

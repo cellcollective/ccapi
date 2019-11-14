@@ -25,4 +25,6 @@ from cc.model.model.cbm import (
 )
 
 # imports - kinetic model imports
-from cc.model.model.kinetic                 import KineticModel
+from cc.model.model.kinetic import (
+    KineticModel
+)
