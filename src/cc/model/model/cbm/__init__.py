@@ -9,4 +9,5 @@ from cc.model.model.cbm.gene        import Gene
 from cc.model.model.cbm.reaction    import Reaction
 
 class ConstraintBasedModel(ModelVersion, JupyterHTMLViewMixin):
-    pass
+    def _repr_html_(self):
+        pass

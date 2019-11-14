@@ -21,7 +21,8 @@ class Component(Species, JupyterHTMLViewMixin):
     :param client: A :class:`cc.Client` object. A reference to the client
         object used to fetch this resource.
     """
-    def __init__(self, id=None, name="", autosave=False, client=None):
+
+    def __init__(self, name="", id=None, autosave=False, client=None):
         Species.__init__(self, id = id, name = name, autosave = autosave,
             client = client)
 
@@ -65,6 +66,13 @@ class InternalComponent(Component):
 
             self._regulators = value
 
+    def add_regulator(self, regulator):
+        self.regulators.append(regulator)
+
+    def add_regulators(self, *regulators):
+        for regulator in regulators:
+            self.regulators.append(regulator)
+
     @property
     def positive_regulators(self):
         for regulator in self.regulators:
@@ -76,6 +84,7 @@ class InternalComponent(Component):
         for regulator in self.regulators:
             if regulator.type == "negative":
                 yield regulator
+
 
 class ExternalComponent(Component):
     pass

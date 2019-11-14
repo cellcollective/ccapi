@@ -4,3 +4,6 @@ from cc.model.model.boolean import (
     BooleanModel,
     Component, InternalComponent, ExternalComponent
 )
+from cc.model.model.boolean import (
+    Regulator, PositiveRegulator, NegativeRegulator
+)

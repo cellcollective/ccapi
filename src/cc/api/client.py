@@ -17,19 +17,14 @@ from cc.constant        import (
     AUTHENTICATION_HEADER,
     _AUTHENTICATION_ERROR_STRING
 )
-from cc.exception       import (
-    ValueError,
-    TypeError,
-    HTTPError,
-    ResponseError,
-    AuthenticationError,
-    JSONDecodeError
-)
 from cc._compat         import string_types
 from cc.util.types      import (
     sequencify,
     merge_dict,
     squash
+)
+from cc.exception   import (
+    AuthenticationError
 )
 from cc.log             import get_logger
 
@@ -81,6 +76,21 @@ class Client:
     def __repr__(self):
         repr_ = "<Client url='%s'>" % (self.base_url)
         return repr_
+
+    def __eq__(self, other):
+        equals = False
+
+        if isinstance(other, Client):
+            if self.base_url == other.base_url:
+                if not self.authenticated and not other.authenticated:
+                    equals = True
+                else:
+                    if self.authenticated:
+                        if other.authenticated:
+                            if self._auth_token == other._auth_token:
+                                equals = True
+
+        return equals
 
     def _build_url(self, *args, **kwargs):
         prefix = kwargs.get("prefix", True)
@@ -347,6 +357,7 @@ class Client:
         Read an SBML file.
 
         :param filename: Name of the file locally present to read an SBML file.
+        :param save: Save model after importing.
         """
 
         files       = dict({
@@ -358,6 +369,9 @@ class Client:
 
         model       = _model_version_response_object_to_model_object(self,
             content)
+
+        if save:
+            model.save()
 
         return model
 

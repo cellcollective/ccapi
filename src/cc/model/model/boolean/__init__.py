@@ -16,9 +16,13 @@ from cc.model.model.boolean.component import (
     Component,
     InternalComponent, ExternalComponent
 )
-from cc.model.model.boolean.regulator    import Regulator
+from cc.model.model.boolean.regulator    import (
+    Regulator, PositiveRegulator, NegativeRegulator
+)
 from cc.model.model.boolean.condition    import Condition
 from cc.model.model.boolean.subcondition import SubCondition
+
+_ACCEPTED_COMPONENT_CLASSES = tuple([InternalComponent, ExternalComponent])
 
 class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
     """
@@ -28,17 +32,19 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
 
         >>> from cc.model import Model, BooleanModel, InternalComponent
         >>> model    = Model('Cortical Area Development')
-        >>> bool     = BooleanModel()
+        >>> bool_    = BooleanModel()
+
         >>> Coup_fti = InternalComponent('Coup_fti')
         >>> Sp8      = InternalComponent('Sp8')
         >>> Pax6     = InternalComponent('Pax6')
         >>> Fgf8     = InternalComponent('Fgf8')
         >>> Emx2     = InternalComponent('Emx2')
-        >>> bool.add_components(Coup_fti, Sp8, Pax6, Fgf8, Emx2)
-        >>> model.add_version(bool)
+        >>> bool_.add_components(Coup_fti, Sp8, Pax6, Fgf8, Emx2)
+        
+        >>> model.add_version(bool_)
         >>> model.save()
     """
-    def __init__(self, id=None, name="", version=None, client=None, base_model=None):
+    def __init__(self, name="", id=None, version=None, client=None, base_model=None):
         ModelVersion.__init__(self, id = id, name = name,
             version = version, client = client
         )
@@ -81,21 +87,23 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
             if isinstance(c, ExternalComponent):
                 yield c
 
-    def add_component(self, value):
-        if not isinstance(value, Component):
-            raise TypeError("Value must be of type Component, InternalComponent \
-                or ExternalComponent.")
+    def add_component(self, component):
+        if not isinstance(component, _ACCEPTED_COMPONENT_CLASSES):
+            raise TypeError("Component must be of type %s, found %s." % 
+                (_ACCEPTED_COMPONENT_CLASSES, type(component))
+            )
+        else:
+            self.components.append(component)
 
-        self.components.append(value)
+    def add_components(self, *components):
+        for component in components:
+            if not isinstance(component, _ACCEPTED_COMPONENT_CLASSES):
+                raise TypeError("Component must be of type %s, found %s." % 
+                    (_ACCEPTED_COMPONENT_CLASSES, type(component))
+                )
 
-    def add_components(self, *args):
-        for arg in args:
-            if not isinstance(arg, Component):
-                raise TypeError("Value must be of type Component, InternalComponent \
-                    or ExternalComponent.")
-
-        for arg in args:
-            self.add_component(arg)
+        for component in components:
+            self.components.append(component)        
 
     def _repr_html_(self):
         repr_ = render_template(join("boolean", "model.html"), args = dict({

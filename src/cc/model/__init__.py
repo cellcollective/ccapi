@@ -12,7 +12,7 @@ from cc.model.model.species                 import Species
 from cc.model.model.boolean  import (
     BooleanModel,
     Component, InternalComponent, ExternalComponent,
-    Regulator,
+    Regulator, PositiveRegulator, NegativeRegulator,
     Condition, SubCondition
 )
 

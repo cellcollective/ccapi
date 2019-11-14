@@ -53,6 +53,10 @@ def sanitize_text(text):
     text = strip(text)
     return text
 
+def upper(text):
+    text = text.upper()
+    return text
+
 def lower(text):
     text = text.lower()
     return text

@@ -5,3 +5,4 @@ from cc.__attr__ import (
     __author__
 )
 from cc.api      import Client
+from cc.model    import *
