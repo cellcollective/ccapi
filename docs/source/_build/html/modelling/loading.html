@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Loading a Model &#8212; cc 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Reading a Model" href="reading.html" />
+    <link rel="prev" title="Quickstart" href="../user/quickstart.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="loading-a-model">
+<span id="loading"></span><h1>Loading a Model<a class="headerlink" href="#loading-a-model" title="Permalink to this headline">¶</a></h1>
+<p>This simple example demonstrates how to load a model from Cell Collective.</p>
+<p>First, <a class="reference internal" href="../user/quickstart.html#instantize-client"><span class="std std-ref">create a Client object with CCPy</span></a> by typing</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">cc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To load models from an account, type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">models</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">models</span>
+<span class="go">[&lt;Model id=2309  name=&#39;EGFR &amp; ErbB S...&#39;&gt;,</span>
+<span class="go"> &lt;Model id=5128  name=&#39;Lac Operon&#39;&gt;,</span>
+<span class="go"> &lt;Model id=10248 name=&#39;Bacteriophage...&#39;&gt;,</span>
+<span class="go"> &lt;Model id=2314  name=&#39;IL-6 Signalli...&#39;&gt;,</span>
+<span class="go"> &lt;Model id=16659 name=&#39;Modeling Ligh...&#39;&gt;]</span>
+</pre></div>
+</div>
+<p>By default, <code class="xref py py-func docutils literal notranslate"><span class="pre">client.get()</span></code> loads a maximum of <code class="docutils literal notranslate"><span class="pre">cc.constant.MAXIMUM_API_RESOURCE_FETCH</span></code>
+models for each request. To fetch more, simply paginate as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">models</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">since</span> <span class="o">=</span> <span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">models</span>
+<span class="go">[&lt;Model id=16659 name=&#39;Modeling Ligh...&#39;&gt;,</span>
+<span class="go"> &lt;Model id=1557  name=&#39;Signal Transd...&#39;&gt;,</span>
+<span class="go"> &lt;Model id=6678  name=&#39;CD4+ T cell D...&#39;&gt;,</span>
+<span class="go"> &lt;Model id=2329  name=&#39;Apoptosis Net...&#39;&gt;,</span>
+<span class="go"> &lt;Model id=17433 name=&#39;Simulating th...&#39;&gt;]</span>
+</pre></div>
+</div>
+<p>Consider a publically available model with ID 2309. We can fetch a model by
+its ID as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">id_</span> <span class="o">=</span> <span class="mi">2309</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Each model provides you a list of species objects:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">species</span><span class="p">)</span>
+<span class="go">104</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">species</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+<span class="go">[&lt;Species id=128127 name=&#39;elk1&#39;&gt;,</span>
+<span class="go"> &lt;Species id=128129 name=&#39;stat1&#39;&gt;,</span>
+<span class="go"> &lt;Species id=128128 name=&#39;shc&#39;&gt;]</span>
+</pre></div>
+</div>
+<p>When using <a class="reference external" href="https://jupyter.org/">Jupyter Notebook</a>, this type of information
+is rendered as follows:</p>
+<div class="section" id="components">
+<h2>Components<a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="regulators">
+<h2>Regulators<a class="headerlink" href="#regulators" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="conditions">
+<h2>Conditions<a class="headerlink" href="#conditions" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="sub-conditions">
+<h2>Sub Conditions<a class="headerlink" href="#sub-conditions" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">cc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../user/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Loading a Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#components">Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#regulators">Regulators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conditions">Conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sub-conditions">Sub Conditions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reading.html">Reading a Model</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">Developer Interface</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../user/quickstart.html" title="previous chapter">Quickstart</a></li>
+      <li>Next: <a href="reading.html" title="next chapter">Reading a Model</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019 Achilles Rasquinha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/modelling/loading.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

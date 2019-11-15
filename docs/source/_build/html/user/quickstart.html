@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Quickstart &#8212; cc 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Loading a Model" href="../modelling/loading.html" />
+    <link rel="prev" title="CCPy" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="quickstart">
+<span id="id1"></span><h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h1>
+<p>Eager to get started? This page gives a good introduction in how to get started with CCPy.</p>
+<p>First, make sure that:</p>
+<ul class="simple">
+<li><p>CCPy is installed</p></li>
+<li><p>CCPy is up-to-date</p></li>
+</ul>
+<p>Let’s get started with some simple examples.</p>
+<div class="section" id="instantizing-a-client-object">
+<span id="instantize-client"></span><h2>Instantizing a Client object<a class="headerlink" href="#instantizing-a-client-object" title="Permalink to this headline">¶</a></h2>
+<p>Creating a Client object with CCPy is very simple.</p>
+<p>Begin by importing the CCPy module:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">cc</span>
+</pre></div>
+</div>
+<p>Now, let’s try to create a client object.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now, we have a Client object called client. We can get all the information we need from this object.</p>
+</div>
+<div class="section" id="authenticating-via-password-flow">
+<h2>Authenticating via Password Flow<a class="headerlink" href="#authenticating-via-password-flow" title="Permalink to this headline">¶</a></h2>
+<p>Before you can authenticate using CCPy, you must first register an
+application of the appropriate type on
+<a class="reference external" href="https://cellcollective.org">Cell Collective</a> . If you do not require a
+user context, it is read only.</p>
+<p>In order to use a password flow application with CCPy you need the following
+pieces of information:</p>
+<p><code class="docutils literal notranslate"><span class="pre">email</span></code> - The email address of the Cell Collective account used to
+register the application.
+<code class="docutils literal notranslate"><span class="pre">password</span></code> - The password for the Cell Collective account used to register
+the application.</p>
+<p>With this information, authorizing is as simple as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">auth</span><span class="p">(</span><span class="n">email</span> <span class="o">=</span> <span class="s2">&quot;test@cellcollective.org&quot;</span><span class="p">,</span> <span class="n">password</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To verify that you are authenticated as the correct user, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">me</span><span class="p">()</span>
+<span class="go">&lt;User id=10887 name=&#39;Test Test&#39;&gt;</span>
+</pre></div>
+</div>
+<p>The output should contain the same name as your Cell Collective account.</p>
+<p>You can also check if you’re authenticated as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">authenticated</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>If the following exception is raised, double check your credentials and ensure
+that that the email address and password you passed are valid.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>AuthenticationError: Unable to login into Cell Collective with credentials provided.
+</pre></div>
+</div>
+</div>
+<div class="section" id="authenticating-via-authorization-token">
+<h2>Authenticating via Authorization Token<a class="headerlink" href="#authenticating-via-authorization-token" title="Permalink to this headline">¶</a></h2>
+<p>You can also authenticate by passing an already available authorization token.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">auth</span><span class="p">(</span><span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR_AUTHORIZATION_TOKEN&gt;&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">authenticated</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">cc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#instantizing-a-client-object">Instantizing a Client object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#authenticating-via-password-flow">Authenticating via Password Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#authenticating-via-authorization-token">Authenticating via Authorization Token</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modelling/loading.html">Loading a Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modelling/reading.html">Reading a Model</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">Developer Interface</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">CCPy</a></li>
+      <li>Next: <a href="../modelling/loading.html" title="next chapter">Loading a Model</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019 Achilles Rasquinha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/user/quickstart.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

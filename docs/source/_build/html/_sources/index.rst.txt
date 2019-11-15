@@ -20,7 +20,7 @@ biological networks.
 
     >>> import cc
     >>> client = cc.Client()
-    >>> model  = client.read("sample.sbml", type = "boolean")
+    >>> model  = client.read("sample.sbml")
     >>> model.species[:3]
     [<Species id=-1026 name='MMP3'>,
      <Species id=-1028 name='MMP1'>,

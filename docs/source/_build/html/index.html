@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>CCPy &#8212; cc 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Quickstart" href="user/quickstart.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="ccpy">
+<h1>CCPy<a class="headerlink" href="#ccpy" title="Permalink to this headline">¶</a></h1>
+<p>A Python Library to interact with the <a class="reference external" href="https://cellcollective.org">Cell Collective</a> API</p>
+<a class="reference external image-reference" href="https://pypi.org/project/ccpy/"><img alt="https://img.shields.io/pypi/v/ccpy.svg?style=flat-square" src="https://img.shields.io/pypi/v/ccpy.svg?style=flat-square" /></a>
+<a class="reference external image-reference" href="https://pypi.org/project/ccpy/"><img alt="https://img.shields.io/pypi/l/ccpy.svg?style=flat-square" src="https://img.shields.io/pypi/l/ccpy.svg?style=flat-square" /></a>
+<a class="reference external image-reference" href="https://pypi.org/project/ccpy/"><img alt="https://img.shields.io/pypi/pyversions/ccpy.svg?style=flat-square" src="https://img.shields.io/pypi/pyversions/ccpy.svg?style=flat-square" /></a>
+<p><strong>CCPy</strong> is a Python Package that provides a simple interface to
+<a class="reference external" href="https://cellcollective.org">Cell Collective</a> for modelling and analysis of
+biological networks.</p>
+<hr class="docutils" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">cc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span>  <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;sample.sbml&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">species</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+<span class="go">[&lt;Species id=-1026 name=&#39;MMP3&#39;&gt;,</span>
+<span class="go"> &lt;Species id=-1028 name=&#39;MMP1&#39;&gt;,</span>
+<span class="go"> &lt;Species id=-1030 name=&#39;MMP1&#39;&gt;]</span>
+</pre></div>
+</div>
+<p><strong>CCPy</strong> includes simple, object-oriented interfaces for creating and
+reading models (to/from an SBML file format), graphically viewing such models,
+editing, saving and exporting models (into SBML, Boolean Expressions,
+Truth Tables, Interaction Matrix, etc. formats).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+<span class="go">Internal Components (+, -) External Components</span>
+<span class="go">-------------------------- -------------------</span>
+<span class="go">AKT_T (8,0)                PI3K</span>
+<span class="go">CARMA1_T (1,0)             GP63_L</span>
+<span class="go">IKK_BETA_T (0,3)           CRE_T</span>
+</pre></div>
+</div>
+<div class="section" id="beloved-features">
+<h2>Beloved Features<a class="headerlink" href="#beloved-features" title="Permalink to this headline">¶</a></h2>
+<p><strong>CCPy</strong> attempts to be an all-in-one toolbox for modelling biological systems.</p>
+<ul class="simple">
+<li><p>Reading public and private models.</p></li>
+<li><p>Rich Knowledge-Base for each model species.</p></li>
+<li><p>Importing models using an SBML file format.</p></li>
+<li><p>Exporting models into SBML, Boolean Expressions, Truth Tables, etc.</p></li>
+<li><p>Querying for models.</p></li>
+<li><p>Visualizing models graphically.</p></li>
+</ul>
+<p><strong>CCPy</strong> officially supports Python 3.4+.</p>
+</div>
+<div class="section" id="the-user-guide">
+<h2>The User Guide<a class="headerlink" href="#the-user-guide" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user/quickstart.html">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user/quickstart.html#instantizing-a-client-object">Instantizing a Client object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user/quickstart.html#authenticating-via-password-flow">Authenticating via Password Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user/quickstart.html#authenticating-via-authorization-token">Authenticating via Authorization Token</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modelling/loading.html">Loading a Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modelling/loading.html#components">Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modelling/loading.html#regulators">Regulators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modelling/loading.html#conditions">Conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modelling/loading.html#sub-conditions">Sub Conditions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modelling/reading.html">Reading a Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modelling/reading.html#sbml">SBML</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="the-api-guide">
+<h2>The API Guide<a class="headerlink" href="#the-api-guide" title="Permalink to this headline">¶</a></h2>
+<p>If you are looking for information on a specific function, class, or method,
+this part of the documentation is for you.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Developer Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#main-interface">Main Interface</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">cc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modelling/loading.html">Loading a Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modelling/reading.html">Reading a Model</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Developer Interface</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="user/quickstart.html" title="next chapter">Quickstart</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019 Achilles Rasquinha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

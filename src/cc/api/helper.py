@@ -69,7 +69,7 @@ def _section_type_to_dict_key(section_type):
 
     return key
 
-def _model_version_response_object_to_model_object(client, response):
+def _boolean_model_response_to_boolean_model(client, response):
     _, data             = next(iter(response.items()))
 
     model               = BooleanModel(client = client)
@@ -81,7 +81,9 @@ def _model_version_response_object_to_model_object(client, response):
     for species_id, species_data in data["speciesMap"].items():
         component_class = InternalComponent \
             if species_data["external"] else ExternalComponent
-        component = component_class(id = int(species_id), name = species_data["name"])
+        component = component_class(id = int(species_id), name = species_data["name"],
+            client = client
+        )
         component.created = cc_datetime_to_python_datetime(species_data["creationDate"])
         component.updated = cc_datetime_to_python_datetime(species_data["updateDate"])
 
@@ -108,7 +110,7 @@ def _model_version_response_object_to_model_object(client, response):
 
                                 sections[key].append({
                                     "position": content_data["position"],
-                                    "text":     text
+                                        "text": text
                                 })
 
             sections_formatted = dict()
@@ -172,7 +174,7 @@ def _model_version_response_object_to_model_object(client, response):
             "condition":    condition
         })
 
-    regulator_map       = dict()
+    regulator_map = dict()
     for regulator_id, regulator_data in data["regulatorMap"].items():
         regulator           = Regulator(
             id              = int(regulator_id),

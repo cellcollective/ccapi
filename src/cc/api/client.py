@@ -8,7 +8,7 @@ import requests
 # imports - module imports
 from cc.api.helper      import (
     _model_response_object_to_model_object,
-    _model_version_response_object_to_model_object,
+    _boolean_model_response_to_boolean_model,
     _user_response_object_to_user_object
 )
 from cc.core.querylist  import QueryList
@@ -324,7 +324,7 @@ class Client:
             
             if id_:
                 resources = QueryList([
-                    _model_version_response_object_to_model_object(
+                    _boolean_model_response_to_boolean_model(
                         self,
                         content
                     )
@@ -367,7 +367,7 @@ class Client:
         response    = self.post("_api/model/import", files = files)
         content     = response.json()
 
-        model       = _model_version_response_object_to_model_object(self,
+        model       = _boolean_model_response_to_boolean_model(self,
             content)
 
         if save:

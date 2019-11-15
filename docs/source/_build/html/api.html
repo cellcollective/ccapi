@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Developer Interface &#8212; cc 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Reading a Model" href="modelling/reading.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="developer-interface">
+<span id="api"></span><h1>Developer Interface<a class="headerlink" href="#developer-interface" title="Permalink to this headline">¶</a></h1>
+<p>This part of the documentation covers all the interfaces of CCPy.</p>
+<div class="section" id="main-interface">
+<h2>Main Interface<a class="headerlink" href="#main-interface" title="Permalink to this headline">¶</a></h2>
+<p>All of CCPy’s functionality can be accessed by the Client object.</p>
+<dl class="class">
+<dt id="cc.Client">
+<em class="property">class </em><code class="sig-prename descclassname">cc.</code><code class="sig-name descname">Client</code><span class="sig-paren">(</span><em class="sig-param">base_url='https://cellcollective.org'</em>, <em class="sig-param">proxies=[]</em>, <em class="sig-param">test=True</em><span class="sig-paren">)</span><a class="headerlink" href="#cc.Client" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#cc.Client" title="cc.Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code></a> class provides a convenient access to the Cell 
+Collective API. Instances of this class are a gateway to interacting 
+with Cell Collective’s API through the CCPy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_url</strong> – A base URL to use.</p></li>
+<li><p><strong>proxies</strong> – A dictionary/list of proxies to use. If a list is passed,
+each element in the list should be a dictionary of the format 
+<code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">protocol:</span> <span class="pre">ip</span> <span class="pre">}</span></code>.</p></li>
+<li><p><strong>test</strong> – Attempt to test the connection to the base url.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">cc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span>
+<span class="go">&lt;Client url=&#39;https://cellcollective.org&#39;&gt;</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="cc.Client.auth">
+<code class="sig-name descname">auth</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cc.Client.auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authenticate client.</p>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">cc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">auth</span><span class="p">(</span>
+<span class="go">        email    = &quot;test@cellcollective.org&quot;,</span>
+<span class="go">        password = &quot;test&quot;</span>
+<span class="go">    )</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">authenticated</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">auth</span><span class="p">(</span><span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">authenticated</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cc.Client.get">
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">resource</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cc.Client.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get resources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>resource</strong> – Resource name.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="cc.Client.logout">
+<code class="sig-name descname">logout</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc.Client.logout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logout client.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cc.Client.me">
+<code class="sig-name descname">me</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cc.Client.me" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the user profile of the authenticated client.</p>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">cc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">auth</span><span class="p">(</span><span class="n">email</span> <span class="o">=</span> <span class="s2">&quot;test@cellcollective.org&quot;</span><span class="p">,</span> <span class="n">password</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">me</span><span class="p">()</span>
+<span class="go">&lt;User id=10887 name=&#39;Test Test&#39;&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cc.Client.ping">
+<code class="sig-name descname">ping</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cc.Client.ping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the URL is alive.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> – Arguments provided to <code class="docutils literal notranslate"><span class="pre">client._request</span></code></p></li>
+<li><p><strong>kwargs</strong> – Keyword Arguments provided to <code class="docutils literal notranslate"><span class="pre">client._request</span></code></p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">cc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">ping</span><span class="p">()</span>
+<span class="go">&#39;pong&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cc.Client.post">
+<code class="sig-name descname">post</code><span class="sig-paren">(</span><em class="sig-param">url</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cc.Client.post" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Dispatch a POST request to the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">param url</dt>
+<dd class="field-odd"><p>URL part (does not include the base URL).</p>
+</dd>
+<dt class="field-even">param args</dt>
+<dd class="field-even"><p>Arguments provided to <code class="docutils literal notranslate"><span class="pre">client._request</span></code></p>
+</dd>
+<dt class="field-odd">param kwargs</dt>
+<dd class="field-odd"><p>Keyword Arguments provided to <code class="docutils literal notranslate"><span class="pre">client._request</span></code></p>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">cc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span>   <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;api/module/12345/report&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span><span class="o">.</span><span class="n">content</span>
+<span class="go">b&#39;&quot;First Name&quot;,&quot;Last Name&quot;,&quot;Email&quot;,&quot;Institution&quot;,&quot;Last Updated Date&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>‘</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cc.Client.raise_for_authentication">
+<code class="sig-name descname">raise_for_authentication</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cc.Client.raise_for_authentication" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise AuthenticationError in case the client hasn’t been authenticated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cc.Client.read">
+<code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">save=False</em><span class="sig-paren">)</span><a class="headerlink" href="#cc.Client.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read an SBML file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – Name of the file locally present to read an SBML file.</p></li>
+<li><p><strong>save</strong> – Save model after importing.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="cc.Client.search">
+<code class="sig-name descname">search</code><span class="sig-paren">(</span><em class="sig-param">resource</em>, <em class="sig-param">query</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cc.Client.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search a resource.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>resource</strong> – Name of the resource.</p></li>
+<li><p><strong>query</strong> – Search a query string.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">cc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modelling/loading.html">Loading a Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modelling/reading.html">Reading a Model</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Developer Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#main-interface">Main Interface</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="modelling/reading.html" title="previous chapter">Reading a Model</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019 Achilles Rasquinha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/api.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
