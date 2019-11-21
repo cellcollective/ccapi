@@ -172,9 +172,26 @@ class Model(Resource, JupyterHTMLViewMixin):
         response = self._client.post("_api/model/save", json = data)
         content  = response.json()
 
-        for id_, data in iteritems(content):
+        for key, data in iteritems(content):
+            _, temp_model_version_id = key.split("/")
+            temp_model_version_id    = int(temp_model_version_id)
+
             id_     = data["id"]
             self.id = id_
+            
+            for i, version in enumerate(self.versions):
+                if temp_model_version_id == version.version:
+                    model_version_id         = int(data["currentVersion"])
+                    self.versions[i].id      = id_
+                    self.versions[i].version = model_version_id
+
+                    if "speciesIds" in data:
+                        species_ids = data["speciesIds"]
+
+                        for temp_species_id, species_id in iteritems(species_ids):
+                            for j, component in enumerate(version.components):
+                                if int(temp_species_id) == component.id:
+                                    self.versions[i].components[i].id = species_id
 
         return self
 
