@@ -19,7 +19,11 @@ from cc.model.model.boolean.component import (
 from cc.model.model.boolean.regulator    import (
     Regulator, PositiveRegulator, NegativeRegulator
 )
-from cc.model.model.boolean.condition    import Condition
+from cc.model.model.boolean.condition    import (
+    Condition,
+    ConditionType,
+    ConditionState
+)
 from cc.model.model.boolean.subcondition import SubCondition
 
 _ACCEPTED_COMPONENT_CLASSES = tuple([InternalComponent, ExternalComponent])
@@ -106,7 +110,7 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
             self.components.append(component)        
 
     def _repr_html_(self):
-        repr_ = render_template(join("boolean", "model.html"), args = dict({
+        repr_ = render_template(join("boolean", "model.html"), context = dict({
             "id":                   self.id,
             "version":              self.version,
             "name":                 self.name,

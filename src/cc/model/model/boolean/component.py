@@ -10,8 +10,6 @@ from cc.core.mixins                     import JupyterHTMLViewMixin
 from cc.template                        import render_template
 from cc.util.string                     import capitalize
 
-_COMPONENT_TYPES = ("internal", "external")
-
 class Component(Species, JupyterHTMLViewMixin):
     """
     A species is a class for holding information regarding a chemical species.
@@ -30,9 +28,9 @@ class Component(Species, JupyterHTMLViewMixin):
 
     def _repr_html_(self):
         repr_ = render_template(join("boolean", "component.html"), dict({
-            "id": self.id,
-            "name": self.name,
-            "memory_address": "0x0%x" % id(self)
+            "id":               self.id,
+            "name":             self.name,
+            "memory_address":   "0x0%x" % id(self)
         }))
         return repr_
 

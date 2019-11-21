@@ -7,7 +7,7 @@ from cc.config              import DEFAULT
 from cc.constant            import MODEL_TYPE
 from cc.template            import render_template
 from cc.util.string         import ellipsis, upper
-from cc._compat             import itervalues
+from cc._compat             import itervalues, iteritems
 
 _MODEL_TYPE_CLASS       = dict({
     "boolean": BooleanModel
@@ -102,7 +102,13 @@ class Model(Resource, JupyterHTMLViewMixin):
 
     def _repr_html_(self):
         # TODO: Check model details.
-        html = render_template("model.html")
+        html = render_template("model.html", context = dict({
+            "id":                   self.id,
+            "name":                 self.name,
+            "memory_address":       "0x0%x" % id(self),
+            "number_of_versions":   len(self.versions),
+            "versions":             self.versions
+        }))
         return html
 
     def add_version(self, version):
@@ -132,9 +138,9 @@ class Model(Resource, JupyterHTMLViewMixin):
         for version in self.versions:
             key       = "%s/%s" % (self.id, version.version)
             data[key] = dict({
-                "name":     self.name,
-                "type":     self._domain_type,
-                "userId":   me.id,
+                "name": self.name,
+                "type": self._domain_type,
+                "userId": me.id,
                 "modelVersionMap": dict({
                     version.version: dict({
                         "name": version.name
@@ -164,6 +170,11 @@ class Model(Resource, JupyterHTMLViewMixin):
                 data[key]["regulatorMap"] = regulator_map
 
         response = self._client.post("_api/model/save", json = data)
+        content  = response.json()
+
+        for id_, data in iteritems(content):
+            id_     = data["id"]
+            self.id = id_
 
         return self
 

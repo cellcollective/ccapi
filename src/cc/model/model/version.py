@@ -3,8 +3,7 @@ from cc.model.resource import Resource
 from cc.model.util     import get_temporary_id
 
 class ModelVersion(Resource):
-    def __init__(self, id=None, name="", version=None, client=None
-    ):
+    def __init__(self, id=None, name="", version=None, client=None):
         Resource.__init__(self, id = id, name = name, client = client)
 
         self._version = version or get_temporary_id()
