@@ -26,14 +26,6 @@ class Component(Species, JupyterHTMLViewMixin):
 
         self._model = None
 
-    def _repr_html_(self):
-        repr_ = render_template(join("boolean", "component.html"), dict({
-            "id":               self.id,
-            "name":             self.name,
-            "memory_address":   "0x0%x" % id(self)
-        }))
-        return repr_
-
 class InternalComponent(Component):
     def __init__(self, *args, **kwargs):
         self.super = super(InternalComponent, self)
@@ -73,16 +65,37 @@ class InternalComponent(Component):
 
     @property
     def positive_regulators(self):
+        # TODO: Use QueryList for query fetch.
+        positive_regulators = [ ]
+
         for regulator in self.regulators:
             if regulator.type == "positive":
-                yield regulator
+                positive_regulators.append(regulator)
+
+        return positive_regulators
 
     @property
     def negative_regulators(self):
+        # TODO: Use QueryList for query fetch.
+        negative_regulators = [ ]
+
         for regulator in self.regulators:
             if regulator.type == "negative":
-                yield regulator
+                negative_regulators.append(regulator)
 
+        return negative_regulators
+
+    def _repr_html_(self):
+        repr_ = render_template(join("boolean", "component", "internal.html"), 
+            context = dict({
+                "id":   self.id,
+                "name": self.name,
+                "memory_address": "0x0%x" % id(self),
+                "number_of_positive_regulators": len(self.positive_regulators),
+                "number_of_negative_regulators": len(self.negative_regulators)
+            })
+        )
+        return repr_
 
 class ExternalComponent(Component):
     pass

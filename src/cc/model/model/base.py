@@ -4,16 +4,17 @@ from cc.core.querylist      import QueryList
 from cc.core.mixins         import JupyterHTMLViewMixin
 from cc.model.model         import BooleanModel, InternalComponent
 from cc.config              import DEFAULT
-from cc.constant            import MODEL_TYPE
+from cc.constant            import MODEL_TYPE, MODEL_DOMAIN_TYPE
 from cc.template            import render_template
 from cc.util.string         import ellipsis, upper
+from cc.util.types          import flatten
 from cc._compat             import itervalues, iteritems
 
-_MODEL_TYPE_CLASS       = dict({
-    "boolean": BooleanModel
-})
-_ACCEPTED_MODEL_TYPES   = tuple([t["value"] for t in itervalues(MODEL_TYPE)])
-_ACCEPTED_MODEL_CLASSES = tuple(itervalues(_MODEL_TYPE_CLASS))
+_ACCEPTED_MODEL_TYPES           = tuple([t["value"] for t in itervalues(MODEL_TYPE)])
+_ACCEPTED_MODEL_DOMAIN_TYPES    = tuple([t["value"] for t in itervalues(MODEL_DOMAIN_TYPE)])
+
+_MODEL_TYPE_CLASS               = dict({ "boolean": BooleanModel })
+_ACCEPTED_MODEL_CLASSES         = tuple(itervalues(_MODEL_TYPE_CLASS))
 
 class Model(Resource, JupyterHTMLViewMixin):
     """
@@ -23,27 +24,28 @@ class Model(Resource, JupyterHTMLViewMixin):
 
         >>> from cc.model import Model
         >>> model = Model('Cortical Area Development')
-        >>> model.save()
     """
-    
-    def __init__(self, name = DEFAULT["MODEL_NAME"], id = None, autosave = False,
-        client = None, default_type = DEFAULT["MODEL_TYPE"]["value"]
-    ):
+    def __init__(self, name = DEFAULT["MODEL_NAME"], default_type = DEFAULT["MODEL_TYPE"]["value"],
+        domain = DEFAULT["MODEL_DOMAIN_TYPE"]["value"], *args, **kwargs):
         """
         A model instance.
         """
         if not default_type in _ACCEPTED_MODEL_TYPES:
-            raise ValueError("Cannot find model type %s. Accepted types are %s."
+            raise TypeError("Cannot find model type %s. Accepted types are %s."
                 % (default_type, _ACCEPTED_MODEL_TYPES))
-
-        Resource.__init__(self, id = id, name = name, autosave = autosave,
-            client = client)
-
-        self._domain_type   = DEFAULT["MODEL_DOMAIN_TYPE"]["value"]
         
         self._default_type  = default_type
+
+        if not domain in _ACCEPTED_MODEL_DOMAIN_TYPES:
+            raise TypeError("Cannot find model domain type %s. Accepted \
+                types are %s." % (domain, _ACCEPTED_MODEL_DOMAIN_TYPES))
+
+        self._domain        = domain
+        
         class_              = _MODEL_TYPE_CLASS[default_type]
-        self._versions      = QueryList([class_(base_model = self)])
+        self._versions      = QueryList([class_(model = self, *args, **kwargs)])
+
+        Resource.__init__(self, name = name, *args, **kwargs)
 
     @property
     def default_type(self):
@@ -64,13 +66,30 @@ class Model(Resource, JupyterHTMLViewMixin):
             self._default_type = value
 
     @property
+    def domain(self):
+        """
+        The domain type of the model.
+        """
+        return getattr(self, "_domain", DEFAULT["MODEL_DOMAIN_TYPE"]["value"])
+
+    @domain.setter
+    def domain(self, value):
+        if self.domain == value:
+            pass
+        elif not value in _ACCEPTED_MODEL_DOMAIN_TYPES:
+            raise TypeError("Cannot find model domain type %s. Accepted \
+                types are %s." % (domain, _ACCEPTED_MODEL_DOMAIN_TYPES))
+        else:
+            self._domain = value
+
+    @property
     def versions(self):
         """
         List of model versions.
         """
         class_ = _MODEL_TYPE_CLASS[self.default_type]
         return getattr(self, "_versions",
-            QueryList([class_(base_model = self)]))
+            QueryList([class_(model = self)]))
 
     @versions.setter
     def versions(self, value):
@@ -86,22 +105,7 @@ class Model(Resource, JupyterHTMLViewMixin):
         else:
             self._versions = versions
 
-    @property
-    def client(self):
-        """
-
-        """
-        return getattr(self, "_client", None)
-
-    @client.setter
-    def client(self):
-        """
-
-        """
-        pass
-
     def _repr_html_(self):
-        # TODO: Check model details.
         html = render_template("model.html", context = dict({
             "id":                   self.id,
             "name":                 self.name,
@@ -139,7 +143,7 @@ class Model(Resource, JupyterHTMLViewMixin):
             key       = "%s/%s" % (self.id, version.version)
             data[key] = dict({
                 "name": self.name,
-                "type": self._domain_type,
+                "type": self.domain,
                 "userId": me.id,
                 "modelVersionMap": dict({
                     version.version: dict({
@@ -162,7 +166,7 @@ class Model(Resource, JupyterHTMLViewMixin):
                     for regulator in component.regulators:
                         regulator_map[regulator.id] = dict({
                                 "regulationType": upper(regulator.type),
-                            "regulatorSpeciesId": regulator.species.id,
+                            "regulatorSpeciesId": regulator.component.id,
                                      "speciesId": component.id,
                         })
 
@@ -171,27 +175,34 @@ class Model(Resource, JupyterHTMLViewMixin):
 
         response = self._client.post("_api/model/save", json = data)
         content  = response.json()
-
+        
         for key, data in iteritems(content):
-            _, temp_model_version_id = key.split("/")
-            temp_model_version_id    = int(temp_model_version_id)
-
-            id_     = data["id"]
-            self.id = id_
+            model_id, model_version_id = list(map(int, key.split("/")))
             
-            for i, version in enumerate(self.versions):
-                if temp_model_version_id == version.version:
-                    model_version_id         = int(data["currentVersion"])
-                    self.versions[i].id      = id_
-                    self.versions[i].version = model_version_id
+            if "id" in data:
+                self.id = data["id"]
 
+            for i, version in enumerate(self.versions):
+                if model_version_id == version.version:
+                    model_version_id            = int(data["currentVersion"])
+                    self.versions[i].id         = self.id
+                    self.versions[i].version    = model_version_id
+                    
                     if "speciesIds" in data:
                         species_ids = data["speciesIds"]
-
-                        for temp_species_id, species_id in iteritems(species_ids):
+                        for previous_species_id, species_id in iteritems(species_ids):
                             for j, component in enumerate(version.components):
-                                if int(temp_species_id) == component.id:
-                                    self.versions[i].components[i].id = species_id
+                                if int(previous_species_id) == component.id:
+                                    self.versions[i].components[j].id = species_id
+
+                    if "regulatorIds" in data:
+                        regulator_ids = data["regulatorIds"]
+                    
+                        for previous_regulator_id, regulator_id in iteritems(regulator_ids):
+                            for j, component in enumerate(version.components):
+                                for k, regulator in enumerate(component.regulators):
+                                    if int(previous_regulator_id) == regulator.id:
+                                        self.versions[i].components[j].regulators[k].id = regulator_id
 
         return self
 

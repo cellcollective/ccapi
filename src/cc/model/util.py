@@ -2,6 +2,9 @@
 import sys
 import random
 
+# imports - module imports
+from cc.limits import MAX_UNSIGNED_SHORT
+
 def get_temporary_id():
-    id_ = random.randint(-sys.maxsize, 0)
+    id_ = random.randint(-MAX_UNSIGNED_SHORT, 0)
     return id_

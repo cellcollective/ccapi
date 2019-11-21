@@ -1,5 +1,6 @@
 # imports - standard imports
 import os.path as osp
+import cgi
 
 # imports - module imports
 from cc.util.system import read
@@ -7,6 +8,8 @@ from cc.config      import PATH
 from cc.util.types  import sequencify
 from cc.log         import get_logger
 from cc.exception   import TemplateNotFoundError
+from cc.util.string import _REGEX_HTML
+from cc._compat     import iteritems
 
 logger = get_logger()
 
@@ -58,6 +61,12 @@ def render_template(template, dirs = [ ], context = None, **kwargs):
         context  = kwargs
 
     if context:
+        for name, item in iteritems(context):
+            item = str(item)
+            item = cgi.escape(item)
+            
+            context[name] = item
+
         rendered = html.format(**context)
     
     return rendered

@@ -12,6 +12,7 @@ from cc.template            import render_template
 from cc.constant            import MODEL_EXPORT_TYPE_MAP
 
 # imports - boolean-model imports
+from cc.model.resource                import Resource
 from cc.model.model.boolean.component import (
     Component,
     InternalComponent, ExternalComponent
@@ -48,11 +49,9 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
         >>> model.add_version(bool_)
         >>> model.save()
     """
-    def __init__(self, name="", id=None, version=None, client=None, base_model=None):
-        ModelVersion.__init__(self, id = id, name = name,
-            version = version, client = client
-        )
-        self._base_model = base_model
+    def __init__(self, *args, **kwargs):
+        ModelVersion.__init__(self, *args, **kwargs)
+
         self._components = QueryList()
 
     @property
@@ -97,7 +96,10 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
                 (_ACCEPTED_COMPONENT_CLASSES, type(component))
             )
         else:
-            self.components.append(component)
+            if component in self.components:
+                raise ValueError("Component already exists.")
+            else:
+                self.components.append(component)
 
     def add_components(self, *components):
         for component in components:
@@ -107,7 +109,7 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
                 )
 
         for component in components:
-            self.components.append(component)        
+            self.add_component(component)
 
     def _repr_html_(self):
         repr_ = render_template(join("boolean", "model.html"), context = dict({

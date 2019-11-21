@@ -56,7 +56,7 @@ def cc_datetime_to_python_datetime(datetime_, default = None,
 
 def _user_response_object_to_user_object(client, response):
     user = User(id = int(response["id"]), first_name = response["firstName"],
-        last_name = response["lastName"], client = client)
+        last_name = response["lastName"], client = client, autosave = False)
 
     user.email       = response.get("email")
     user.institution = response.get("institution")

@@ -1,8 +1,6 @@
 # imports - module imports
 from cc.model.resource import Resource
 
-# TODO: Auto Save
-
 class User(Resource):
     """
     A User resource object.
@@ -48,17 +46,16 @@ class User(Resource):
         last_name   = None,
         email       = None,
         institution = None,
-        autosave    = False,
-        client      = None
+        *args, **kwargs
     ):
         self.first_name     = first_name
         self.last_name      = last_name
 
-        Resource.__init__(self, id = id, name = self.name, autosave = autosave,
-            client = client)
-
         self.email          = email
         self.institution    = institution
+
+        Resource.__init__(self, *args, **kwargs)
+
 
     @property
     def name(self):
@@ -81,11 +78,10 @@ class User(Resource):
             >>> user.first_name = 'foobar'
             >>> user.save()
         """
+        data = self._prepare_save_data()
 
-        data = self._prepare_save_data(self)
-
-        self._client.raise_for_authentication()
-        me   = self._client.me()
+        self.client.raise_for_authentication()
+        me   = self.client.me()
         if not me == self:
             raise ValueError("User %s cannot save for user %s" % (me, self))
         else:

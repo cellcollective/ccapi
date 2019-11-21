@@ -6,26 +6,30 @@ from cc.model.util      import get_temporary_id
 
 class Resource:
     """
-    Defines common behaviour of all objects in the CC API
+    Defines a common behaviour of all objects within the CC API
     """
-
-    def __init__(self, id=None, name="", autosave=False, client=None):
+    def __init__(self, id = None, name = "", autosave = False, client = None):
         """
         A resource object with an identifier and/or name.
 
         :param id: An integer or None. An identifier associated with the resource.
         :param name: A string or None. A name associated with the resource.
+        :param autosave: If `True`, changes are automatically saved when
+            a resource has been mutated.
         :param client: A :class:`cc.Client` object. A reference to the client
             object used to fetch this resource.
         """
+        self.created    = now()
+        self.updated    = now()
 
-        self._id      = id or get_temporary_id()
-        self._name    = name
-        self.autosave = autosave
-        self._client  = client
+        self._id        = id or get_temporary_id()
+        self._name      = name
 
-        self.created  = now()
-        self.updated  = now()
+        self._client    = client
+        self._autosave  = autosave
+        
+        if self.autosave:
+            self.save()
 
     @property
     def id(self):
@@ -57,10 +61,11 @@ class Resource:
     @property
     def client(self):
         client = getattr(self, "_client", None)
+        
         if not client:
             raise ValueError("%s has no client instance." % 
-                self.__class__.__name__
-            )
+                self.__class__.__name__)
+        
         return client
 
     @client.setter
@@ -70,13 +75,26 @@ class Resource:
         else:
             self._client = value
 
+    @property
+    def autosave(self):
+        autosave = getattr(self, "_autosave", False)
+        return autosave
+
+    @autosave.setter
+    def autosave(self, value):
+        if self.autosave == value:
+            pass
+        else:
+            self._autosave = bool(value)
+
     def __repr__(self):
         klass   = self.__class__.__name__
         id_     = self.id
+        memory  = "0x0%x" % id(self)
         name    = " name='%s'" % (ellipsis(self.name, threshold = 30)) \
             if self.name else ""
 
-        repr_   = "<%s %s%s>" % (klass, id_, name)
+        repr_   = "<%s %s at %s%s>" % (klass, id_, memory, name)
 
         return repr_
 
@@ -88,17 +106,17 @@ class Resource:
 
         return equals
 
-    def _prepare_save_data(self, resource):
+    def _prepare_save_data(self):
         """
         Prepares the data to be dispatched to save this resource object.
         """
-        name   = resource.__class__.__name__
-        fields = resource.FIELDS
+        name   = self.__class__.__name__
+        fields = self.FIELDS
         
         data   = dict()
 
         for attr, info in iteritems(fields):
-            value = getattr(resource, attr, None)
+            value = getattr(self, attr, None)
             if value == None and not fields["none"]:
                 raise ValueError("%s cannot be None for resource %s." % 
                     (attr, name)
@@ -113,16 +131,34 @@ class Resource:
 
         return data
 
-    def _before_save(self):
+    def _before_crud(self):
+        """
+        Hook to perform before Create, Read, Update and Delete Operations.
+        """
         self.client.raise_for_authentication()
+    
+    def _before_save(self):
+        self._before_crud()
 
     def save(self):
-        self._before_save()
+        self._before_crud()
         raise NotImplementedError
 
     def _before_delete(self):
-        self.client.raise_for_authentication()
+        self._before_crud()
 
     def delete(self):
-        self._before_delete()
+        self._before_crud()
         raise NotImplementedError
+
+    @staticmethod
+    def autosave(fn):
+        def wrapper(self, *args, **kwargs):
+            return_ = fn(self, *args, **kwargs)
+
+            if self.autosave:
+                self.save()
+
+            return return_
+        
+        return wrapper
