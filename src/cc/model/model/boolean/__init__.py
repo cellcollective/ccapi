@@ -22,8 +22,8 @@ from cc.model.model.boolean.regulator    import (
 )
 from cc.model.model.boolean.condition    import (
     Condition,
-    ConditionType,
-    ConditionState
+    State as ConditionType,
+    Type  as ConditionState
 )
 from cc.model.model.boolean.subcondition import SubCondition
 

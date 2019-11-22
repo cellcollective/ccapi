@@ -8,6 +8,7 @@ from cc.constant            import MODEL_TYPE, MODEL_DOMAIN_TYPE
 from cc.template            import render_template
 from cc.util.string         import ellipsis, upper
 from cc.util.types          import flatten
+from cc.model.model.util    import get_temporary_id
 from cc._compat             import itervalues, iteritems
 
 _ACCEPTED_MODEL_TYPES           = tuple([t["value"] for t in itervalues(MODEL_TYPE)])
@@ -15,6 +16,19 @@ _ACCEPTED_MODEL_DOMAIN_TYPES    = tuple([t["value"] for t in itervalues(MODEL_DO
 
 _MODEL_TYPE_CLASS               = dict({ "boolean": BooleanModel })
 _ACCEPTED_MODEL_CLASSES         = tuple(itervalues(_MODEL_TYPE_CLASS))
+
+_API_CONDITION_TYPES            = dict({
+    ConditionType.IF:       "IF_WHEN",
+    ConditionType.UNLESS:   "UNLESS"
+})
+_API_CONDITION_STATE            = dict({
+    ConditionState.ON:      "ON",
+    ConditionState.OFF:     "OFF"
+})
+_API_CONDITION_RELATION         = dict({
+    ConditionRelation.INDEPENDENT: "OR",
+    ConditionRelation.COOPERATIVE: "AND"
+})
 
 class Model(Resource, JupyterHTMLViewMixin):
     """
@@ -153,8 +167,14 @@ class Model(Resource, JupyterHTMLViewMixin):
             })
 
             if isinstance(version, BooleanModel):
-                species_map   = dict()
-                regulator_map = dict()
+                species_map                 = dict()
+                regulator_map               = dict()
+                
+                condition_map               = dict()
+                condition_species_map       = dict()
+
+                sub_condition_map           = dict()
+                sub_condition_species_map   = dict()
 
                 for component in version.components:
                     external = not isinstance(component, InternalComponent)
@@ -170,8 +190,34 @@ class Model(Resource, JupyterHTMLViewMixin):
                                      "speciesId": component.id,
                         })
 
-                data[key]["speciesMap"]   = species_map
-                data[key]["regulatorMap"] = regulator_map
+                        for condition in regulator.conditions:
+                            condition_map[condition.id] = dict({
+                                    "regulatorId": regulator.id,
+                                          "state": _API_CONDITION_STATE[condition.state],
+                                           "type": _API_CONDITION_TYPE[condition.type],
+                                "speciesRelation": _API_CONDITION_RELATION[condition.relation]
+                            })
+
+                            for component in condition.components:
+                                id_ = get_temporary_id()
+                                condition_species_map[id_] = dict({
+                                    "conditionId": condition.id,
+                                      "speciesId": component.id
+                                })
+
+                            # for sub_condition in condition.sub_conditions:
+                            #     sub_condition_map[sub_condition.id] = dict({
+                            #         ""
+                            #     })
+
+                data[key]["speciesMap"]             = species_map
+                data[key]["regulatorMap"]           = regulator_map
+
+                data[key]["conditionMap"]           = condition_map
+                data[key]["conditionSpeciesMap"]    = condition_species_map
+                
+                data[key]["subConditionMap"]        = sub_condition_map
+                data[key]["subConditionSpeciesMap"] = sub_condition_species_map
 
         response = self._client.post("_api/model/save", json = data)
         content  = response.json()

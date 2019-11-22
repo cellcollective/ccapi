@@ -8,14 +8,12 @@ class Resource:
     """
     Defines a common behaviour of all objects within the CC API
     """
-    def __init__(self, id = None, name = "", autosave = False, client = None):
+    def __init__(self, id = None, name = "",  client = None):
         """
         A resource object with an identifier and/or name.
 
         :param id: An integer or None. An identifier associated with the resource.
         :param name: A string or None. A name associated with the resource.
-        :param autosave: If `True`, changes are automatically saved when
-            a resource has been mutated.
         :param client: A :class:`cc.Client` object. A reference to the client
             object used to fetch this resource.
         """
@@ -26,10 +24,6 @@ class Resource:
         self._name      = name
 
         self._client    = client
-        self._autosave  = autosave
-        
-        if self.autosave:
-            self.save()
 
     @property
     def id(self):
@@ -74,18 +68,6 @@ class Resource:
             pass
         else:
             self._client = value
-
-    @property
-    def autosave(self):
-        autosave = getattr(self, "_autosave", False)
-        return autosave
-
-    @autosave.setter
-    def autosave(self, value):
-        if self.autosave == value:
-            pass
-        else:
-            self._autosave = bool(value)
 
     def __repr__(self):
         klass   = self.__class__.__name__
@@ -150,15 +132,3 @@ class Resource:
     def delete(self):
         self._before_crud()
         raise NotImplementedError
-
-    @staticmethod
-    def autosave(fn):
-        def wrapper(self, *args, **kwargs):
-            return_ = fn(self, *args, **kwargs)
-
-            if self.autosave:
-                self.save()
-
-            return return_
-        
-        return wrapper

@@ -1,2 +1,3 @@
-class ConditionType:
-    IF_WHEN = 1
+class Type:
+    IF      = 1
+    UNLESS  = 2

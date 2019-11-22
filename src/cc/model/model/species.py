@@ -15,9 +15,8 @@ class Species(Resource, JupyterHTMLViewMixin):
         object used to fetch this resource.
     """
 
-    def __init__(self, id=None, name="", autosave=False, client=None):
-        Resource.__init__(self, id = id, name = name, autosave = autosave,
-            client = client)
+    def __init__(self, id=None, name="", client=None):
+        Resource.__init__(self, id = id, name = name, client = client)
 
     def _repr_html_(self):
         repr_ = render_template("species.html", dict({
