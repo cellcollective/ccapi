@@ -22,8 +22,9 @@ from cc.model.model.boolean.regulator    import (
 )
 from cc.model.model.boolean.condition    import (
     Condition,
-    State as ConditionType,
-    Type  as ConditionState
+    State    as ConditionState,
+    Type     as ConditionType,
+    Relation as ConditionRelation
 )
 from cc.model.model.boolean.subcondition import SubCondition
 
@@ -80,15 +81,25 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
 
     @property
     def internal_components(self):
-        for c in self.components:
-            if isinstance(c, InternalComponent):
-                yield c
+        # TODO: Use QueryList for query fetch.
+        internal_components = [ ]
+
+        for component in self.components:
+            if isinstance(component, InternalComponent):
+                internal_components.append(component)
+
+        return internal_components
 
     @property
     def external_components(self):
-        for c in self.components:
-            if isinstance(c, ExternalComponent):
-                yield c
+        # TODO: Use QueryList for query fetch.
+        external_components = [ ]
+
+        for component in self.components:
+            if isinstance(component, ExternalComponent):
+                external_components.append(component)
+
+        return external_components
 
     def add_component(self, component):
         if not isinstance(component, _ACCEPTED_COMPONENT_CLASSES):
@@ -122,56 +133,99 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
         }))
         return repr_
 
-    # def draw(self, *args, **kwargs):
-    #     engine = kwargs.get("engine", "networkx")
-    #     labels = kwargs.get("labels", True)
+    def draw(self, type_ = "networkx", **kwargs):
+        if type_ == "networkx":
+            try:
+                import networkx as nx
+            except ImportError:
+                raise ImportError("Unable to draw using networkx. Please install networkx \
+                    https://networkx.github.io/documentation/stable/install.html")
+                    
+            try:
+                from   networkx.drawing.nx_agraph import graphviz_layout
+            except ImportError:
+                raise ImportError("Unable to use graphviz_layout. Please install pygraphviz \
+                    https://pygraphviz.github.io/")
+            
+            graph  = nx.DiGraph()
+            graph.add_nodes_from([c.name for c in self.components])
 
-    #     if engine == "networkx":
-    #         try:
-    #             import networkx as nx
+            layout = graphviz_layout(graph)
+
+            nx.draw_networkx_nodes(graph, layout,
+                nodelist    = [c.name for c in self.internal_components],
+                node_color  = 'b',
+                alpha       = 0.8
+            )
+            nx.draw_networkx_nodes(graph, layout,
+                nodelist    = [c.name for c in self.external_components],
+                node_color  = 'r',
+                alpha       = 0.8
+            )
+
+            def get_edges(type_):
+                edges      = [ ]
+
+                for component in self.components:
+                    for regulator in component.regulators:
+                        if regulator.type == type_:
+                            edges.append([
+                                component.name,
+                                regulator.component.name
+                            ])
                 
-    #             graph = nx.Graph()
-    #             graph.add_nodes_from([s.name for s in self.species])
+                return edges
 
-    #             for species in self.species:
-    #                 for regulator in species.regulators:
-    #                     graph.add_edge(regulator.of.name, regulator.species.name)
+            edges = get_edges("positive")
+            nx.draw_networkx_edges(graph, layout,
+                edgelist    = edges,
+                alpha       = 0.5,
+                edge_color  = 'g'
+            )
 
-    #             nx.draw(graph, with_labels = labels)
-    #         except ImportError:
-    #             raise ImportError("Unable to draw using networkx. Please install networkx.")
-    #     elif engine == "cytoscape":
-    #         pass
+            edges = get_edges("negative")
+            nx.draw_networkx_edges(graph, layout,
+                edgelist    = edges,
+                alpha       = 0.5,
+                edge_color  = 'r'
+            )
 
-    # def summary(self):
-    #     table    = Table(header = ["Internal Components (+, -)", "External Components"])
+            labels = dict((c.name, c.name) for c in self.components)
+            nx.draw_networkx_labels(graph, layout, labels)
+        elif type_ == "cytoscape":
+            pass
+        else:
+            raise TypeError("No drawing type %s found." % type_)
 
-    #     internal = self.get_species(key = lambda x: x.type == "internal")
-    #     external = self.get_species(key = lambda x: x.type == "external")
+    def summary(self):
+        table    = Table(header = ["Internal Components (+, -)", "External Components"])
 
-    #     maximum  = max(len(internal), len(external))
+        internal = self.internal_components
+        external = self.external_components
 
-    #     for _ in range(maximum):
-    #         row = [ ]
+        maximum  = max(len(internal), len(external))
 
-    #         if len(internal):
-    #             species     = internal.pop(0)
-    #             value       = "%s (%s,%s)" % (
-    #                 species.name,
-    #                 len(species.positive_regulators),
-    #                 len(species.negative_regulators)
-    #             )
-    #             row.append(value)
+        for _ in range(maximum):
+            row = [ ]
 
-    #         if len(external):
-    #             species = external.pop(0)
-    #             row.append(species.name)
+            if len(internal):
+                component   = internal.pop(0)
+                value       = "%s (%s,%s)" % (
+                    component.name,
+                    len(component.positive_regulators),
+                    len(component.negative_regulators)
+                )
+                row.append(value)
 
-    #         table.insert(row)
+            if len(external):
+                component = external.pop(0)
+                row.append(component.name)
 
-    #     string = table.render()
+            table.insert(row)
 
-    #     print(string)
+        string = table.render()
+
+        print(string)
 
     # def export(self, path = None, type_ = "sbml", **kwargs):
     #     url             = self._client._build_url("_api", "model", "export", self.id)

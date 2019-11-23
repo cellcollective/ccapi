@@ -33,11 +33,10 @@ class ModelVersion(Resource):
         else:
             self._model = model
 
-    def save(self):
-        if self.model:
-            self.model.save()
-
     def draw(self):
+        raise NotImplementedError
+
+    def summary(self):
         raise NotImplementedError
 
     def export(self):

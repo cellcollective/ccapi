@@ -3,12 +3,17 @@ from cc.model.resource      import Resource
 from cc.core.querylist      import QueryList
 from cc.core.mixins         import JupyterHTMLViewMixin
 from cc.model.model         import BooleanModel, InternalComponent
+from cc.model.model.boolean import (
+    ConditionType,
+    ConditionState,
+    ConditionRelation
+)
 from cc.config              import DEFAULT
 from cc.constant            import MODEL_TYPE, MODEL_DOMAIN_TYPE
 from cc.template            import render_template
 from cc.util.string         import ellipsis, upper
 from cc.util.types          import flatten
-from cc.model.model.util    import get_temporary_id
+from cc.model.util          import get_temporary_id
 from cc._compat             import itervalues, iteritems
 
 _ACCEPTED_MODEL_TYPES           = tuple([t["value"] for t in itervalues(MODEL_TYPE)])
@@ -17,13 +22,13 @@ _ACCEPTED_MODEL_DOMAIN_TYPES    = tuple([t["value"] for t in itervalues(MODEL_DO
 _MODEL_TYPE_CLASS               = dict({ "boolean": BooleanModel })
 _ACCEPTED_MODEL_CLASSES         = tuple(itervalues(_MODEL_TYPE_CLASS))
 
-_API_CONDITION_TYPES            = dict({
+_API_CONDITION_TYPE             = dict({
     ConditionType.IF:       "IF_WHEN",
     ConditionType.UNLESS:   "UNLESS"
 })
 _API_CONDITION_STATE            = dict({
-    ConditionState.ON:      "ON",
-    ConditionState.OFF:     "OFF"
+    ConditionState.ON:  "ON",
+    ConditionState.OFF: "OFF"
 })
 _API_CONDITION_RELATION         = dict({
     ConditionRelation.INDEPENDENT: "OR",
@@ -205,11 +210,6 @@ class Model(Resource, JupyterHTMLViewMixin):
                                       "speciesId": component.id
                                 })
 
-                            # for sub_condition in condition.sub_conditions:
-                            #     sub_condition_map[sub_condition.id] = dict({
-                            #         ""
-                            #     })
-
                 data[key]["speciesMap"]             = species_map
                 data[key]["regulatorMap"]           = regulator_map
 
@@ -250,12 +250,22 @@ class Model(Resource, JupyterHTMLViewMixin):
                                     if int(previous_regulator_id) == regulator.id:
                                         self.versions[i].components[j].regulators[k].id = regulator_id
 
+                    if "conditionIds" in data:
+                        condition_ids = data["conditionIds"]
+
+                        for previous_condition_id, condition_id in iteritems(condition_ids):
+                            for j, component in enumerate(version.components):
+                                for k, regulator in enumerate(component.regulators):
+                                    for l, condition in enumerate(regulator.conditions):
+                                        if int(previous_condition_id) == condition.id:
+                                            self.versions[i].components[j].regulators[k].conditions[l].id = condition_id
+
         return self
 
     def delete(self):
         data = dict(("%s/%s" % (self.id, model.version), None)
             for model in self.versions
         )
-        self._client.post("_api/model/save", json = data)
+        self.client.post("_api/model/save", json = data)
         
         return self

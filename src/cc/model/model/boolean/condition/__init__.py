@@ -21,13 +21,12 @@ class Condition(Resource, JupyterHTMLViewMixin):
 
         self.type                   = type
         self.state                  = state
-        self.operator               = operator
         self.relation               = relation
         self.components             = QueryList(sequencify(components))
 
         self.sub_condition_relation = sub_condition_relation
         self.sub_conditions         = QueryList(sequencify(sub_conditions))
 
-    def __repr__(self):
+    def _repr_html_(self):
         repr_ = render_template(join("boolean", "condition.html"))
         return repr_
