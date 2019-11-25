@@ -61,11 +61,11 @@ path                        = dict()
 path["base"]                = pardir(__file__)
 path["version"]             = osp.join(path["base"], "VERSION")
 
-__name__                    = "cc"
-__command__                 = "cc"
+__name__                    = "ccpaw"
+__command__                 = "ccpaw"
 __version__                 = strip(read(path["version"]))
 __build__                   = get_revision(pardir(path["base"], 2), short = True, raise_err = False)
-__url__                     = "https://github.com/achillesrasquinha/cc"
+__url__                     = "https://github.com/achillesrasquinha/ccpaw"
 __author__                  = "Achilles Rasquinha"
 __email__                   = "achillesrasquinha@gmail.com"
 __description__             = "Python API for Cell Collective"
