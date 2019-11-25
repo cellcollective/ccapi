@@ -2,10 +2,10 @@
 import pytest
 
 # imports - module imports
-import cc
+import ccpaw
 
 @pytest.fixture()
 def client():
-    client = cc.Client()
+    client = ccpaw.Client()
     client.auth(email = "test@cellcollective.org", password = "test")
     return client

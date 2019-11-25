@@ -1,6 +1,6 @@
 # imports - module imports
 from cc import cli
-from cc.table import _sanitize_string, Table
+from ccpaw.table import _sanitize_string, Table
 
 def test__sanitize_string():
     assert _sanitize_string(cli.format("foobar", cli.GREEN)) == "foobar"

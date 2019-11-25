@@ -1,5 +1,5 @@
 # imports - module imports
-from cc.model import Model, BooleanModel, InternalComponent
+from ccpaw.model import Model, BooleanModel, InternalComponent
 
 def test_boolean_model(client):
     model    = Model(client = client, name = 'Cortical Area Development')

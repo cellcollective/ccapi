@@ -1,5 +1,5 @@
 # imports - module imports
-from cc.util.string import strip, strip_ansi, pluralize, kebab_case
+from ccpaw.util.string import strip, strip_ansi, pluralize, kebab_case
 from cc import cli
 
 def test_strip():

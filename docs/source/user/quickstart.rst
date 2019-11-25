@@ -3,12 +3,12 @@
 Getting Started
 ===============
 
-Eager to get started? This page gives a good introduction in how to get started with CCPy.
+Eager to get started? This page gives a good introduction in how to get started with ccpaw.
 
 First, make sure that:
 
-* CCPy is installed
-* CCPy is up-to-date
+* ccpaw is installed
+* ccpaw is up-to-date
 
 Let’s get started with some simple examples.
 
@@ -17,27 +17,27 @@ Let’s get started with some simple examples.
 Instantizing a Client object
 ----------------------------
 
-Creating a Client object with CCPy is very simple.
+Creating a Client object with ccpaw is very simple.
 
-Begin by importing the CCPy module:
+Begin by importing the ccpaw module:
 
-    >>> import cc
+    >>> import ccpaw
 
 Now, let’s try to create a client object.
 
-    >>> client = cc.Client()
+    >>> client = ccpaw.Client()
 
 Now, we have a Client object called client. We can get all the information we need from this object.
 
 Authenticating via Password Flow
 --------------------------------
 
-Before you can authenticate using CCPy, you must first register an 
+Before you can authenticate using ccpaw, you must first register an 
 application of the appropriate type on 
 `Cell Collective <https://cellcollective.org>`_ . If you do not require a 
 user context, it is read only.
 
-In order to use a password flow application with CCPy you need the following 
+In order to use a password flow application with ccpaw you need the following 
 pieces of information:
 
 ``email`` - The email address of the Cell Collective account used to 
@@ -77,15 +77,15 @@ You can also authenticate by passing an already available authorization token.
     >>> client.authenticated
     True
 
-Logging in CCPy
+Logging in ccpaw
 ---------------
 
-Occasionally it is useful to observe the HTTP requests that CCPy is issuing.
+Occasionally it is useful to observe the HTTP requests that ccpaw is issuing.
 To do so you have to configure and enable logging.
 
 To log everything available, import the `logging` module:
 
-    >>> import cc, logging
+    >>> import ccpaw, logging
 
 Create a logger instance of a logger of name `cc` and set its level to `DEBUG`.
 
@@ -95,7 +95,7 @@ Create a logger instance of a logger of name `cc` and set its level to `DEBUG`.
 When properly configured, HTTP requests that are issued should produce output 
 similar to one below.
 
-    >>> client = cc.Client()
+    >>> client = ccpaw.Client()
     2019-11-23 14:23:37,547 | INFO | Dispatching a GET request to URL: https://cellcollective.org/api/ping with Arguments - {}
     >>> client
     <Client url='https://cellcollective.org'>

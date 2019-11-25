@@ -1,4 +1,4 @@
-from cc.model import Model, BooleanModel
+from ccpaw.model import Model, BooleanModel
 
 def test_model(client):
     model = Model(client = client)

@@ -1,6 +1,6 @@
 # imports - module imports
-import cc
-from   cc.exception import (
+import ccpaw
+from   ccpaw.exception import (
     TypeError,
     ConnectionError,
     AuthenticationError,
@@ -16,17 +16,17 @@ _TEST_EMAIL     = "test@cellcollective.org"
 _TEST_PASSWORD  = "test"
 _AUTH_TOKEN     = None
 
-_BASE_CLIENT    = cc.Client()
+_BASE_CLIENT    = ccpaw.Client()
 
 def test_client():
     # Check proxy definitions.
     with pytest.raises(TypeError):
-        cc.Client(proxies = "foobar")
+        ccpaw.Client(proxies = "foobar")
 
     with pytest.raises((ConnectionError, ResponseError)):
-        cc.Client(base_url = _INVALID_URL)
+        ccpaw.Client(base_url = _INVALID_URL)
 
-    cc.Client(base_url = _INVALID_URL, test = False)
+    ccpaw.Client(base_url = _INVALID_URL, test = False)
 
     assert not _BASE_CLIENT.authenticated
 
@@ -38,7 +38,7 @@ def test_client_repr():
 
     _test(_BASE_CLIENT)
 
-    client = cc.Client(_INVALID_URL, test = False)
+    client = ccpaw.Client(_INVALID_URL, test = False)
     _test(client)
 
 def test__build_url():
@@ -62,7 +62,7 @@ def test_auth():
     _BASE_CLIENT.auth(email = _TEST_EMAIL, password = _TEST_PASSWORD)
     assert _BASE_CLIENT.authenticated
     
-    client = cc.Client()
+    client = ccpaw.Client()
     assert not client.authenticated
     client.auth(token = _BASE_CLIENT._auth_token)
     assert client.authenticated
@@ -76,7 +76,7 @@ def test_auth():
 
 def test__request():
     proxies  = get_random_proxies()
-    client   = cc.Client(proxies = proxies)
+    client   = ccpaw.Client(proxies = proxies)
     response = client._request("GET", "api/ping")
 
 def test_post():

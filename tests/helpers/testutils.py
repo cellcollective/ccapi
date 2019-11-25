@@ -2,7 +2,7 @@
 import requests
 
 # imports - third-party imports
-from cc.util.string import safe_decode, strip
+from ccpaw.util.string import safe_decode, strip
 
 _URL_PROXY_LIST = "https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt"
 

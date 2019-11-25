@@ -6,7 +6,7 @@ import subprocess
 import pytest
 
 # imports - module imports
-from cc.__attr__ import (
+from ccpaw.__attr__ import (
     read,
     pardir,
     strip,

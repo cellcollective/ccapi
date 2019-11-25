@@ -1,16 +1,16 @@
-CCPy
+ccpaw
 ====
 
 A Python Library to interact with the `Cell Collective <https://cellcollective.org>`_ API v2
 
-**CCPy** is a Python Package that provides a simple interface to 
+**ccpaw** is a Python Package that provides a simple interface to 
 `Cell Collective <https://cellcollective.org>`_ for modelling and analysis of 
 biological networks.
 
 -------------------
 
-    >>> import cc
-    >>> client  = cc.Client()
+    >>> import ccpaw
+    >>> client  = ccpaw.Client()
     >>> model   = client.read("fibroblasts.sbml") # a boolean-based model
     >>> boolean = model.version[0]
     >>> boolean.components
@@ -18,7 +18,7 @@ biological networks.
      <ExternalComponent -3 at 0x0111ab9a90 name='alpha_1213L'>,
      <ExternalComponent -4 at 0x0111ab9ad0 name='alpha_iL'>]
 
-**CCPy** includes simple, object-oriented interfaces for creating and 
+**ccpaw** includes simple, object-oriented interfaces for creating and 
 reading models (to/from an `SBML qual <http://www.colomoto.org/formats/sbml-qual.html>`_ file format), graphically viewing such models, 
 editing, saving and exporting models (into SBML qual, Boolean Expressions, 
 Truth Tables, Interaction Matrix and GML formats).
@@ -35,7 +35,7 @@ Truth Tables, Interaction Matrix and GML formats).
 Beloved Features
 ----------------
 
-**CCPy** attempts to be an all-in-one toolbox for modelling biological systems.
+**ccpaw** attempts to be an all-in-one toolbox for modelling biological systems.
 
 - Reading public and private models from `Cell Collective <https://cellcollective.org>`_.
 - A rich knowledge-base for each model species.
@@ -44,14 +44,14 @@ Beloved Features
 - Querying for models.
 - Visualizing models graphically.
 
-**CCPy** officially supports Python 2.7+ and 3.4+.
+**ccpaw** officially supports Python 2.7+ and 3.4+.
 
 The User Guide
 --------------
 
 This part of the documentation, which is mostly prose, begins with some 
-background information about **CCPy**, then focuses on step-by-step 
-instructions for getting the most out of **CCPy**.
+background information about **ccpaw**, then focuses on step-by-step 
+instructions for getting the most out of **ccpaw**.
 
 .. toctree::
    :maxdepth: 2

@@ -1,5 +1,5 @@
 # imports - module imports
-from cc.util.types import (
+from ccpaw.util.types import (
     merge_dict,
     dict_from_list,
     get_function_arguments

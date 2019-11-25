@@ -1,5 +1,5 @@
 # imports - module imports
-from cc._compat    import StringIO, input
+from ccpaw._compat    import StringIO, input
 
 # imports - test imports
 from testutils import mock_input, assert_input

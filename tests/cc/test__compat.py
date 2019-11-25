@@ -2,14 +2,14 @@
 import collections
 
 # imports - module imports
-from cc._compat import (cmp, input, StringIO, iteritems, iterkeys,
+from ccpaw._compat import (cmp, input, StringIO, iteritems, iterkeys,
     PYTHON_VERSION, _is_python_version)
 
 # imports - test imports
 from testutils import mock_input, assert_input
 
 def test_imports():
-    from cc._compat import (
+    from ccpaw._compat import (
         StringIO    as _,
 
         urlopen     as _,

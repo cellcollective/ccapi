@@ -12,14 +12,14 @@ NOW     = dt.datetime.now()
 
 sys.path.insert(0, BASEDIR)
 
-import cc
+import ccpaw
 
-project   = cc.__name__
-author    = cc.__author__
-copyright = "%s %s" % (NOW.year, cc.__author__)
+project   = ccpaw.__name__
+author    = ccpaw.__author__
+copyright = "%s %s" % (NOW.year, ccpaw.__author__)
 
-version   = cc.__version__
-release   = cc.__version__
+version   = ccpaw.__version__
+release   = ccpaw.__version__
 
 source_suffix       = [".rst", ".md"]
 source_parsers      = { ".md": "recommonmark.parser.CommonMarkParser" }

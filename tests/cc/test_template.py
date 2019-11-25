@@ -5,8 +5,8 @@ import os.path as osp
 import pytest
 
 # imports - module imports
-from cc.template  import render_template
-from cc.exception import TemplateNotFoundError
+from ccpaw.template  import render_template
+from ccpaw.exception import TemplateNotFoundError
 
 _TEST_DATA_DIR = osp.join(osp.abspath(osp.dirname(__file__)), "data")
 
