@@ -6,23 +6,24 @@ import collections
 import requests
 
 # imports - module imports
-from cc.api.helper      import (
-    _model_response_object_to_model_object,
-    _model_version_response_object_to_model_object,
-    _user_response_object_to_user_object
+from cc.api.helper          import (
+    _user_response_to_user,
+    _model_response_to_model,
+    _model_version_response_to_boolean_model,
 )
-from cc.core.querylist  import QueryList
-from cc.config          import DEFAULT
-from cc.constant        import (
+from cc.model.model.base    import Model
+from cc.core.querylist      import QueryList
+from cc.config              import DEFAULT
+from cc.constant            import (
     AUTHENTICATION_HEADER,
     _AUTHENTICATION_ERROR_STRING
 )
-from cc._compat         import string_types
-from cc.util.types      import (
+from cc._compat             import string_types
+from cc.util.array          import (
     sequencify,
-    merge_dict,
     squash
 )
+from cc.util._dict          import merge_dict
 from cc.exception   import (
     AuthenticationError
 )
@@ -268,7 +269,7 @@ class Client:
         """
         response = self._request("GET", "_api/user/getProfile", *args, **kwargs)
         content  = response.json()
-        user     = _user_response_object_to_user_object(self, content)
+        user     = _user_response_to_user(self, content)
 
         return user
 
@@ -290,6 +291,7 @@ class Client:
             DEFAULT["MAX_API_RESOURCE_FETCH"]
         )
         since     = kwargs.get("since", 1)
+        since     = since if since > 0 else 1
 
         if id_:
             if isinstance(id_, string_types) and id_.isdigit():
@@ -324,7 +326,7 @@ class Client:
             
             if id_:
                 resources = QueryList([
-                    _model_version_response_object_to_model_object(
+                    _boolean_model_response_to_model_version(
                         self,
                         content
                     )
@@ -332,7 +334,7 @@ class Client:
             else:
                 content   = content[since - 1 : since - 1 + size]
                 resources = QueryList([
-                    _model_response_object_to_model_object(self, obj)
+                    _model_response_to_model(self, obj)
                         for obj in content
                 ])
         elif _resource == "user":
@@ -345,7 +347,7 @@ class Client:
             content     = response.json()
 
             for user_id, user_data in content.items():
-                user = _user_response_object_to_user_object(self, 
+                user = _user_response_to_user(self, 
                     merge_dict({ "id": user_id }, user_data)
                 )
                 resources.append(user)
@@ -367,8 +369,11 @@ class Client:
         response    = self.post("_api/model/import", files = files)
         content     = response.json()
 
-        model       = _model_version_response_object_to_model_object(self,
-            content)
+        model       = Model(client = self)
+        boolean     = _model_version_response_to_boolean_model(self, content)
+
+        # HACK
+        model.versions[0] = boolean
 
         if save:
             model.save()

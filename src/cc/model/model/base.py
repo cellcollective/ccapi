@@ -12,12 +12,16 @@ from cc.config              import DEFAULT
 from cc.constant            import MODEL_TYPE, MODEL_DOMAIN_TYPE
 from cc.template            import render_template
 from cc.util.string         import ellipsis, upper
-from cc.util.types          import flatten
+from cc.util.array          import flatten
 from cc.model.util          import get_temporary_id
 from cc._compat             import itervalues, iteritems
 
-_ACCEPTED_MODEL_TYPES           = tuple([t["value"] for t in itervalues(MODEL_TYPE)])
-_ACCEPTED_MODEL_DOMAIN_TYPES    = tuple([t["value"] for t in itervalues(MODEL_DOMAIN_TYPE)])
+_ACCEPTED_MODEL_TYPES           = tuple([t["value"] \
+    for t in itervalues(MODEL_TYPE)])
+_ACCEPTED_MODEL_DOMAIN_TYPES    = tuple([t["value_api"] \
+    if "value_api" in t else t["value"] \
+        for t in itervalues(MODEL_DOMAIN_TYPE)
+])
 
 _MODEL_TYPE_CLASS               = dict({ "boolean": BooleanModel })
 _ACCEPTED_MODEL_CLASSES         = tuple(itervalues(_MODEL_TYPE_CLASS))
@@ -146,7 +150,7 @@ class Model(Resource, JupyterHTMLViewMixin):
         for version in versions:
             if not isinstance(version, _ACCEPTED_MODEL_CLASSES):
                 raise TypeError("Model must be of type %s, found %s." %
-                    (_ACCEPTED_MODEL_CLASS, type(version))
+                    (_ACCEPTED_MODEL_CLASSES, type(version))
                 )
                 
         for version in versions:
@@ -188,27 +192,28 @@ class Model(Resource, JupyterHTMLViewMixin):
                         "external": external,
                     })
 
-                    for regulator in component.regulators:
-                        regulator_map[regulator.id] = dict({
-                                "regulationType": upper(regulator.type),
-                            "regulatorSpeciesId": regulator.component.id,
-                                     "speciesId": component.id,
-                        })
-
-                        for condition in regulator.conditions:
-                            condition_map[condition.id] = dict({
-                                    "regulatorId": regulator.id,
-                                          "state": _API_CONDITION_STATE[condition.state],
-                                           "type": _API_CONDITION_TYPE[condition.type],
-                                "speciesRelation": _API_CONDITION_RELATION[condition.relation]
+                    if not external:
+                        for regulator in component.regulators:
+                            regulator_map[regulator.id] = dict({
+                                    "regulationType": upper(regulator.type),
+                                "regulatorSpeciesId": regulator.component.id,
+                                        "speciesId": component.id,
                             })
 
-                            for component in condition.components:
-                                id_ = get_temporary_id()
-                                condition_species_map[id_] = dict({
-                                    "conditionId": condition.id,
-                                      "speciesId": component.id
+                            for condition in regulator.conditions:
+                                condition_map[condition.id] = dict({
+                                        "regulatorId": regulator.id,
+                                            "state": _API_CONDITION_STATE[condition.state],
+                                            "type": _API_CONDITION_TYPE[condition.type],
+                                    "speciesRelation": _API_CONDITION_RELATION[condition.relation]
                                 })
+
+                                for component in condition.components:
+                                    id_ = get_temporary_id()
+                                    condition_species_map[id_] = dict({
+                                        "conditionId": condition.id,
+                                        "speciesId": component.id
+                                    })
 
                 data[key]["speciesMap"]             = species_map
                 data[key]["regulatorMap"]           = regulator_map
@@ -246,19 +251,21 @@ class Model(Resource, JupyterHTMLViewMixin):
                     
                         for previous_regulator_id, regulator_id in iteritems(regulator_ids):
                             for j, component in enumerate(version.components):
-                                for k, regulator in enumerate(component.regulators):
-                                    if int(previous_regulator_id) == regulator.id:
-                                        self.versions[i].components[j].regulators[k].id = regulator_id
+                                if isinstance(component, InternalComponent):
+                                    for k, regulator in enumerate(component.regulators):
+                                        if int(previous_regulator_id) == regulator.id:
+                                            self.versions[i].components[j].regulators[k].id = regulator_id
 
                     if "conditionIds" in data:
                         condition_ids = data["conditionIds"]
 
                         for previous_condition_id, condition_id in iteritems(condition_ids):
                             for j, component in enumerate(version.components):
-                                for k, regulator in enumerate(component.regulators):
-                                    for l, condition in enumerate(regulator.conditions):
-                                        if int(previous_condition_id) == condition.id:
-                                            self.versions[i].components[j].regulators[k].conditions[l].id = condition_id
+                                if isinstance(component, InternalComponent):
+                                    for k, regulator in enumerate(component.regulators):
+                                        for l, condition in enumerate(regulator.conditions):
+                                            if int(previous_condition_id) == condition.id:
+                                                self.versions[i].components[j].regulators[k].conditions[l].id = condition_id
 
         return self
 

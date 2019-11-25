@@ -23,6 +23,7 @@ def _is_python_version(*args, **kwargs):
     return result
 
 PY2 = _is_python_version(major = 2)
+PY3 = _is_python_version(major = 3)
 
 def cmp(a, b):
     return ((a > b) - (a < b))

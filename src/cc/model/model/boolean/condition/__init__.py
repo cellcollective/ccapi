@@ -6,7 +6,7 @@ from cc.core.querylist  import QueryList
 from cc.model.resource  import Resource
 from cc.core.mixins     import JupyterHTMLViewMixin
 from cc.template        import render_template
-from cc.util.types      import sequencify
+from cc.util.array      import sequencify
 
 from cc.model.model.boolean.condition.state     import State
 from cc.model.model.boolean.condition.type      import Type

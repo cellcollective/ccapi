@@ -4,7 +4,7 @@ import os.path as osp
 # imports - module imports
 from cc.__attr__    import __version__
 from cc.util.system import pardir
-from cc.util.types  import autodict
+from cc.util._dict  import autodict
 from cc.constant    import MODEL_TYPE, MODEL_DOMAIN_TYPE
 
 PATH              = autodict()

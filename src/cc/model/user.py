@@ -1,7 +1,9 @@
 # imports - module imports
-from cc.model.resource import Resource
+from cc.model.resource  import Resource
+from cc.core.mixins     import JupyterHTMLViewMixin
+from cc.template        import render_template
 
-class User(Resource):
+class User(Resource, JupyterHTMLViewMixin):
     """
     A User resource object.
 
@@ -41,7 +43,6 @@ class User(Resource):
     }
 
     def __init__(self,
-        id          = None,
         first_name  = None,
         last_name   = None,
         email       = None,
@@ -51,11 +52,10 @@ class User(Resource):
         self.first_name     = first_name
         self.last_name      = last_name
 
+        Resource.__init__(self, name = self.name, *args, **kwargs)
+
         self.email          = email
         self.institution    = institution
-
-        Resource.__init__(self, *args, **kwargs)
-
 
     @property
     def name(self):
@@ -86,3 +86,18 @@ class User(Resource):
             raise ValueError("User %s cannot save for user %s" % (me, self))
         else:
             self._client.post("_api/user/saveProfile", json = data)
+
+    def _repr_html_(self):
+        context = dict({
+            "id":               self.id,
+            "name":             self.name,
+            "memory_address":   "0x0%x" % id(self),
+            "first_name":       self.first_name,
+            "last_name":        self.last_name,
+            "email":            self.email,
+            "institution":      self.institution
+        })
+
+        html = render_template("user.html", context = context)
+
+        return html

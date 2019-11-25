@@ -1,7 +1,7 @@
 .. _quickstart:
 
-Quickstart
-==========
+Getting Started
+===============
 
 Eager to get started? This page gives a good introduction in how to get started with CCPy.
 
@@ -52,7 +52,7 @@ With this information, authorizing is as simple as:
 To verify that you are authenticated as the correct user, run:
 
     >>> client.me()
-    <User id=10887 name='Test Test'>
+    <User 10887 at 0x01118bf850 name='Test Test'>
 
 The output should contain the same name as your Cell Collective account.
 
@@ -76,3 +76,28 @@ You can also authenticate by passing an already available authorization token.
     >>> client.auth(token = "<YOUR_AUTHORIZATION_TOKEN>")
     >>> client.authenticated
     True
+
+Logging in CCPy
+---------------
+
+Occasionally it is useful to observe the HTTP requests that CCPy is issuing.
+To do so you have to configure and enable logging.
+
+To log everything available, import the `logging` module:
+
+    >>> import cc, logging
+
+Create a logger instance of a logger of name `cc` and set its level to `DEBUG`.
+
+    >>> logger = logging.getLogger("cc")
+    >>> logger.setLevel(logging.DEBUG)
+
+When properly configured, HTTP requests that are issued should produce output 
+similar to one below.
+
+    >>> client = cc.Client()
+    2019-11-23 14:23:37,547 | INFO | Dispatching a GET request to URL: https://cellcollective.org/api/ping with Arguments - {}
+    >>> client
+    <Client url='https://cellcollective.org'>
+
+For more information on logging, see `logging.Logger <https://docs.python.org/3/library/logging.html>`_.

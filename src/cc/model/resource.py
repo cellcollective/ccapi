@@ -5,6 +5,11 @@ from cc.util.datetime   import now
 from cc.model.util      import get_temporary_id
 
 class Resource:
+    _REPR_ATTRIBUTES = [
+        "id",
+        "name"
+    ]
+    
     """
     Defines a common behaviour of all objects within the CC API
     """

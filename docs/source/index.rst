@@ -1,16 +1,7 @@
 CCPy
 ====
 
-A Python Library to interact with the `Cell Collective <https://cellcollective.org>`_ API
-
-.. image:: https://img.shields.io/pypi/v/ccpy.svg?style=flat-square
-    :target: https://pypi.org/project/ccpy/
-
-.. image:: https://img.shields.io/pypi/l/ccpy.svg?style=flat-square
-    :target: https://pypi.org/project/ccpy/
-
-.. image:: https://img.shields.io/pypi/pyversions/ccpy.svg?style=flat-square
-    :target: https://pypi.org/project/ccpy/
+A Python Library to interact with the `Cell Collective <https://cellcollective.org>`_ API v2
 
 **CCPy** is a Python Package that provides a simple interface to 
 `Cell Collective <https://cellcollective.org>`_ for modelling and analysis of 
@@ -19,48 +10,58 @@ biological networks.
 -------------------
 
     >>> import cc
-    >>> client = cc.Client()
-    >>> model  = client.read("sample.sbml")
-    >>> model.species[:3]
-    [<Species id=-1026 name='MMP3'>,
-     <Species id=-1028 name='MMP1'>,
-     <Species id=-1030 name='MMP1'>]
+    >>> client  = cc.Client()
+    >>> model   = client.read("fibroblasts.sbml") # a boolean-based model
+    >>> boolean = model.version[0]
+    >>> boolean.components
+    [<ExternalComponent -2 at 0x0111ab9a50 name='ExtPump'>,
+     <ExternalComponent -3 at 0x0111ab9a90 name='alpha_1213L'>,
+     <ExternalComponent -4 at 0x0111ab9ad0 name='alpha_iL'>]
 
 **CCPy** includes simple, object-oriented interfaces for creating and 
-reading models (to/from an SBML file format), graphically viewing such models, 
-editing, saving and exporting models (into SBML, Boolean Expressions, 
-Truth Tables, Interaction Matrix, etc. formats).
+reading models (to/from an `SBML qual <http://www.colomoto.org/formats/sbml-qual.html>`_ file format), graphically viewing such models, 
+editing, saving and exporting models (into SBML qual, Boolean Expressions, 
+Truth Tables, Interaction Matrix and GML formats).
 
-    >>> model.summary()
+    >>> boolean.summary()
     Internal Components (+, -) External Components
     -------------------------- -------------------
-    AKT_T (8,0)                PI3K
-    CARMA1_T (1,0)             GP63_L
-    IKK_BETA_T (0,3)           CRE_T
+    Palpha_iR (1,0)            ExtPump            
+    Cbp (1,0)                  alpha_1213L        
+    EGFR (3,0)                 alpha_iL           
+    PIP2_45 (3,0)              alpha_sL
+    ...
 
 Beloved Features
 ----------------
 
 **CCPy** attempts to be an all-in-one toolbox for modelling biological systems.
 
-- Reading public and private models.
-- Rich Knowledge-Base for each model species.
+- Reading public and private models from `Cell Collective <https://cellcollective.org>`_.
+- A rich knowledge-base for each model species.
 - Importing models using an SBML file format.
-- Exporting models into SBML, Boolean Expressions, Truth Tables, etc.
+- Exporting models into SBML qual, Boolean Expressions, Truth Tables, Interaction Matrix and GML formats.
 - Querying for models.
 - Visualizing models graphically.
 
-**CCPy** officially supports Python 3.4+.
+**CCPy** officially supports Python 2.7+ and 3.4+.
 
 The User Guide
 --------------
 
+This part of the documentation, which is mostly prose, begins with some 
+background information about **CCPy**, then focuses on step-by-step 
+instructions for getting the most out of **CCPy**.
+
 .. toctree::
    :maxdepth: 2
 
+   user/installation
    user/quickstart
-   modelling/loading
-   modelling/reading
+
+   notebooks/building-boolean-models
+   notebooks/reading-writing-boolean-models
+   notebooks/loading-models
 
 The API Guide
 -------------

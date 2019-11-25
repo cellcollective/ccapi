@@ -13,7 +13,8 @@ from cc.model.model.boolean  import (
     BooleanModel,
     Component, InternalComponent, ExternalComponent,
     Regulator, PositiveRegulator, NegativeRegulator,
-    Condition, ConditionType, ConditionState, SubCondition
+    Condition, ConditionType, ConditionState, ConditionRelation,
+    SubCondition
 )
 
 # imports - constraint-based model imports

@@ -5,7 +5,7 @@ import cgi
 # imports - module imports
 from cc.util.system import read
 from cc.config      import PATH
-from cc.util.types  import sequencify
+from cc.util.array  import sequencify
 from cc.log         import get_logger
 from cc.exception   import TemplateNotFoundError
 from cc.util.string import _REGEX_HTML

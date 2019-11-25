@@ -6,6 +6,14 @@ MODEL_TYPE                      = dict({
 MODEL_DOMAIN_TYPE               = dict({
     "RESEARCH": {
         "value": "research"
+    },
+    "LEARN": {
+        "value": "learn",
+        "value_api": "learning",
+    },
+    "TEACH": {
+        "value": "teach",
+        "value_api": "teaching"
     }
 })
 AUTHENTICATION_HEADER           = "X-AUTH-TOKEN"

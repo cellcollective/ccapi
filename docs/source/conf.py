@@ -21,15 +21,27 @@ copyright = "%s %s" % (NOW.year, cc.__author__)
 version   = cc.__version__
 release   = cc.__version__
 
-source_suffix  = [".rst", ".md"]
-source_parsers = { ".md": "recommonmark.parser.CommonMarkParser" }
+source_suffix       = [".rst", ".md"]
+source_parsers      = { ".md": "recommonmark.parser.CommonMarkParser" }
 
-master_doc  = "index"
+master_doc          = "index"
 
-extensions  = [
-    'sphinx.ext.autodoc',
-
-    # IPython directive
-    'IPython.sphinxext.ipython_console_highlighting',
-    'IPython.sphinxext.ipython_directive'
+exclude_patterns    = [
+    osp.join(BASEDIR,"source","notebooks",".ipynb_checkpoints")
 ]
+
+extensions          = [
+    "sphinx.ext.autodoc",
+    "nbsphinx"
+]
+
+templates_path      = [osp.join(BASEDIR, "source", "_templates")]
+
+html_static_path    = [osp.join(BASEDIR, "source", "_static")]
+
+html_sidebars       = {
+    "index": ["sidebar.html"],
+    "**": [
+        "sidebar.html"
+    ]
+}

@@ -166,7 +166,7 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
             def get_edges(type_):
                 edges      = [ ]
 
-                for component in self.components:
+                for component in self.internal_components:
                     for regulator in component.regulators:
                         if regulator.type == type_:
                             edges.append([
