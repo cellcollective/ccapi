@@ -104,7 +104,7 @@ class Client:
 
         return url
 
-    def _request(self, method, url, *args, **kwargs):
+    def request(self, method, url, *args, **kwargs):
         raise_error = kwargs.pop("raise_error", True)
         token       = kwargs.pop("token",       None)
         headers     = kwargs.pop("headers",     { })
@@ -163,7 +163,7 @@ class Client:
             >>> response.content
             b'"First Name","Last Name","Email","Institution","Last Updated Date"\n'
         """
-        response = self._request("POST", url, *args, **kwargs)
+        response = self.request("POST", url, *args, **kwargs)
         return response
 
     def ping(self, *args, **kwargs):
@@ -180,7 +180,7 @@ class Client:
             >>> client.ping()
             'pong'
         """
-        response = self._request("GET", "api/ping", *args, **kwargs)
+        response = self.request("GET", "api/ping", *args, **kwargs)
         try:
             content = response.json()
             if content.get("data") == "pong":
@@ -267,7 +267,7 @@ class Client:
             >>> client.me()
             <User id=10887 name='Test Test'>
         """
-        response = self._request("GET", "_api/user/getProfile", *args, **kwargs)
+        response = self.request("GET", "_api/user/getProfile", *args, **kwargs)
         content  = response.json()
         user     = _user_response_to_user(self, content)
 
@@ -321,12 +321,12 @@ class Client:
                     ("name",   query)
                 ]
 
-            response = self._request("GET", url, params = params)
+            response = self.request("GET", url, params = params)
             content  = response.json()
             
             if id_:
                 resources = QueryList([
-                    _boolean_model_response_to_model_version(
+                    _model_version_response_to_boolean_model(
                         self,
                         content
                     )
@@ -341,7 +341,7 @@ class Client:
             if not id_:
                 raise ValueError("id required.")
 
-            response    = self._request("GET", "_api/user/lookupUsers",
+            response    = self.request("GET", "_api/user/lookupUsers",
                 params = [("id", i) for i in id_]
             )
             content     = response.json()
@@ -372,9 +372,11 @@ class Client:
         model       = Model(client = self)
         boolean     = _model_version_response_to_boolean_model(self, content)
 
-        # HACK
-        model.versions[0] = boolean
+        # HACK: remove default version provided.
+        model.versions.pop()
 
+        model.add_version(boolean)
+        
         if save:
             model.save()
 

@@ -9,7 +9,9 @@ from cc.model.model.version import ModelVersion
 from cc.util.system         import read
 from cc.table               import Table
 from cc.template            import render_template
-from cc.constant            import MODEL_EXPORT_TYPE_MAP
+from cc.constant            import BOOLEAN_MODEL_EXPORT_TYPE
+from cc.config              import DEFAULT
+from cc.util.system         import makepath
 
 # imports - boolean-model imports
 from cc.model.resource                import Resource
@@ -227,29 +229,27 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
 
         print(string)
 
-    # def export(self, path = None, type_ = "sbml", **kwargs):
-    #     url             = self._client._build_url("_api", "model", "export", self.id)
-    #     type_           = MODEL_EXPORT_TYPE_MAP[type_]
-    #     params          = { "version": self.version, "type": type_ }
+    def write(self, path = None, type = "sbml", **kwargs):
+        self.save()
 
-    #     response        = self._client._request("GET", url, params = params)
+        type_           = BOOLEAN_MODEL_EXPORT_TYPE[type]["value_api"]
+        params          = { "version": self.version, "type": type_ }
 
-    #     default_path    = False
+        response        = self.client.request("GET", "_api/model/export/%s" % self.id,
+            params = params)
 
-    #     if not path:
-    #         default_path = True
+        if not path:
+            header  = response.headers["content-disposition"]
+            name    = re.findall("filename=(.+)", header)[0]
+            path    = abspath(name)
 
-    #         header  = response.headers["content-disposition"]
-    #         name    = re.findall("filename=(.+)", header)[0]
+        nchunk      = kwargs.get("nchunk", DEFAULT["MAX_CHUNK_DOWNLOAD_BYTES"])
 
-    #         path    = abspath(name)
+        makepath(path)
 
-    #     nchunk      = kwargs.get("nchunk", 1024)
+        with open(path, "wb") as f:
+            for chunk in response.iter_content(chunk_size = nchunk):
+                if chunk:
+                    f.write(chunk)
 
-    #     with open(path, "wb") as f:
-    #         for chunk in response.iter_content(chunk_size = nchunk):
-    #             if chunk:
-    #                 f.write(chunk)
-
-    #     if default_path:
-    #         return path
+        return path

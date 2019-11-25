@@ -25,13 +25,16 @@ class ModelVersion(Resource):
     @property
     def model(self):
         return getattr(self, "_model", None)
-    
+
     @model.setter
     def model(self, value):
         if self.model == value:
             pass
         else:
-            self._model = model
+            self._model = value
+
+    def save(self):
+        self.model.save()
 
     def draw(self):
         raise NotImplementedError

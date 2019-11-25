@@ -144,6 +144,7 @@ class Model(Resource, JupyterHTMLViewMixin):
                 (_ACCEPTED_MODEL_CLASSES, type(version))
             )
         else:
+            version.model = self
             self.versions.append(version)
 
     def add_versions(self, *versions):
@@ -154,6 +155,7 @@ class Model(Resource, JupyterHTMLViewMixin):
                 )
                 
         for version in versions:
+            version.model = self
             self.versions.append(version)
 
     def save(self):

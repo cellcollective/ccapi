@@ -93,3 +93,9 @@ def makedirs(dirs, exist_ok = False):
     except OSError as e:
         if not exist_ok or e.errno != errno.EEXIST:
             raise
+
+def makepath(path):
+    dirs = osp.dirname(path)
+    makedirs(dirs, exist_ok = True)
+
+    write(path)

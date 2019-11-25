@@ -19,6 +19,25 @@ MODEL_DOMAIN_TYPE               = dict({
 AUTHENTICATION_HEADER           = "X-AUTH-TOKEN"
 _AUTHENTICATION_ERROR_STRING    = "Unable to login into Cell Collective with credentials provided."
 
-MODEL_EXPORT_TYPE_MAP           = dict({
-    "sbml": "SBML"
+BOOLEAN_MODEL_EXPORT_TYPE       = dict({
+    "sbml": {
+        "name": "SBML",
+        "value_api": "SBML"
+    },
+    "tt": {
+        "name": "Truth Tables",
+        "value_api": "TT"
+    },
+    "expr": {
+        "name": "Boolean Expressions",
+        "value_api": "EXPR"
+    },
+    "matrix": {
+        "name": "Interaction Matrix",
+        "value_api": "MATRIX"
+    },
+    "gml": {
+        "name": "GML",
+        "value_api": "GML"
+    }
 })

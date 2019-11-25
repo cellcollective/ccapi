@@ -88,8 +88,9 @@ class Resource:
     def __eq__(self, other):
         equals = False
 
-        if self.id and other.id:
-            equals = self.id == other.id
+        if other and isinstance(other, Resource):
+            if self.id and other.id:
+                equals = self.id == other.id
 
         return equals
 
