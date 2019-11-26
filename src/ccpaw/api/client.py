@@ -24,10 +24,10 @@ from ccpaw.util.array          import (
     squash
 )
 from ccpaw.util._dict          import merge_dict
-from ccpaw.exception   import (
+from ccpaw.exception           import (
     AuthenticationError
 )
-from ccpaw.log             import get_logger
+from ccpaw.log                 import get_logger
 
 logger = get_logger()
 

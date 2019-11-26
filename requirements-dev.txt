@@ -5,7 +5,6 @@ safety
 pre-commit
 twine
 sphinx
-recommonmark
 nbsphinx
 pytest
 pytest-cov

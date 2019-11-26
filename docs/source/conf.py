@@ -7,7 +7,7 @@ def pardir(path, level = 1):
         path = osp.dirname(path)
     return path
 
-BASEDIR = osp.abspath(pardir(__file__, 2))
+BASEDIR = osp.abspath(pardir(__file__, 3))
 NOW     = dt.datetime.now()
 
 sys.path.insert(0, BASEDIR)
@@ -21,8 +21,7 @@ copyright = "%s %s" % (NOW.year, ccpaw.__author__)
 version   = ccpaw.__version__
 release   = ccpaw.__version__
 
-source_suffix       = [".rst", ".md"]
-source_parsers      = { ".md": "recommonmark.parser.CommonMarkParser" }
+source_suffix       = [".rst"]
 
 master_doc          = "index"
 
