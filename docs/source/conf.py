@@ -8,6 +8,7 @@ def pardir(path, level = 1):
     return path
 
 BASEDIR = osp.abspath(pardir(__file__, 3))
+DOCSDIR = osp.join(BASEDIR, "docs")
 NOW     = dt.datetime.now()
 
 sys.path.insert(0, BASEDIR)
@@ -26,7 +27,7 @@ source_suffix       = [".rst"]
 master_doc          = "index"
 
 exclude_patterns    = [
-    osp.join(BASEDIR,"source","notebooks",".ipynb_checkpoints")
+    osp.join(DOCSDIR,"source","notebooks",".ipynb_checkpoints")
 ]
 
 extensions          = [
@@ -34,9 +35,13 @@ extensions          = [
     "nbsphinx"
 ]
 
-templates_path      = [osp.join(BASEDIR, "source", "_templates")]
+templates_path      = [
+    osp.join(DOCSDIR,"source","_templates")
+]
 
-html_static_path    = [osp.join(BASEDIR, "source", "_static")]
+html_static_path    = [
+    osp.join(DOCSDIR,"source","_static")
+]
 
 html_sidebars       = {
     "index": ["sidebar.html"],
