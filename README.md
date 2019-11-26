@@ -54,6 +54,17 @@ biological networks.
 
 #### Features
 
+**ccpaw** attempts to be an all-in-one toolbox for modelling biological systems.
+
+* Reading public and private models from [Cell Collective](https://cellcollective.org).
+* A rich knowledge-base for each model species.
+* Importing models using an SBML file format.
+* Exporting models into SBML qual, Boolean Expressions, Truth Tables, Interaction Matrix and GML formats.
+* Querying for models.
+* Visualizing models graphically.
+
+**ccpaw** officially supports Python 2.7+ and 3.4+.
+
 #### Installation
 
 ```shell
