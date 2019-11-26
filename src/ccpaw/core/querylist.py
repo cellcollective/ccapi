@@ -6,6 +6,7 @@ from ccpaw._compat import (
 )
 
 # imports - standard imports
+import inspect
 import re
 from   itertools import islice
 
@@ -457,10 +458,47 @@ class QueryList(list, JupyterHTMLViewMixin):
         attributes.extend(self._dict.keys())
         return attributes
 
-    # def _repr_html_(self):
-    #     string = ""
+    def _repr_html_(self):
+        template = """
+            <table>
+                <thead>
+                    <tr>
+                        {header}
+                    </tr>
+                </thead>
+                <tbody>
+                    {body}
+                </tbody>
+            </table>
+        """
+        body     = ""
+        attrs    = [ ]
 
-    #     if len(self):
-    #         attrs = 
+        if len(self):
+            objekt  = self[0]
+            classes = reversed(inspect.getmro(objekt.__class__))
+            
+            for class_ in classes:
+                attr = getattr(class_, "_REPR_ATTRIBUTES", None)
+                if attr:
+                    attrs += [a for a in attr if a not in attrs]
 
-    #     return string
+        for item in self:
+            row = ""
+
+            for attr in attrs:
+                if "key" in attr:
+                    value = attr["key"](item)
+                else:
+                    value = getattr(item, attr["name"])
+
+                row     += "<td>%s</td>" % value
+
+            body += "<tr>%s</tr>" % row
+
+        template = template.format(
+            header = "".join(["<th>%s</th>" % attr["title"] for attr in attrs]),
+            body   = body
+        )
+
+        return template

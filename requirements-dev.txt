@@ -1,11 +1,9 @@
-pipenv
-ipython
-vulture
-safety
-pre-commit
-twine
+networkx
+pygraphviz
 sphinx
 nbsphinx
+pylint
+autopep8
 pytest
 pytest-cov
 pytest-xdist
@@ -16,5 +14,9 @@ coveralls
 requests
 matplotlib
 networkx
-pylint
-autopep8
+pipenv
+ipython
+vulture
+safety
+pre-commit
+twine
