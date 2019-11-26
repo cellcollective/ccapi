@@ -6,14 +6,20 @@ from ccpaw.model.util      import get_temporary_id
 
 class Resource:
     _REPR_ATTRIBUTES = [
-        "id",
-        "name"
+        dict({
+             "name": "id",
+            "title": "ID"
+        }),
+        dict({
+             "name": "name",
+            "title": "Name"
+        })
     ]
     
     """
     Defines a common behaviour of all objects within the CC API
     """
-    def __init__(self, id = None, name = "",  client = None):
+    def __init__(self, id = None, name = "", client = None):
         """
         A resource object with an identifier and/or name.
 

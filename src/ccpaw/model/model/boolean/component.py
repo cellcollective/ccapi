@@ -26,6 +26,19 @@ class Component(Species, JupyterHTMLViewMixin):
         self._model = None
 
 class InternalComponent(Component):
+    _REPR_ATTRIBUTES = [
+        dict({
+             "name": "number_of_positive_regulators",
+            "title": "Number of Positive Regulators",
+              "key": lambda x: len(x.positive_regulators)
+        }),
+        dict({
+             "name": "number_of_negative_regulators",
+            "title": "Number of Negative Regulators",
+              "key": lambda x: len(x.negative_regulators)
+        })
+    ]
+
     def __init__(self, *args, **kwargs):
         self.super = super(InternalComponent, self)
         self.super.__init__(*args, **kwargs)

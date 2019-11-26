@@ -57,7 +57,7 @@ biological networks.
 #### Installation
 
 ```shell
-$ pip install ccpaw
+$ pip install ccpaw[all]
 ```
 
 #### License

@@ -15,7 +15,7 @@ except ImportError:
     from pip.req           import parse_requirements # pip 9
 
 # globals
-PACKAGE     = "cc"
+PACKAGE     = "ccpaw"
 SRCDIR      = "src"
 
 def isdef(var):
@@ -78,7 +78,8 @@ setup(
     # },
     install_requires     = get_dependencies(type_ = "production"),
     extras_require       = dict(
-        dev = get_dependencies(type_ = "development")
+        dev = get_dependencies(type_ = "development"),
+        all = get_dependencies(type_ = "all")
     ),
     include_package_data = True,
     classifiers          = [
