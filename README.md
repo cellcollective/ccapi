@@ -1,6 +1,6 @@
 <div align="center">
     <h1>
-      ccpaw
+      ccapi
     </h1>
     <h4><i>Cell Collective Python API Wrapper</i></h4>
     <h4>
@@ -10,26 +10,26 @@
 </div>
 
 <p align="center">
-    <a href="https://travis-ci.org/achillesrasquinha/ccpaw">
-        <img src="https://img.shields.io/travis/achillesrasquinha/ccpaw.svg?style=flat-square">
+    <a href="https://travis-ci.org/achillesrasquinha/ccapi">
+        <img src="https://img.shields.io/travis/achillesrasquinha/ccapi.svg?style=flat-square">
     </a>
-    <a href="https://ci.appveyor.com/project/achillesrasquinha/ccpaw">
-        <img src="https://img.shields.io/appveyor/ci/achillesrasquinha/ccpaw.svg?style=flat-square&logo=appveyor">
+    <a href="https://ci.appveyor.com/project/achillesrasquinha/ccapi">
+        <img src="https://img.shields.io/appveyor/ci/achillesrasquinha/ccapi.svg?style=flat-square&logo=appveyor">
     </a>
-    <a href="https://coveralls.io/github/achillesrasquinha/ccpaw">
-        <img src="https://img.shields.io/coveralls/github/achillesrasquinha/ccpaw.svg?style=flat-square">
+    <a href="https://coveralls.io/github/achillesrasquinha/ccapi">
+        <img src="https://img.shields.io/coveralls/github/achillesrasquinha/ccapi.svg?style=flat-square">
     </a>
-    <a href="https://pypi.org/project/ccpaw/">
-		<img src="https://img.shields.io/pypi/v/ccpaw.svg?style=flat-square">
+    <a href="https://pypi.org/project/ccapi/">
+		<img src="https://img.shields.io/pypi/v/ccapi.svg?style=flat-square">
 	</a>
-    <a href="https://pypi.org/project/ccpaw/">
-		<img src="https://img.shields.io/pypi/l/ccpaw.svg?style=flat-square">
+    <a href="https://pypi.org/project/ccapi/">
+		<img src="https://img.shields.io/pypi/l/ccapi.svg?style=flat-square">
 	</a>
-    <a href="https://pypi.org/project/ccpaw/">
-		<img src="https://img.shields.io/pypi/pyversions/ccpaw.svg?style=flat-square">
+    <a href="https://pypi.org/project/ccapi/">
+		<img src="https://img.shields.io/pypi/pyversions/ccapi.svg?style=flat-square">
 	</a>
-    <a href="https://hub.docker.com/r/achillesrasquinha/ccpaw">
-		<img src="https://img.shields.io/docker/build/achillesrasquinha/ccpaw.svg?style=flat-square&logo=docker">
+    <a href="https://hub.docker.com/r/achillesrasquinha/ccapi">
+		<img src="https://img.shields.io/docker/build/achillesrasquinha/ccapi.svg?style=flat-square&logo=docker">
 	</a>
     <a href="https://git.io/boilpy">
       <img src="https://img.shields.io/badge/made%20with-boilpy-red.svg?style=flat-square">
@@ -42,7 +42,7 @@
 	</a>
 </p>
 
-**ccpaw** is a Python Package that provides a simple interface to 
+**ccapi** is a Python Package that provides a simple interface to 
 [Cell Collective](https://cellcollective.org) for modelling and analysis of 
 biological networks.
 
@@ -54,7 +54,7 @@ biological networks.
 
 #### Features
 
-**ccpaw** attempts to be an all-in-one toolbox for modelling biological systems.
+**ccapi** attempts to be an all-in-one toolbox for modelling biological systems.
 
 * Reading public and private models from [Cell Collective](https://cellcollective.org).
 * A rich knowledge-base for each model species.
@@ -63,16 +63,15 @@ biological networks.
 * Querying for models.
 * Visualizing models graphically.
 
-**ccpaw** officially supports Python 2.7+ and 3.4+.
+**ccapi** officially supports Python 2.7+ and 3.4+.
 
 #### Installation
 
 ```shell
-$ pip install ccpaw[all]
+$ pip install ccapi
 ```
 
 #### Documentation
-
 
 
 #### License

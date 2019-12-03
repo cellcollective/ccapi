@@ -14,14 +14,14 @@ NOW     = dt.datetime.now()
 
 sys.path.insert(0, SRCDIR)
 
-import ccpaw
+import ccapi
 
-project   = ccpaw.__name__
-author    = ccpaw.__author__
-copyright = "%s %s" % (NOW.year, ccpaw.__author__)
+project   = ccapi.__name__
+author    = ccapi.__author__
+copyright = "%s %s" % (NOW.year, ccapi.__author__)
 
-version   = ccpaw.__version__
-release   = ccpaw.__version__
+version   = ccapi.__version__
+release   = ccapi.__version__
 
 source_suffix       = [".rst"]
 

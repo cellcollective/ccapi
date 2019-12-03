@@ -3,12 +3,12 @@
 Getting Started
 ===============
 
-Eager to get started? This page gives a good introduction in how to get started with ccpaw.
+Eager to get started? This page gives a good introduction in how to get started with ccapi.
 
 First, make sure that:
 
-* ccpaw is installed
-* ccpaw is up-to-date
+* ccapi is installed
+* ccapi is up-to-date
 
 Let’s get started with some simple examples.
 
@@ -17,27 +17,27 @@ Let’s get started with some simple examples.
 Instantizing a Client object
 ----------------------------
 
-Creating a Client object with ccpaw is very simple.
+Creating a Client object with ccapi is very simple.
 
-Begin by importing the ccpaw module:
+Begin by importing the ccapi module:
 
-    >>> import ccpaw
+    >>> import ccapi
 
 Now, let’s try to create a client object.
 
-    >>> client = ccpaw.Client()
+    >>> client = ccapi.Client()
 
 Now, we have a Client object called client. We can get all the information we need from this object.
 
 Authenticating via Password Flow
 --------------------------------
 
-Before you can authenticate using ccpaw, you must first register an 
+Before you can authenticate using ccapi, you must first register an 
 application of the appropriate type on 
 `Cell Collective <https://cellcollective.org>`_ . If you do not require a 
 user context, it is read only.
 
-In order to use a password flow application with ccpaw you need the following 
+In order to use a password flow application with ccapi you need the following 
 pieces of information:
 
 ``email`` - The email address of the Cell Collective account used to 
@@ -77,17 +77,17 @@ You can also authenticate by passing an already available authorization token.
     >>> client.authenticated
     True
 
-Logging in ccpaw
----------------
+Logging in ccapi
+----------------
 
-Occasionally it is useful to observe the HTTP requests that ccpaw is issuing.
+Occasionally it is useful to observe the HTTP requests that ccapi is issuing.
 To do so you have to configure and enable logging.
 
-To log everything available, import the `logging` module:
+To log everything available, import the ``logging`` module:
 
-    >>> import ccpaw, logging
+    >>> import ccapi, logging
 
-Create a logger instance of a logger of name `cc` and set its level to `DEBUG`.
+Create a logger instance of a logger of name ``cc`` and set its level to ``DEBUG``.
 
     >>> logger = logging.getLogger("cc")
     >>> logger.setLevel(logging.DEBUG)
@@ -95,7 +95,7 @@ Create a logger instance of a logger of name `cc` and set its level to `DEBUG`.
 When properly configured, HTTP requests that are issued should produce output 
 similar to one below.
 
-    >>> client = ccpaw.Client()
+    >>> client = ccapi.Client()
     2019-11-23 14:23:37,547 | INFO | Dispatching a GET request to URL: https://cellcollective.org/api/ping with Arguments - {}
     >>> client
     <Client url='https://cellcollective.org'>

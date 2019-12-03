@@ -1,3 +1,4 @@
+matplotlib
 networkx
 pygraphviz
 pipenv
@@ -17,7 +18,5 @@ pytest-travis-fold
 tox-travis
 coveralls
 requests
-matplotlib
-networkx
 pylint
 autopep8

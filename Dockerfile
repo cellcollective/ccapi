@@ -2,18 +2,18 @@ FROM  python:alpine
 
 LABEL maintainer=achillesrasquinha@gmail.com
 
-ENV ccPATH=/usr/local/src/cc
+ENV CCAPI_PATH=/usr/local/src/ccapi
 
-RUN apk add --no-cache bash git
+RUN apk add --no-cache \
+    bash \
+    git
 
-RUN mkdir -p $ccPATH
+RUN mkdir -p $CCAPI_PATH
 
-COPY . $ccPATH
+COPY . $CCAPI_PATH
 
-RUN pip install $ccPATH
+RUN pip install $CCAPI_PATH
 
-WORKDIR $ccPATH
+WORKDIR $CCAPI_PATH
 
 ENTRYPOINT ["/usr/local/src/cc/docker/entrypoint.sh"]
-
-CMD ["cc"]

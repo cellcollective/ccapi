@@ -5,9 +5,9 @@ BASEDIR					= $(shell pwd)
 
 ENVIRONMENT			   ?= development
 
-PROJECT					= ccpaw
+PROJECT					= ccapi
 
-PROJDIR					= ${BASEDIR}/src/ccpaw
+PROJDIR					= ${BASEDIR}/src/ccapi
 TESTDIR					= ${BASEDIR}/tests
 DOCSDIR					= ${BASEDIR}/docs
 
@@ -66,7 +66,13 @@ endif
 info: ## Display Information
 	@echo "Python Environment: ${PYTHON_ENVIRONMENT}"
 
-install: clean info ## Install dependencies and module.
+build-requirements:
+	$(call log,INFO,Building Requirements)
+	@find $(BASEDIR)/requirements -maxdepth 1 -type f | xargs awk '{print}' > $(BASEDIR)/requirements-dev.txt
+	@cat $(BASEDIR)/requirements/production.txt  > $(BASEDIR)/requirements.txt
+	@cat $(BASEDIR)/requirements/all.txt		 > $(BASEDIR)/requirements-all.txt
+
+install: clean info build-requirements ## Install dependencies and module.
 ifneq (${VERBOSE},true)
 	$(eval OUT = > /dev/null)
 endif
@@ -74,11 +80,6 @@ endif
 ifneq (${PIPCACHEDIR},)
 	$(eval PIPCACHEDIR := --cache-dir $(PIPCACHEDIR))
 endif
-
-	$(call log,INFO,Building Requirements)
-	@find $(BASEDIR)/requirements -maxdepth 1 -type f | xargs awk '{print}' > $(BASEDIR)/requirements-dev.txt
-	@cat $(BASEDIR)/requirements/production.txt  > $(BASEDIR)/requirements.txt
-	@cat $(BASEDIR)/requirements/all.txt		 > $(BASEDIR)/requirements-all.txt
 
 	$(call log,INFO,Installing Requirements)
 	$(PIP) install -r $(BASEDIR)/requirements-dev.txt $(OUT)
@@ -158,7 +159,7 @@ ifeq (${launch},true)
 	$(call browse,file:///${DOCSDIR}/build/index.html)
 endif
 
-docker-build: clean pre-commit ## Build the Docker Image.
+docker-build: clean pre-commit build-requirements ## Build the Docker Image.
 	$(call log,INFO,Building Docker Image)
 
 	@docker build $(BASEDIR) --tag $(DOCKER_HUB_USERNAME)/$(PROJECT) $(DOCKER_BUILD_ARGS)

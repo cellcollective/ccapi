@@ -1,16 +1,16 @@
-ccpaw
+ccapi
 =====
 
 A Python Library to interact with the `Cell Collective <https://cellcollective.org>`_ API v2
 
-**ccpaw** is a Python Package that provides a simple interface to 
+**ccapi** is a Python Package that provides a simple interface to 
 `Cell Collective <https://cellcollective.org>`_ for modelling and analysis of 
 biological networks.
 
 -------------------
 
-    >>> import ccpaw
-    >>> client  = ccpaw.Client()
+    >>> import ccapi
+    >>> client  = ccapi.Client()
     >>> model   = client.read("fibroblasts.sbml") # a boolean-based model
     >>> boolean = model.version[0]
     >>> boolean.components
@@ -18,7 +18,7 @@ biological networks.
      <ExternalComponent -3 at 0x0111ab9a90 name='alpha_1213L'>,
      <ExternalComponent -4 at 0x0111ab9ad0 name='alpha_iL'>]
 
-**ccpaw** includes simple, object-oriented interfaces for creating and 
+**ccapi** includes simple, object-oriented interfaces for creating and 
 reading models (to/from an `SBML qual <http://www.colomoto.org/formats/sbml-qual.html>`_ file format), graphically viewing such models, 
 editing, saving and exporting models (into SBML qual, Boolean Expressions, 
 Truth Tables, Interaction Matrix and GML formats).
@@ -35,7 +35,7 @@ Truth Tables, Interaction Matrix and GML formats).
 Beloved Features
 ----------------
 
-**ccpaw** attempts to be an all-in-one toolbox for modelling biological systems.
+**ccapi** attempts to be an all-in-one toolbox for modelling biological systems.
 
 - Reading public and private models from `Cell Collective <https://cellcollective.org>`_.
 - A rich knowledge-base for each model species.
@@ -44,14 +44,14 @@ Beloved Features
 - Querying for models.
 - Visualizing models graphically.
 
-**ccpaw** officially supports Python 2.7+ and 3.4+.
+**ccapi** officially supports Python 2.7+ and 3.4+.
 
 The User Guide
 --------------
 
 This part of the documentation, which is mostly prose, begins with some 
-background information about **ccpaw**, then focuses on step-by-step 
-instructions for getting the most out of **ccpaw**.
+background information about **ccapi**, then focuses on step-by-step 
+instructions for getting the most out of **ccapi**.
 
 .. toctree::
    :maxdepth: 2
@@ -59,9 +59,18 @@ instructions for getting the most out of **ccpaw**.
    user/installation
    user/quickstart
 
-   notebooks/building-boolean-models
-   notebooks/reading-writing-boolean-models
-   notebooks/loading-models
+   notebooks/examples/building-boolean-models
+   notebooks/examples/reading-writing-boolean-models
+   notebooks/examples/loading-models
+
+Integrations
+------------
+
+.. toctree::
+
+   notebooks/integrations/biomodels
+   notebooks/integrations/ginsim
+   notebooks/integrations/pyboolnet
 
 The API Guide
 -------------
