@@ -150,6 +150,10 @@ ifneq (${VERBOSE},true)
 	$(eval OUT = > /dev/null)
 endif
 
+	$(call log,INFO,Building Notebooks)
+	@find $(DOCSDIR)/source/notebooks -type f -name '*.ipynb' -not -path "*/.ipynb_checkpoints/*" | \
+		xargs jupyter nbconvert --to notebook --inplace --execute
+
 	$(call log,INFO,Building Documentation)
 	$(SPHINXBUILD) $(DOCSDIR)/source $(DOCSDIR)/build $(OUT)
 

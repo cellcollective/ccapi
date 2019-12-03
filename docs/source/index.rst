@@ -1,6 +1,8 @@
 ccapi
 =====
 
+Release v\ |version|. (:ref:`Installation <installation>`)
+
 A Python Library to interact with the `Cell Collective <https://cellcollective.org>`_ API v2
 
 **ccapi** is a Python Package that provides a simple interface to 
@@ -69,8 +71,6 @@ Integrations
 .. toctree::
 
    notebooks/integrations/biomodels
-   notebooks/integrations/ginsim
-   notebooks/integrations/pyboolnet
 
 The API Guide
 -------------

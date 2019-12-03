@@ -218,14 +218,10 @@ def _model_response_to_model(client, response):
 
     model.created     = cc_datetime_to_datetime(data.get("creationDate")) or now()
 
-    # model.updated     = dict(
-    #     biologic  = cc_datetime_to_python_datetime(
-    #         data.get("biologicUpdateDate")
-    #     ),
-    #     knowledge = cc_datetime_to_python_datetime(
-    #         data.get("knowledgeBaseUpdateDate")
-    #     )
-    # )
+    model.updated     = dict(
+        biologic  = cc_datetime_to_datetime(data.get("biologicUpdateDate")),
+        knowledge = cc_datetime_to_datetime(data.get("knowledgeBaseUpdateDate"))
+    )
 
     model.public      = data["published"]
 

@@ -1,5 +1,5 @@
 # imports - module imports
-from ccapi.services import Service
+from ccapi.services.base import Service
 
 class BioModels(Service):
     BASE_URL = "https://www.ebi.ac.uk/biomodels"

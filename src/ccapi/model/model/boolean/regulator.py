@@ -3,6 +3,14 @@ from ccapi.core.querylist import QueryList
 from ccapi.model.resource import Resource
 
 class Regulator(Resource):
+    _REPR_ATTRIBUTES = [
+        dict({
+             "name": "number_of_conditions",
+            "title": "Number of Conditions",
+              "key": lambda x: len(x.conditions)
+        })
+    ]
+
     def __init__(self, component, type, conditions = [ ], *args, **kwargs):
         Resource.__init__(self, *args, **kwargs)
 

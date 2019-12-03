@@ -40,6 +40,36 @@ _API_CONDITION_RELATION         = dict({
 })
 
 class Model(Resource, JupyterHTMLViewMixin):
+    _REPR_ATTRIBUTES = [
+        dict({
+             "name": "description",
+            "title": "Description"
+        }),
+        dict({
+             "name": "tags",
+            "title": "Tags",
+              "key": lambda x: ", ".join(x.tags) if x.tags else ""
+        }),
+        dict({
+             "name": "author",
+            "title": "Author"
+        }),
+        dict({
+             "name": "created",
+            "title": "Created"
+        }),
+        dict({
+             "name": "updated_biologic",
+            "title": "Updated (Biologic)",
+              "key": lambda x: x.updated["biologic"]
+        }),
+        dict({
+             "name": "updated_knowledge_base",
+            "title": "Updated (Knowledge Base)",
+              "key": lambda x: x.updated["knowledge"]
+        })
+    ]
+
     """
     The Base Model class.
 

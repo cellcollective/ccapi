@@ -278,7 +278,6 @@ class Client:
 
         :param resource: Resource name.
         """
-
         _resource = resource.lower()
         resources = [ ]
 

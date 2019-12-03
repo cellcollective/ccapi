@@ -11,6 +11,7 @@ import re
 from   itertools import islice
 
 # imports - module imports
+from ccapi.util.string import ellipsis
 from ccapi.core.mixins import JupyterHTMLViewMixin
 
 class QueryList(list, JupyterHTMLViewMixin):
@@ -492,7 +493,7 @@ class QueryList(list, JupyterHTMLViewMixin):
                 else:
                     value = getattr(item, attr["name"])
 
-                row     += "<td>%s</td>" % value
+                row += "<td>%s</td>" % ellipsis(str(value), threshold = 50)
 
             body += "<tr>%s</tr>" % row
 
