@@ -40,6 +40,8 @@ templates_path      = [
     osp.join(DOCSDIR,"source","_templates")
 ]
 
+html_theme          = "alabaster"
+
 html_static_path    = [
     osp.join(DOCSDIR,"source","_static")
 ]
