@@ -64,6 +64,7 @@ instructions for getting the most out of **ccapi**.
    notebooks/examples/building-boolean-models
    notebooks/examples/reading-writing-boolean-models
    notebooks/examples/loading-models
+   notebooks/examples/inspecting-model
 
 Integrations
 ------------

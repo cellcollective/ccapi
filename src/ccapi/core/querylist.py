@@ -11,8 +11,9 @@ import re
 from   itertools import islice
 
 # imports - module imports
-from ccapi.util.string import ellipsis
-from ccapi.core.mixins import JupyterHTMLViewMixin
+from ccapi.config       import DEFAULT
+from ccapi.util.string  import ellipsis
+from ccapi.core.mixins  import JupyterHTMLViewMixin
 
 class QueryList(list, JupyterHTMLViewMixin):
     """A combined dict and list
@@ -484,18 +485,35 @@ class QueryList(list, JupyterHTMLViewMixin):
                 if attr:
                     attrs += [a for a in attr if a not in attrs]
 
-        for item in self:
+        max_rows    = DEFAULT["DISPLAY_MAX_ROWS"]
+        items       = self
+        truncate    = len(items) > max_rows
+        
+        if truncate:
+            nrows = int(max_rows / 2)
+            items = items[:nrows] + items[-nrows:]
+
+        for i, item in enumerate(items):
             row = ""
 
             for attr in attrs:
-                if "key" in attr:
-                    value = attr["key"](item)
+                if truncate and i == nrows:
+                    row += "<td>...</td>"
                 else:
-                    value = getattr(item, attr["name"])
+                    if "key" in attr:
+                        value = attr["key"](item)
+                    else:
+                        value = getattr(item, attr["name"])
 
-                row += "<td>%s</td>" % ellipsis(str(value), threshold = 50)
+                    if value in (None,):
+                        value = ""
+                
+                    row += "<td>%s</td>" % ellipsis(str(value), threshold = 50)
 
-            body += "<tr>%s</tr>" % row
+            if truncate and i == nrows:
+                body += "<tr>%s</tr>" % row
+            else:
+                body += "<tr>%s</tr>" % row
 
         template = template.format(
             header = "".join(["<th>%s</th>" % attr["title"] for attr in attrs]),

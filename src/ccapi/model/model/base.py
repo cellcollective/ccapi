@@ -15,6 +15,9 @@ from ccapi.util.string         import ellipsis, upper
 from ccapi.util.array          import flatten
 from ccapi.model.util          import get_temporary_id
 from ccapi._compat             import itervalues, iteritems
+from ccapi.log                 import get_logger
+
+logger = get_logger()
 
 _ACCEPTED_MODEL_TYPES           = tuple([t["value"] \
     for t in itervalues(MODEL_TYPE)])
@@ -302,6 +305,8 @@ class Model(Resource, JupyterHTMLViewMixin):
         return self
 
     def delete(self):
+        logger.info("Deleting Model %s" % self)
+
         data = dict(("%s/%s" % (self.id, model.version), None)
             for model in self.versions
         )

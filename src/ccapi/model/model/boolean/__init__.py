@@ -83,25 +83,11 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
 
     @property
     def internal_components(self):
-        # TODO: Use QueryList for query fetch.
-        internal_components = [ ]
-
-        for component in self.components:
-            if isinstance(component, InternalComponent):
-                internal_components.append(component)
-
-        return internal_components
+        return self.components.query(lambda c: isinstance(c, InternalComponent))
 
     @property
     def external_components(self):
-        # TODO: Use QueryList for query fetch.
-        external_components = [ ]
-
-        for component in self.components:
-            if isinstance(component, ExternalComponent):
-                external_components.append(component)
-
-        return external_components
+        return self.components.query(lambda c: isinstance(c, ExternalComponent))
 
     def add_component(self, component):
         if not isinstance(component, _ACCEPTED_COMPONENT_CLASSES):

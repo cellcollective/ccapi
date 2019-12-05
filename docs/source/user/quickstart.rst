@@ -89,7 +89,7 @@ To log everything available, import the ``logging`` module:
 
 Create a logger instance of a logger of name ``cc`` and set its level to ``DEBUG``.
 
-    >>> logger = logging.getLogger("cc")
+    >>> logger = logging.getLogger(ccapi.__name__)
     >>> logger.setLevel(logging.DEBUG)
 
 When properly configured, HTTP requests that are issued should produce output 

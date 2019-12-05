@@ -22,7 +22,7 @@ from ccapi.util.string     import (
 #     sanitize_text,
     lower
 )
-from ccapi._compat         import iteritems
+from ccapi._compat         import iteritems, iterkeys
 
 def cc_datetime_to_datetime(datetime_, default = None, raise_err = False):
     datetime_object = default
@@ -56,15 +56,13 @@ def _user_response_to_user(client, response):
 
 def _model_version_response_to_boolean_model(client, response):
     for key, data in iteritems(response):
-        
         if "/" in key:
             model_id, model_version_id = list(map(int, key.split("/")))
         else:
             model_id         = None
             model_version_id = int(key)
 
-        model = BooleanModel(id = model_id, version = model_version_id,
-            client = client)
+        model = BooleanModel(version = model_version_id, client = client)
 
     #     if "score" in data:
     #         model.score = data["score"]["score"]
@@ -168,32 +166,32 @@ def _model_version_response_to_boolean_model(client, response):
     #             "condition":    condition
     #         })
 
-        regulator_map           = dict()
-        component_regulator_map = dict()
-        for regulator_id, regulator_data in data["regulatorMap"].items():
-            regulator     = Regulator(id = int(regulator_id),
-                component = component_map[regulator_data["regulatorSpeciesId"]],
-                type      = lower(regulator_data["regulationType"]),
-    #             conditions      = [data["condition"]
-    #                 for _, data in condition_map.items()
-    #                     if data["regulator_id"] == int(regulator_id)
-    #             ]
-            )
+    #     regulator_map           = dict()
+    #     component_regulator_map = dict()
+    #     for regulator_id, regulator_data in data["regulatorMap"].items():
+    #         regulator     = Regulator(id = int(regulator_id),
+    #             component = component_map[regulator_data["regulatorSpeciesId"]],
+    #             type      = lower(regulator_data["regulationType"]),
+    # #             conditions      = [data["condition"]
+    # #                 for _, data in condition_map.items()
+    # #                     if data["regulator_id"] == int(regulator_id)
+    # #             ]
+    #         )
 
-            component_regulator_map[regulator.id] = dict({
-                "component": component_map[regulator_data["speciesId"]],
-                "regulator": regulator
-            })
+    #         component_regulator_map[regulator.id] = dict({
+    #             "component": component_map[regulator_data["speciesId"]],
+    #             "regulator": regulator
+    #         })
 
-            regulator_map[regulator.id] = regulator
+    #         regulator_map[regulator.id] = regulator
 
-        for i, component in enumerate(model.components):
-            if isinstance(component, InternalComponent):
-                for regulator_id, component_regulator_data in iteritems(component_regulator_map):
-                    if component == component_regulator_data["component"]:
-                        model.components[i].regulators.append(
-                            component_regulator_data["regulator"]
-                        )
+    #     for i, component in enumerate(model.components):
+    #         if isinstance(component, InternalComponent):
+    #             for regulator_id, component_regulator_data in iteritems(component_regulator_map):
+    #                 if component == component_regulator_data["component"]:
+    #                     model.components[i].regulators.append(
+    #                         component_regulator_data["regulator"]
+    #                     )
 
     #     model.permissions   = data.get("permissions")
 
@@ -209,6 +207,9 @@ def _model_response_to_model(client, response):
 
     model             = Model(id = int(data["id"]), name = data["name"],
         domain = data["type"], client = client)
+
+    # HACK: remove default version provided.
+    model.versions.pop()
 
     model.description = data["description"]
     model.author      = data["author"]
@@ -227,19 +228,16 @@ def _model_response_to_model(client, response):
 
     model.user        = client.get("user", id = data["userId"])
 
-#     model.hash        = data.get("hash")
+    model.hash        = data.get("hash")
 
 #     model.permissions = response["modelPermissions"]
     
-#     # for version in iterkeys(data["modelVersionMap"]):
-#     #     model_version = client.get("model", id = model.id, version = version,
-#     #         hash = model.hash)
+    for version in iterkeys(data["modelVersionMap"]):
+        content = client.get("model", id = model.id, version = version,
+            hash = model.hash, raw = True)
+        version = _model_version_response_to_boolean_model(client, content)
 
-#     #     model_version.id      = model.id
-#     #     model_version.version = version
-#     #     model_version.name    = model.name
-
-#     #     model.versions.append(model_version)
+        model.add_version(version)
 
 #     # if response["uploadMap"]:
 #     #     for _, upload_data in response["uploadMap"].items():

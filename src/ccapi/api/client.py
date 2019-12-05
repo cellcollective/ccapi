@@ -1,9 +1,13 @@
 # imports - standard imports
+import sys
+import os.path as osp
 import random
 import collections
 
 # imports - third-party imports
 import requests
+from   requests_cache.core     import CachedSession
+import grequests
 
 # imports - module imports
 from ccapi.api.helper          import (
@@ -12,8 +16,9 @@ from ccapi.api.helper          import (
     _model_version_response_to_boolean_model,
 )
 from ccapi.model.model.base    import Model
+from ccapi.model.user          import User
 from ccapi.core.querylist      import QueryList
-from ccapi.config              import DEFAULT
+from ccapi.config              import PATH, DEFAULT
 from ccapi.constant            import (
     AUTHENTICATION_HEADER,
     _AUTHENTICATION_ERROR_STRING
@@ -51,13 +56,21 @@ class Client:
         <Client url='https://cellcollective.org'>
     """
     def __init__(self,
-        base_url = DEFAULT["URL"],
-        proxies  = [ ],
-        test     = True
+        base_url        = DEFAULT["URL"],
+        proxies         = [ ],
+        test            = True,
+        cache_timeout   = None
     ):
         self.base_url    = base_url
         self._auth_token = None
-        self._session    = requests.Session()
+        
+        if cache_timeout:
+            self._session = CachedSession(
+                cache_name   = osp.join(PATH["CACHE"], "requests"),
+                expire_after = cache_timeout
+            )
+        else:
+            self._session = requests.Session()
 
         if proxies and \
             not isinstance(proxies, (collections.Mapping, list, tuple)):
@@ -266,6 +279,7 @@ class Client:
             >>> client.me()
             <User id=10887 name='Test Test'>
         """
+        
         response = self.request("GET", "_api/user/getProfile", *args, **kwargs)
         content  = response.json()
         user     = _user_response_to_user(self, content)
@@ -283,11 +297,11 @@ class Client:
 
         id_       = kwargs.get("id")
         query     = kwargs.get("query")
+        raw       = kwargs.get("raw", False)
 
-        size      = min(
-            kwargs.get("size", DEFAULT["MAX_API_RESOURCE_FETCH"]),
-            DEFAULT["MAX_API_RESOURCE_FETCH"]
-        )
+        filters   = kwargs.get("filters", { })
+
+        size      = kwargs.get("size",  DEFAULT["MAX_API_RESOURCE_FETCH"])
         since     = kwargs.get("since", 1)
         since     = since if since > 0 else 1
 
@@ -308,7 +322,8 @@ class Client:
 
                 if version:
                     params = dict({
-                        "version": str(version) + ("&%s" % hash_ if hash_ else "")
+                        "version": str(version) + \
+                            ("&%s" % hash_ if hash_ else "")
                     })
 
             if query:
@@ -321,20 +336,41 @@ class Client:
 
             response = self.request("GET", url, params = params)
             content  = response.json()
-            
+
             if id_:
-                resources = QueryList([
-                    _model_version_response_to_boolean_model(
-                        self,
-                        content
-                    )
-                ])
+                id_       = squash(id_)
+
+                models    = self.get("model", size = sys.maxsize, raw = True)
+                
+                model     = squash([model for model in models \
+                    if model["model"]["id"] == id_])
+
+                if not model:
+                    raise ValueError("Model with ID %s not found." % id_)
+                else:
+                    resources = content if raw else \
+                        _model_response_to_model(self, model)
             else:
-                content   = content[since - 1 : since - 1 + size]
-                resources = QueryList([
-                    _model_response_to_model(self, obj)
-                        for obj in content
-                ])
+                if filters:
+                    if "user" in filters:
+                        user = filters["user"]
+
+                        if isinstance(user, int):
+                            user = self.get("user", id = user)
+
+                        if not isinstance(user, User):
+                            raise TypeError("Expected type for user is User or ID, type %s found." % type(user))
+
+                        content = list(filter(lambda x: x["model"]["userId"] == user.id, content))
+
+                from_, to = since - 1, min(len(content), size)
+                content   = content[from_ : from_ + to]
+
+                resources = content if raw else \
+                    QueryList([
+                        _model_response_to_model(self, obj)
+                            for obj in content
+                    ])
         elif _resource == "user":
             if not id_:
                 raise ValueError("id required.")
