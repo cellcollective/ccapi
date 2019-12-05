@@ -7,7 +7,6 @@ import collections
 # imports - third-party imports
 import requests
 from   requests_cache.core     import CachedSession
-import grequests
 
 # imports - module imports
 from ccapi.api.helper          import (

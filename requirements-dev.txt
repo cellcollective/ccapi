@@ -19,7 +19,6 @@ tox-travis
 coveralls
 requests
 gevent
-grequests
 requests-cache
 pylint
 autopep8
