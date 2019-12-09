@@ -15,7 +15,7 @@ class Document(Resource):
     def download(self, location = ".", name = None, **kwargs):
         nchunk   = kwargs.get("nchunk", 1024)
 
-        url      = self._client._build_url("_api", "model", "download")
+        url      = self._client._build_url("_api","model","download")
         response = self._client._request("GET", url, params = { "token": self._token })
 
         if not name:

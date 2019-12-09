@@ -1,3 +1,23 @@
+# imports - standard imports
+import os.path as osp
+
+# imports - module imports
+from ccapi.__attr__    import __name__
+from ccapi.util.system import pardir, makedirs
+from ccapi.util._dict  import autodict
+
+PATH              = autodict()
+PATH["BASE"]      = pardir(__file__)
+PATH["DATA"]      = osp.join(PATH["BASE"], "data")
+PATH["TEMPLATES"] = osp.join(PATH["DATA"], "templates")
+PATH["CACHE"]     = osp.join(osp.expanduser("~"), ".%s" % __name__)
+PATH["MODELS"]    = dict({
+    "fibroblasts": osp.join(PATH["DATA"], "models", "boolean", "sbml", "fibroblasts.sbml"),
+     "lac-operon": osp.join(PATH["DATA"], "models", "boolean", "sbml", "lac-operon.sbml") 
+})
+
+makedirs(PATH["CACHE"], exist_ok = True)
+
 MODEL_TYPE                      = dict({
     "BOOLEAN": {
         "value": "boolean"
