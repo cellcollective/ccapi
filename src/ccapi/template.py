@@ -4,12 +4,12 @@ import cgi
 
 # imports - module imports
 from ccapi.util.system import read
-from ccapi.config      import PATH
 from ccapi.util.array  import sequencify
 from ccapi.log         import get_logger
 from ccapi.exception   import TemplateNotFoundError
 from ccapi.util.string import _REGEX_HTML
 from ccapi._compat     import iteritems
+from ccapi.constant    import PATH
 
 logger = get_logger()
 

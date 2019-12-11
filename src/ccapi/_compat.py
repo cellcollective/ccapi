@@ -57,7 +57,7 @@ else:
 
 if PY2:
     # moves
-    from urllib2 import urlopen, Request
+    from urllib2 import urljoin, urlopen, Request
     
     try:
         from requests.exceptions import HTTPError
@@ -77,7 +77,7 @@ if PY2:
 else:
     # moves
     from urllib.request import urlopen, Request
-    from urllib.parse   import urlencode
+    from urllib.parse   import urlencode, urljoin
 
     try:
         from requests.exceptions import HTTPError

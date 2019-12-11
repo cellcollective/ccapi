@@ -200,8 +200,8 @@ class Model(Resource, JupyterHTMLViewMixin):
         for version in self.versions:
             key       = "%s/%s" % (self.id, version.version)
             data[key] = dict({
-                "name": self.name,
-                "type": self.domain,
+                  "name": self.name,
+                  "type": self.domain,
                 "userId": me.id,
                 "modelVersionMap": dict({
                     version.version: dict({
@@ -232,14 +232,14 @@ class Model(Resource, JupyterHTMLViewMixin):
                             regulator_map[regulator.id] = dict({
                                     "regulationType": upper(regulator.type),
                                 "regulatorSpeciesId": regulator.component.id,
-                                        "speciesId": component.id,
+                                         "speciesId": component.id,
                             })
 
                             for condition in regulator.conditions:
                                 condition_map[condition.id] = dict({
                                         "regulatorId": regulator.id,
-                                            "state": _API_CONDITION_STATE[condition.state],
-                                            "type": _API_CONDITION_TYPE[condition.type],
+                                              "state": _API_CONDITION_STATE[condition.state],
+                                               "type": _API_CONDITION_TYPE[condition.type],
                                     "speciesRelation": _API_CONDITION_RELATION[condition.relation]
                                 })
 
@@ -247,7 +247,7 @@ class Model(Resource, JupyterHTMLViewMixin):
                                     id_ = get_temporary_id()
                                     condition_species_map[id_] = dict({
                                         "conditionId": condition.id,
-                                        "speciesId": component.id
+                                          "speciesId": component.id
                                     })
 
                 data[key]["speciesMap"]             = species_map

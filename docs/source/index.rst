@@ -12,8 +12,7 @@ biological networks.
 -------------------
 
     >>> import ccapi
-    >>> client  = ccapi.Client()
-    >>> model   = client.read("fibroblasts.sbml") # a boolean-based model
+    >>> model   = ccapi.load_model("fibroblasts") # a boolean-based model
     >>> boolean = model.version[0]
     >>> boolean.components
     [<ExternalComponent -2 at 0x0111ab9a50 name='ExtPump'>,
@@ -22,7 +21,7 @@ biological networks.
 
 **ccapi** includes simple, object-oriented interfaces for creating and 
 reading models (to/from an `SBML qual <http://www.colomoto.org/formats/sbml-qual.html>`_ file format), graphically viewing such models, 
-editing, saving and exporting models (into SBML qual, Boolean Expressions, 
+querying, editing, saving and exporting models (into SBML qual, Boolean Expressions, 
 Truth Tables, Interaction Matrix and GML formats).
 
     >>> boolean.summary()
@@ -72,6 +71,7 @@ Integrations
 .. toctree::
 
    notebooks/integrations/biomodels
+   notebooks/integrations/ginsim
 
 The API Guide
 -------------

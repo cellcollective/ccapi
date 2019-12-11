@@ -16,6 +16,15 @@ For instructions on installing python and pip see "The Hitchhiker's Guide to
 Python" `Installation Guides
 <http://docs.python-guide.org/en/latest/starting/installation/>`_.
 
+Installation of optional dependencies
+-------------------------------------
+
+You can install all packages directly by:
+
+.. code-block:: console
+
+   $ pip install ccapi[all]
+
 Building from source
 --------------------
 

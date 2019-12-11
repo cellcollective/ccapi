@@ -17,12 +17,17 @@ from ccapi.api.helper          import (
 from ccapi.model.model.base    import Model
 from ccapi.model.user          import User
 from ccapi.core.querylist      import QueryList
-from ccapi.config              import PATH, DEFAULT
+from ccapi.config              import DEFAULT
 from ccapi.constant            import (
+    PATH,
     AUTHENTICATION_HEADER,
     _AUTHENTICATION_ERROR_STRING
 )
-from ccapi._compat             import string_types
+from ccapi._compat             import (
+    string_types,
+    iteritems,
+    iterkeys
+)
 from ccapi.util.array          import (
     sequencify,
     squash
@@ -379,7 +384,7 @@ class Client:
             )
             content     = response.json()
 
-            for user_id, user_data in content.items():
+            for user_id, user_data in iteritems(content):
                 user = _user_response_to_user(self, 
                     merge_dict({ "id": user_id }, user_data)
                 )

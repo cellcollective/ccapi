@@ -12,6 +12,7 @@ from ccapi.template            import render_template
 from ccapi.constant            import BOOLEAN_MODEL_EXPORT_TYPE
 from ccapi.config              import DEFAULT
 from ccapi.util.system         import makepath
+from ccapi.util.imports        import import_handler
 
 # imports - boolean-model imports
 from ccapi.model.resource                import Resource
@@ -123,18 +124,15 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
 
     def draw(self, type_ = "networkx", **kwargs):
         if type_ == "networkx":
-            try:
-                import networkx as nx
-            except ImportError:
-                raise ImportError("Unable to draw using networkx. Please install networkx \
-                    https://networkx.github.io/documentation/stable/install.html")
-                    
-            try:
-                from   networkx.drawing.nx_agraph import graphviz_layout
-            except ImportError:
-                raise ImportError("Unable to use graphviz_layout. Please install pygraphviz \
-                    https://pygraphviz.github.io/")
-            
+            error_string    = "Unable to draw using networkx. Please install networkx \
+                https://networkx.github.io/documentation/stable/install.html"
+            nx              = import_handler("networkx",
+                err_str = error_string
+            )
+            graphviz_layout = import_handler("networkx.drawing.nx_agraph.graphviz_layout",
+                err_str = error_string
+            )
+
             graph  = nx.DiGraph()
             graph.add_nodes_from([c.name for c in self.components])
 
@@ -180,8 +178,13 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
 
             labels = dict((c.name, c.name) for c in self.components)
             nx.draw_networkx_labels(graph, layout, labels)
+        elif type_ == "ccnetviz":
+            HTML     = import_handler("IPython.core.display.HTML")
         elif type_ == "cytoscape":
-            pass
+            HTML     = import_handler("IPython.core.display.HTML")
+            template = render_template("draw/cytoscape.html")
+            
+            HTML(template)
         else:
             raise TypeError("No drawing type %s found." % type_)
 

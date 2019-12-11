@@ -14,6 +14,16 @@ class HandlerRegistry(dict):
 
 _HANDLER_REGISTRY = HandlerRegistry()
 
-def import_handler(name):
-    handler = _HANDLER_REGISTRY[name]
+def import_handler(name, default = None, raise_err = True, err_str = None):
+    handler = default
+
+    try:
+        handler = _HANDLER_REGISTRY[name]
+    except ImportError:
+        if raise_err:
+            if err_str:
+                raise ImportError(err_str)
+            else:
+                raise
+
     return handler

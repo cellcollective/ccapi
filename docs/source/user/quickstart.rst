@@ -40,9 +40,9 @@ user context, it is read only.
 In order to use a password flow application with ccapi you need the following 
 pieces of information:
 
-``email`` - The email address of the Cell Collective account used to 
+``email`` - The email address of the `Cell Collective <https://cellcollective.org>`_ account used to 
 register the application.
-``password`` - The password for the Cell Collective account used to register 
+``password`` - The password for the `Cell Collective <https://cellcollective.org>`_ account used to register 
 the application.
 
 With this information, authorizing is as simple as:
@@ -54,7 +54,7 @@ To verify that you are authenticated as the correct user, run:
     >>> client.me()
     <User 10887 at 0x01118bf850 name='Test Test'>
 
-The output should contain the same name as your Cell Collective account.
+The output should contain the same name as your `Cell Collective <https://cellcollective.org>`_ account.
 
 You can also check if you're authenticated as follows:
 
@@ -66,7 +66,7 @@ that that the email address and password you passed are valid.
 
 .. code:: shell
 
-    AuthenticationError: Unable to login into Cell Collective with credentials provided.
+    AuthenticationError: Unable to login into `Cell Collective <https://cellcollective.org>`_ with credentials provided.
 
 Authenticating via Authorization Token
 --------------------------------------
