@@ -178,13 +178,14 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
 
             labels = dict((c.name, c.name) for c in self.components)
             nx.draw_networkx_labels(graph, layout, labels)
-        elif type_ == "ccnetviz":
-            HTML     = import_handler("IPython.core.display.HTML")
-        elif type_ == "cytoscape":
-            HTML     = import_handler("IPython.core.display.HTML")
-            template = render_template("draw/cytoscape.html")
-            
-            HTML(template)
+        # elif type_ == "ccnetviz":
+        #     HTML     = import_handler("IPython.core.display.HTML")
+        # elif type_ == "d3":
+        #     HTML     = import_handler("IPython.core.display.HTML")
+        #     display  = import_handler("IPython.display.display")
+        #     template = render_template("draw/d3.html")
+
+        #     display(HTML(template))
         else:
             raise TypeError("No drawing type %s found." % type_)
 
@@ -232,7 +233,7 @@ class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
             name    = re.findall("filename=(.+)", header)[0]
             path    = abspath(name)
 
-        nchunk      = kwargs.get("nchunk", DEFAULT["MAX_CHUNK_DOWNLOAD_BYTES"])
+        nchunk      = kwargs.get("nchunk", config.max_chunk_download_bytes)
 
         makepath(path)
 

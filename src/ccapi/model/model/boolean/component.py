@@ -77,25 +77,11 @@ class InternalComponent(Component):
 
     @property
     def positive_regulators(self):
-        # TODO: Use QueryList for query fetch.
-        positive_regulators = [ ]
-
-        for regulator in self.regulators:
-            if regulator.type == "positive":
-                positive_regulators.append(regulator)
-
-        return positive_regulators
+        return self.regulators.query(lambda r: r.type == "positive")
 
     @property
     def negative_regulators(self):
-        # TODO: Use QueryList for query fetch.
-        negative_regulators = [ ]
-
-        for regulator in self.regulators:
-            if regulator.type == "negative":
-                negative_regulators.append(regulator)
-
-        return negative_regulators
+        return self.regulators.query(lambda r: r.type == "negative")
 
     def _repr_html_(self):
         repr_ = render_template(join("boolean", "component", "internal.html"), 

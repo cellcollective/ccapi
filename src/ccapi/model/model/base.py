@@ -81,8 +81,8 @@ class Model(Resource, JupyterHTMLViewMixin):
         >>> from ccapi.model import Model
         >>> model = Model('Cortical Area Development')
     """
-    def __init__(self, name = DEFAULT["MODEL_NAME"], default_type = DEFAULT["MODEL_TYPE"]["value"],
-        domain = DEFAULT["MODEL_DOMAIN_TYPE"]["value"], *args, **kwargs):
+    def __init__(self, name = config.model_name, default_type = config.model_type["value"],
+        domain = config.model_domain_type["value"], *args, **kwargs):
         """
         A model instance.
         """
@@ -108,7 +108,7 @@ class Model(Resource, JupyterHTMLViewMixin):
         """
         The default model type.
         """
-        return getattr(self, "_default_type", DEFAULT["MODEL_TYPE"]["value"])
+        return getattr(self, "_default_type", config.model_type["value"])
 
     @default_type.setter
     def default_type(self, value):
@@ -126,7 +126,7 @@ class Model(Resource, JupyterHTMLViewMixin):
         """
         The domain type of the model.
         """
-        return getattr(self, "_domain", DEFAULT["MODEL_DOMAIN_TYPE"]["value"])
+        return getattr(self, "_domain", config.model_domain_type["value"])
 
     @domain.setter
     def domain(self, value):

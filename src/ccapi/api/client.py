@@ -17,6 +17,7 @@ from ccapi.api.helper          import (
 from ccapi.model.model.base    import Model
 from ccapi.model.user          import User
 from ccapi.core.querylist      import QueryList
+from ccapi.core.config         import Configuration
 from ccapi.config              import DEFAULT
 from ccapi.constant            import (
     PATH,
@@ -39,6 +40,7 @@ from ccapi.exception           import (
 from ccapi.log                 import get_logger
 
 logger = get_logger()
+config = Configuration()
 
 class Client:
     """
@@ -60,7 +62,7 @@ class Client:
         <Client url='https://cellcollective.org'>
     """
     def __init__(self,
-        base_url        = DEFAULT["URL"],
+        base_url        = config.url,
         proxies         = [ ],
         test            = True,
         cache_timeout   = None
@@ -128,7 +130,7 @@ class Client:
         proxies     = kwargs.pop("proxies",     self._proxies)
         data        = kwargs.get("params",      kwargs.get("data"))
         prefix      = kwargs.get("prefix",      True)
-        user_agent  = kwargs.get("user_agent",  DEFAULT["USER_AGENT"])
+        user_agent  = kwargs.get("user_agent",  config.user_agent)
 
         headers.update({
             "User-Agent": user_agent
@@ -305,7 +307,7 @@ class Client:
 
         filters   = kwargs.get("filters", { })
 
-        size      = kwargs.get("size",  DEFAULT["MAX_API_RESOURCE_FETCH"])
+        size      = kwargs.get("size",  config.max_api_resource_fetch)
         since     = kwargs.get("since", 1)
         since     = since if since > 0 else 1
 

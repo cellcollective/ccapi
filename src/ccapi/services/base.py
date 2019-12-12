@@ -9,9 +9,11 @@ from ccapi.config       import DEFAULT
 from ccapi.util.array   import (
     sequencify
 )
+from ccapi.core.config  import Configuration
 from ccapi.log          import get_logger
 
 logger = get_logger()
+config = Configuration()
 
 class Service:
     def __init__(self,
@@ -42,6 +44,24 @@ class Service:
 
         if test:
             self.ping()
+        
+        self._build_service()
+
+    def _path_to_method(path):
+        path = path.lstrip("/")
+        path = path.rstrip("/")
+
+        path = path.replace("/", "_")
+
+        return path
+
+    def _build_service(self):
+        if hasattr(self, "API"):
+            for api in getattr(self, "API"):
+                path            = api["path"]
+                parameters      = api["parameters"]
+                
+                method, params  = self._path_to_method(path)
 
     def _build_url(self, *args, **kwargs):
         prefix = kwargs.get("prefix", True)
@@ -60,7 +80,7 @@ class Service:
         proxies     = kwargs.pop("proxies",     self._proxies)
         data        = kwargs.get("params",      kwargs.get("data"))
         prefix      = kwargs.get("prefix",      True)
-        user_agent  = kwargs.get("user_agent",  DEFAULT["USER_AGENT"])
+        user_agent  = kwargs.get("user_agent",  config.user_agent)
 
         headers.update({
             "User-Agent": user_agent

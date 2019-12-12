@@ -9,16 +9,17 @@ import requests
 import grequests
 
 # imports - module imports
-from ccapi.config       import DEFAULT
+from ccapi.core.config  import Configuration
 from ccapi.constant     import PATH, URL
 from ccapi.util         import iz
 from ccapi.util.system  import makedirs
 from ccapi.log          import get_logger
 
 logger = get_logger()
+config = Configuration()
 
 def get_ginsim_executable(version = None):
-    version     = version or DEFAULT["GINSIM_VERSION"]
+    version     = version or config.ginsim_version
     dirs        = osp.join(PATH["CACHE"], "ginsim", version)
     executable  = osp.join(dirs, "ginsim.jar")
 
@@ -33,7 +34,7 @@ def get_ginsim_executable(version = None):
             
             with open(executable, "wb") as f:
                 for chunk in response.iter_content(
-                    chunk_size = DEFAULT["MAX_CHUNK_DOWNLOAD_BYTES"]
+                    chunk_size = config.max_chunk_download_bytes
                 ):
                     if chunk:
                         f.write(chunk)

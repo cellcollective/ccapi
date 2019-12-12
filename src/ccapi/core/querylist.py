@@ -14,6 +14,9 @@ from   itertools import islice
 from ccapi.config       import DEFAULT
 from ccapi.util.string  import ellipsis
 from ccapi.core.mixins  import JupyterHTMLViewMixin
+from ccapi.core.config  import Configuration
+
+config = Configuration()
 
 class QueryList(list, JupyterHTMLViewMixin):
     """A combined dict and list
@@ -485,7 +488,7 @@ class QueryList(list, JupyterHTMLViewMixin):
                 if attr:
                     attrs += [a for a in attr if a not in attrs]
 
-        max_rows    = DEFAULT["DISPLAY_MAX_ROWS"]
+        max_rows    = config.display_max_rows
         items       = self
         truncate    = len(items) > max_rows
         

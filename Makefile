@@ -10,6 +10,7 @@ PROJECT					= ccapi
 PROJDIR					= ${BASEDIR}/src/ccapi
 TESTDIR					= ${BASEDIR}/tests
 DOCSDIR					= ${BASEDIR}/docs
+NOTEBOOKSDIR			= ${DOCSDIR}/source/notebooks
 
 PYTHONPATH		 	   ?= python
 
@@ -19,6 +20,7 @@ VENVBIN					= ${VIRTUAL_ENV}/bin
 PYTHON				  	= ${VENVBIN}/python
 IPYTHON					= ${VENVBIN}/ipython
 PIP					  	= ${VENVBIN}/pip
+JUPYTER					= ${VENVBIN}/jupyter
 PYTEST					= ${VENVBIN}/pytest
 TOX						= ${VENVBIN}/tox
 COVERALLS				= ${VENVBIN}/coveralls
@@ -195,6 +197,9 @@ ifeq (${ENVIRONMENT},development)
 else
 	$(TWINE) upload --repository-url https://upload.pypi.org/legacy/ $(BASEDIR)/dist/* 
 endif
+
+jupyter: ## Launch Notebooks
+	$(JUPYTER) notebook --notebook-dir $(NOTEBOOKSDIR)
 
 help: ## Show help and exit.
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)

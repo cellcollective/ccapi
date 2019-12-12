@@ -3,10 +3,11 @@ import os.path as osp
 import sqlite3
 
 # imports - module imports
-from ccapi.__attr__    import __name__ as NAME
-from ccapi.util.string import strip
-from ccapi.util.system import makedirs, read
-from cc             import config, log
+from ccapi.__attr__     import __name__ as NAME
+from ccapi.constant     import PATH
+from ccapi.util.string  import strip
+from ccapi.util.system  import makedirs, read
+from cc                 import config, log
 
 logger = log.get_logger()
 
@@ -78,7 +79,7 @@ def get_connection(bootstrap = True):
         if bootstrap:
             logger.info("Bootstrapping DataBase...")
 
-            abspath = osp.join(config.PATH["DATA"], "bootstrap.sql")
+            abspath = osp.join(PATH["DATA"], "bootstrap.sql")
             buffer  = read(abspath)
 
             queries = _get_queries(buffer)
