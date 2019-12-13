@@ -6,6 +6,7 @@ class BioModels(Service):
     VERSION  = "beta2"
 
     API      = dict({
+        "content-type": "application/json",
         "paths": [
             # dict({
             #           "path": "/<modelId>",
@@ -18,22 +19,22 @@ class BioModels(Service):
             #     ]
             # }),
             dict({
-                      "path": "/search",
-                "parameters": [
-                    dict({
-                        "name": "query",
-                        "required": True
-                    }),
-                    dict({
-                        "name": "offset",
-                        "type": int
-                    }),
-                    dict({
-                        "name": "numResults",
-                        "type": int
-                    }),
-                    "sort",
-                    "format"
+                        "path": "/search",
+                  "parameters": [
+                        dict({
+                            "name": "query",
+                            "required": True
+                        }),
+                        dict({
+                            "name": "offset",
+                            "type": int
+                        }),
+                        dict({
+                            "name": "numResults",
+                            "type": int
+                        }),
+                        "sort",
+                        "format"
                 ]
             }),
             dict({

@@ -66,7 +66,7 @@ that that the email address and password you passed are valid.
 
 .. code:: shell
 
-    AuthenticationError: Unable to login into `Cell Collective <https://cellcollective.org>`_ with credentials provided.
+    AuthenticationError: Unable to login into Cell Collective with credentials provided.
 
 Authenticating via Authorization Token
 --------------------------------------

@@ -3,6 +3,9 @@
 Installation
 ============
 
+This part of the documentation covers the installation of **ccapi**. 
+The first step to using any software package is getting it properly installed.
+
 Installation via ``pip``
 ------------------------
 

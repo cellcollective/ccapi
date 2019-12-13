@@ -10,36 +10,30 @@
 </div>
 
 <p align="center">
-    <a href="https://travis-ci.org/achillesrasquinha/ccapi">
-        <img src="https://img.shields.io/travis/achillesrasquinha/ccapi.svg?style=flat-square">
-    </a>
-    <a href="https://ci.appveyor.com/project/achillesrasquinha/ccapi">
-        <img src="https://img.shields.io/appveyor/ci/achillesrasquinha/ccapi.svg?style=flat-square&logo=appveyor">
-    </a>
-    <a href="https://coveralls.io/github/achillesrasquinha/ccapi">
-        <img src="https://img.shields.io/coveralls/github/achillesrasquinha/ccapi.svg?style=flat-square">
-    </a>
-    <a href="https://pypi.org/project/ccapi/">
-		<img src="https://img.shields.io/pypi/v/ccapi.svg?style=flat-square">
-	</a>
-    <a href="https://pypi.org/project/ccapi/">
-		<img src="https://img.shields.io/pypi/l/ccapi.svg?style=flat-square">
-	</a>
-    <a href="https://pypi.org/project/ccapi/">
-		<img src="https://img.shields.io/pypi/pyversions/ccapi.svg?style=flat-square">
-	</a>
-    <a href="https://hub.docker.com/r/achillesrasquinha/ccapi">
-		<img src="https://img.shields.io/docker/build/achillesrasquinha/ccapi.svg?style=flat-square&logo=docker">
-	</a>
-    <a href="https://git.io/boilpy">
-      <img src="https://img.shields.io/badge/made%20with-boilpy-red.svg?style=flat-square">
-    </a>
-	<a href="https://saythanks.io/to/achillesrasquinha">
-		<img src="https://img.shields.io/badge/Say%20Thanks-🦉-1EAEDB.svg?style=flat-square">
-	</a>
-	<a href="https://paypal.me/achillesrasquinha">
-		<img src="https://img.shields.io/badge/donate-💵-f44336.svg?style=flat-square">
-	</a>
+  <a href="https://travis-ci.org/achillesrasquinha/ccapi">
+    <img src="https://img.shields.io/travis/achillesrasquinha/ccapi.svg?style=flat-square">
+  </a>
+  <a href="https://ci.appveyor.com/project/achillesrasquinha/ccapi">
+    <img src="https://img.shields.io/appveyor/ci/achillesrasquinha/ccapi.svg?style=flat-square&logo=appveyor">
+  </a>
+  <a href="https://coveralls.io/github/achillesrasquinha/ccapi">
+    <img src="https://img.shields.io/coveralls/github/achillesrasquinha/ccapi.svg?style=flat-square">
+  </a>
+  <a href="https://pypi.org/project/ccapi/">
+    <img src="https://img.shields.io/pypi/v/ccapi.svg?style=flat-square">
+  </a>
+  <a href="https://hub.docker.com/r/achillesrasquinha/ccapi">
+    <img src="https://img.shields.io/docker/build/achillesrasquinha/ccapi.svg?style=flat-square&logo=docker">
+  </a>
+  <a href="https://git.io/boilpy">
+    <img src="https://img.shields.io/badge/made%20with-boilpy-red.svg?style=flat-square">
+  </a>
+  <a href="https://saythanks.io/to/achillesrasquinha">
+    <img src="https://img.shields.io/badge/Say%20Thanks-🦉-1EAEDB.svg?style=flat-square">
+  </a>
+  <a href="https://paypal.me/achillesrasquinha">
+    <img src="https://img.shields.io/badge/donate-💵-f44336.svg?style=flat-square">
+  </a>
 </p>
 
 **ccapi** is a Python Package that provides a simple interface to 

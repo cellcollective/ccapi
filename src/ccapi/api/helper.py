@@ -50,6 +50,8 @@ def _section_type_to_dict_key(section_type):
     return key
 
 def _model_version_response_to_boolean_model(client, response):
+    meta = { }
+
     for key, data in iteritems(response):
         if "/" in key:
             model_id, model_version_id = list(map(int, key.split("/")))
@@ -135,9 +137,9 @@ def _model_version_response_to_boolean_model(client, response):
     #         })
 
     #     condition_map   = dict()
-    #     for condition_id, condition_data in data["conditionMap"].items():
+    #     for condition_id, condition_data in iteritems(data["conditionMap"]):
     #         species     = [ ]
-    #         for _, condition_species_data in data["conditionSpeciesMap"].items():
+    #         for _, condition_species_data in iteritems(data["conditionSpeciesMap"]):
     #             if condition_species_data["conditionId"] == int(condition_id):
     #                 species_id = condition_species_data["speciesId"]
     #                 species.append(component_map[species_id])

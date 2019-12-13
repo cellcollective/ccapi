@@ -58,41 +58,63 @@ class Service:
 
         return path
 
+    def _build_service_function(self, api, request_args = None):
+        def fn(**kwargs):
+            reqargs = kwargs.get("request_args", { })
+            args    = iterkeys(kwargs)
+            
+            if "headers" in reqargs:
+                headers = reqargs.get("headers", { })
+                headers.update()
+
+            for arg, value in iteritems(kwargs):
+                for param in api["parameters"]:
+                    if isinstance(param, string_types):
+                        param = dict({
+                            "name": param
+                        })
+
+                    name        = param["name"]
+                    required    = param.get("required", False)
+                    type_       = param.get("type",     string_types)
+
+                    if required and name not in args:
+                        raise ValueError("Required parameter: %s" % name)
+                    
+                    if arg == name:
+                        if not isinstance(value, type_):
+                            raise TypeError("%s is not of type %s, expected %s" % (arg, name, type_))
+
+                response = self.request("GET", path, params = kwargs, **reqargs)
+
+                return response
+        
+        return fn
+
     def _build_service(self):
         if hasattr(self, "API"):
             API = getattr(self, "API", None)
+
             if API:
                 for api in API["paths"]:
                     path    = api["path"]
-                    params  = api["parameters"]
-                    
                     method  = self._path_to_method(path)
 
-                    def fn(self, **kwargs):
-                        args = iterkeys(kwargs)
-
-                        for arg, value in iterkeys(kwargs):
-                            for param in params:
-                                if isinstance(param, string_types):
-                                    param = dict({
-                                        "name": param
-                                    })
-
-                                name        = param["name"]
-                                required    = param.get("required", False)
-                                type_       = param.get("type",     string_types)
-
-                                if required and name not in args:
-                                    raise ValueError("Required parameter %s" % name)
-                                
-                                if arg == name:
-                                    if not isinstance(value, type_):
-                                        raise TypeError("%s is not of type %s, expected %s" % (arg, name, type_))
-
-                    # self.request("GET", path, params = )
-
+            # if API:
+            #     for api in API["paths"]:
+            #         path    = api["path"]
                     
+            #         method  = self._path_to_method(path)
 
+            #         reqargs = dict({
+            #             "headers": dict({
+            #                 "content-type": API["content-type"]
+            #             })
+            #         })
+
+            #         setattr(self, method, self._build_service_function(api,
+            #             request_args = request_args))
+                    
     def _build_url(self, *args, **kwargs):
         prefix = kwargs.get("prefix", True)
         parts  = [ ]
