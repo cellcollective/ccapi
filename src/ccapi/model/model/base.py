@@ -1,5 +1,6 @@
 # imports - module imports
 from ccapi.model.resource      import Resource
+from ccapi.core.config         import Configuration
 from ccapi.core.querylist      import QueryList
 from ccapi.core.mixins         import JupyterHTMLViewMixin
 from ccapi.model.model         import BooleanModel, InternalComponent
@@ -18,6 +19,7 @@ from ccapi._compat             import itervalues, iteritems
 from ccapi.log                 import get_logger
 
 logger = get_logger()
+config = Configuration()
 
 _ACCEPTED_MODEL_TYPES           = tuple([t["value"] \
     for t in itervalues(MODEL_TYPE)])
@@ -81,11 +83,15 @@ class Model(Resource, JupyterHTMLViewMixin):
         >>> from ccapi.model import Model
         >>> model = Model('Cortical Area Development')
     """
-    def __init__(self, name = config.model_name, default_type = config.model_type["value"],
-        domain = config.model_domain_type["value"], *args, **kwargs):
+    def __init__(self, name = None, default_type = None, domain = None,
+        *args, **kwargs):
         """
         A model instance.
         """
+        name            = name          or config.model_name
+        default_type    = default_type  or config.model_type["value"]
+        domain          = domain        or config.model_domain_type["value"] 
+
         if not default_type in _ACCEPTED_MODEL_TYPES:
             raise TypeError("Cannot find model type %s. Accepted types are %s."
                 % (default_type, _ACCEPTED_MODEL_TYPES))

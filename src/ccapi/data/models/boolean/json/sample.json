@@ -3,11 +3,17 @@
     "components": [
         {
             "name": "A",
-            "type": "internal"
+            "type": "internal",
+            "regulators": [
+
+            ]
         },
         {
             "name": "B",
-            "type": "external"
+            "type": "external",
+            "regulators": [
+                   
+            ]
         }
     ]
 }

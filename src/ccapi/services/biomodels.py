@@ -7,16 +7,16 @@ class BioModels(Service):
 
     API      = dict({
         "paths": [
-            dict({
-                      "path": "/<modelId>"
-                "parameters": [
-                    dict({
-                           "name": "format",
-                           "type": str,
-                        "default": True
-                    })
-                ]
-            }),
+            # dict({
+            #           "path": "/<modelId>",
+            #     "parameters": [
+            #         dict({
+            #                "name": "format",
+            #                "type": str,
+            #             "default": True
+            #         })
+            #     ]
+            # }),
             dict({
                       "path": "/search",
                 "parameters": [
@@ -37,7 +37,7 @@ class BioModels(Service):
                 ]
             }),
             dict({
-                      "path": "/search/download"
+                      "path": "/search/download",
                 "parameters": [
                     dict({
                         "name": "models",

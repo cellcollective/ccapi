@@ -23,6 +23,9 @@ URL["GINSIM_FILES"]             = "http://ginsim.org/sites/default/files"
 MODEL_TYPE                      = dict({
     "BOOLEAN": {
         "value": "boolean"
+    },
+    "CONSTRAINT": {
+        "value": "constraint"
     }
 })
 MODEL_DOMAIN_TYPE               = dict({

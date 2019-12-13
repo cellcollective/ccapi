@@ -14,7 +14,7 @@ from ccapi.api.helper          import (
     _model_response_to_model,
     _model_version_response_to_boolean_model,
 )
-from ccapi.model.model.base    import Model
+from ccapi.model.model.base    import Model, _ACCEPTED_MODEL_DOMAIN_TYPES
 from ccapi.model.user          import User
 from ccapi.core.querylist      import QueryList
 from ccapi.core.config         import Configuration
@@ -62,12 +62,12 @@ class Client:
         <Client url='https://cellcollective.org'>
     """
     def __init__(self,
-        base_url        = config.url,
+        base_url        = None,
         proxies         = [ ],
         test            = True,
         cache_timeout   = None
     ):
-        self.base_url    = base_url
+        self.base_url    = base_url or config.url
         self._auth_token = None
         
         if cache_timeout:
@@ -369,6 +369,14 @@ class Client:
 
                         content = list(filter(lambda x: x["model"]["userId"] == user.id, content))
 
+                    if "domain" in filters:
+                        domain = filters["domain"]
+
+                        if domain not in _ACCEPTED_MODEL_DOMAIN_TYPES:
+                            raise TypeError("Not a valid domain type: %s" % domain)
+                        else:
+                            content = list(filter(lambda x: x["model"]["type"] == domain, content))
+
                 from_, to = since - 1, min(len(content), size)
                 content   = content[from_ : from_ + to]
 
@@ -394,13 +402,14 @@ class Client:
 
         return squash(resources)
 
-    def read(self, filename, save = False):
+    def read(self, filename, type = None, save = False):
         """
         Read an SBML file.
 
         :param filename: Name of the file locally present to read an SBML file.
         :param save: Save model after importing.
         """
+        type_       = type or config.model_type["value"]
 
         files       = dict({
             "upload": (filename, open(filename, "rb"))

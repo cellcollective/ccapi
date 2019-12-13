@@ -1,6 +1,9 @@
 # imports - standard imports
 import collections
 
+# imports - compatibility imports
+from ccapi._compat      import string_types, iterkeys, iteritems
+
 # imports - third-party imports
 import requests
 
@@ -47,7 +50,7 @@ class Service:
         
         self._build_service()
 
-    def _path_to_method(path):
+    def _path_to_method(self, path):
         path = path.lstrip("/")
         path = path.rstrip("/")
 
@@ -57,11 +60,38 @@ class Service:
 
     def _build_service(self):
         if hasattr(self, "API"):
-            for api in getattr(self, "API"):
-                path            = api["path"]
-                parameters      = api["parameters"]
-                
-                method, params  = self._path_to_method(path)
+            API = getattr(self, "API", None)
+            if API:
+                for api in API["paths"]:
+                    path    = api["path"]
+                    params  = api["parameters"]
+                    
+                    method  = self._path_to_method(path)
+
+                    def fn(self, **kwargs):
+                        args = iterkeys(kwargs)
+
+                        for arg, value in iterkeys(kwargs):
+                            for param in params:
+                                if isinstance(param, string_types):
+                                    param = dict({
+                                        "name": param
+                                    })
+
+                                name        = param["name"]
+                                required    = param.get("required", False)
+                                type_       = param.get("type",     string_types)
+
+                                if required and name not in args:
+                                    raise ValueError("Required parameter %s" % name)
+                                
+                                if arg == name:
+                                    if not isinstance(value, type_):
+                                        raise TypeError("%s is not of type %s, expected %s" % (arg, name, type_))
+
+                    # self.request("GET", path, params = )
+
+                    
 
     def _build_url(self, *args, **kwargs):
         prefix = kwargs.get("prefix", True)
@@ -103,6 +133,25 @@ class Service:
 
             response.raise_for_status()
 
+        return response
+
+    def post(self, url, *args, **kwargs):
+        """
+        Dispatch a POST request to the server.
+
+        :param url: URL part (does not include the base URL).
+        :param args: Arguments provided to ``client._request``
+        :param kwargs: Keyword Arguments provided to ``client._request``
+
+        Usage::
+
+            >>> import ccapi
+            >>> client   = ccapi.Client()
+            >>> response = client.post("api/module/12345/report")
+            >>> response.content
+            b'"First Name","Last Name","Email","Institution","Last Updated Date"\n'
+        """
+        response = self.request("POST", url, *args, **kwargs)
         return response
 
     def ping(self, *args, **kwargs):

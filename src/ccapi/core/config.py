@@ -2,9 +2,10 @@
 from ccapi.__attr__         import __version__
 from ccapi.constant         import MODEL_TYPE, MODEL_DOMAIN_TYPE
 from ccapi.core.singleton   import Singleton
+from ccapi.core.mixins      import JupyterHTMLViewMixin
 
-class Configuration(Singleton):
-    def __init__(self):
+class Configuration(JupyterHTMLViewMixin, metaclass = Singleton):
+    def __init__(self, *args, **kwargs):
         self.url                         = "https://cellcollective.org"
 
         self.user_agent                  = "Python CCAPI / %s" % (__version__)

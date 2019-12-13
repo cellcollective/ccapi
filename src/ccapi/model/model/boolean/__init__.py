@@ -3,16 +3,18 @@ from os.path import join, abspath
 import re
 
 # imports - module imports
-from ccapi.core.querylist      import QueryList
-from ccapi.core.mixins         import JupyterHTMLViewMixin
-from ccapi.model.model.version import ModelVersion
-from ccapi.util.system         import read
-from ccapi.table               import Table
-from ccapi.template            import render_template
-from ccapi.constant            import BOOLEAN_MODEL_EXPORT_TYPE
-from ccapi.config              import DEFAULT
-from ccapi.util.system         import makepath
-from ccapi.util.imports        import import_handler
+from ccapi.core.config              import Configuration
+from ccapi.core.querylist           import QueryList
+from ccapi.core.mixins              import JupyterHTMLViewMixin
+from ccapi.model.model.version      import ModelVersion
+from ccapi.model.model.education    import Module
+from ccapi.util.system              import read
+from ccapi.table                    import Table
+from ccapi.template                 import render_template
+from ccapi.constant                 import BOOLEAN_MODEL_EXPORT_TYPE
+from ccapi.config                   import DEFAULT
+from ccapi.util.system              import makepath
+from ccapi.util.imports             import import_handler
 
 # imports - boolean-model imports
 from ccapi.model.resource                import Resource
@@ -33,7 +35,9 @@ from ccapi.model.model.boolean.subcondition import SubCondition
 
 _ACCEPTED_COMPONENT_CLASSES = tuple([InternalComponent, ExternalComponent])
 
-class BooleanModel(ModelVersion, JupyterHTMLViewMixin):
+config = Configuration()
+
+class BooleanModel(ModelVersion, Module, JupyterHTMLViewMixin):
     """
     A Boolean Model.
 

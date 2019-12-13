@@ -60,6 +60,7 @@ instructions for getting the most out of **ccapi**.
    user/installation
    user/quickstart
 
+   notebooks/examples/global-configuration
    notebooks/examples/building-boolean-models
    notebooks/examples/reading-writing-boolean-models
    notebooks/examples/loading-models
