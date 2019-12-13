@@ -17,5 +17,5 @@
     "editor.rulers": [78],
     "editor.fontFamily": "Consolas",
     "editor.tabSize": 4,
-    "python.pythonPath": ".venv/bin/python"
+    "python.pythonPath": "/Users/achillesrasquinha/dev/ccapi/.venv/bin/python2.7"
 }
