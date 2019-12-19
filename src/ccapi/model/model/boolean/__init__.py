@@ -15,6 +15,7 @@ from ccapi.constant                 import BOOLEAN_MODEL_EXPORT_TYPE
 from ccapi.config                   import DEFAULT
 from ccapi.util.system              import makepath
 from ccapi.util.imports             import import_handler
+from ccapi.util.request             import response_download
 
 # imports - boolean-model imports
 from ccapi.model.resource                import Resource
@@ -241,9 +242,6 @@ class BooleanModel(ModelVersion, Module, JupyterHTMLViewMixin):
 
         makepath(path)
 
-        with open(path, "wb") as f:
-            for chunk in response.iter_content(chunk_size = nchunk):
-                if chunk:
-                    f.write(chunk)
+        path        = response_download(response, path, chunk_size = nchunk)
 
         return path

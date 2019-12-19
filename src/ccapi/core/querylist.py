@@ -15,6 +15,7 @@ from ccapi.config       import DEFAULT
 from ccapi.util.string  import ellipsis
 from ccapi.core.mixins  import JupyterHTMLViewMixin
 from ccapi.core.config  import Configuration
+from ccapi.util.array   import squash
 
 config = Configuration()
 
@@ -65,6 +66,14 @@ class QueryList(list, JupyterHTMLViewMixin):
     def get_by_id(self, id):
         """return the element with a matching id"""
         return list.__getitem__(self, self._dict[id])
+
+    def get_by_name(self, name):
+        element = self.query(lambda x: x.name == name)
+        
+        if not element:
+            raise ValueError("No element found by name %s" % name)
+        
+        return squash(element)
 
     def list_attr(self, attribute):
         """return a list of the given attribute for every object"""
@@ -464,22 +473,24 @@ class QueryList(list, JupyterHTMLViewMixin):
         return attributes
 
     def _repr_html_(self):
-        template = """
-            <table>
-                <thead>
-                    <tr>
-                        {header}
-                    </tr>
-                </thead>
-                <tbody>
-                    {body}
-                </tbody>
-            </table>
-        """
-        body     = ""
-        attrs    = [ ]
+        template = ""
 
         if len(self):
+            template = """
+                <table>
+                    <thead>
+                        <tr>
+                            {header}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {body}
+                    </tbody>
+                </table>
+            """
+            body    = ""
+            attrs   = [ ]
+
             objekt  = self[0]
             classes = reversed(inspect.getmro(objekt.__class__))
             
@@ -488,39 +499,41 @@ class QueryList(list, JupyterHTMLViewMixin):
                 if attr:
                     attrs += [a for a in attr if a not in attrs]
 
-        max_rows    = config.display_max_rows
-        items       = self
-        truncate    = len(items) > max_rows
-        
-        if truncate:
-            nrows = int(max_rows / 2)
-            items = items[:nrows] + items[-nrows:]
+            max_rows    = config.display_max_rows
+            items       = self
+            truncate    = len(items) > max_rows
+            
+            if truncate:
+                nrows = int(max_rows / 2)
+                items = items[:nrows] + items[-nrows:]
 
-        for i, item in enumerate(items):
-            row = ""
+            for i, item in enumerate(items):
+                row = ""
 
-            for attr in attrs:
-                if truncate and i == nrows:
-                    row += "<td>...</td>"
-                else:
-                    if "key" in attr:
-                        value = attr["key"](item)
+                for attr in attrs:
+                    if truncate and i == nrows:
+                        row += "<td>...</td>"
                     else:
-                        value = getattr(item, attr["name"])
+                        if "key" in attr:
+                            value = attr["key"](item)
+                        else:
+                            value = getattr(item, attr["name"])
 
-                    if value in (None,):
-                        value = ""
-                
-                    row += "<td>%s</td>" % ellipsis(str(value), threshold = 50)
+                        if value in (None,):
+                            value = ""
+                    
+                        row += "<td>%s</td>" % ellipsis(str(value), threshold = 50)
 
-            if truncate and i == nrows:
-                body += "<tr>%s</tr>" % row
-            else:
-                body += "<tr>%s</tr>" % row
+                if truncate and i == nrows:
+                    body += "<tr>%s</tr>" % row
+                else:
+                    body += "<tr>%s</tr>" % row
 
-        template = template.format(
-            header = "".join(["<th>%s</th>" % attr["title"] for attr in attrs]),
-            body   = body
-        )
-
+            template = template.format(
+                header = "".join(["<th>%s</th>" % attr["title"] for attr in attrs]),
+                body   = body
+            )
+        else:
+            template = "<pre>{string}</pre>".format(string = repr(self))
+            
         return template

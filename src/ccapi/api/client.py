@@ -13,6 +13,7 @@ from ccapi.api.helper          import (
     _user_response_to_user,
     _model_response_to_model,
     _model_version_response_to_boolean_model,
+    _merge_metadata_to_model
 )
 from ccapi.model.model.base    import Model, _ACCEPTED_MODEL_DOMAIN_TYPES
 from ccapi.model.user          import User
@@ -409,17 +410,18 @@ class Client:
         :param filename: Name of the file locally present to read an SBML file.
         :param save: Save model after importing.
         """
-        type_       = type or config.model_type["value"]
+        type_           = type or config.model_type["value"]
 
-        files       = dict({
-            "upload": (filename, open(filename, "rb"))
-        })
+        files           = dict({ "upload": (filename, open(filename, "rb")) })
 
-        response    = self.post("_api/model/import", files = files)
-        content     = response.json()
+        response        = self.post("_api/model/import", files = files)
+        content         = response.json()
 
-        model       = Model(client = self)
-        boolean     = _model_version_response_to_boolean_model(self, content)
+        model           = Model(client = self)
+
+        boolean, meta   = _model_version_response_to_boolean_model(self, content)
+        
+        model           = _merge_metadata_to_model(model, meta)
 
         # HACK: remove default version provided.
         model.versions.pop()

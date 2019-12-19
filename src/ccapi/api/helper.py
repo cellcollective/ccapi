@@ -49,6 +49,11 @@ def _section_type_to_dict_key(section_type):
 
     return key
 
+def _merge_metadata_to_model(model, meta):
+    for attr, value in iteritems(meta):
+        setattr(model, attr, value)
+    return model
+
 def _model_version_response_to_boolean_model(client, response):
     meta = { }
 
@@ -61,8 +66,8 @@ def _model_version_response_to_boolean_model(client, response):
 
         model = BooleanModel(version = model_version_id, client = client)
 
-    #     if "score" in data:
-    #         model.score = data["score"]["score"]
+        if "score" in data:
+            meta["score"] = data["score"]["score"]
 
         component_map = dict()
         for component_id, component_data in iteritems(data["speciesMap"]):
@@ -110,7 +115,7 @@ def _model_version_response_to_boolean_model(client, response):
             #     sections = sections_formatted
 
             # component.information       = sections
-            # component_map[component.id] = component
+            component_map[component.id] = component
 
             model.add_component(component)
 
@@ -164,39 +169,39 @@ def _model_version_response_to_boolean_model(client, response):
     #             "condition":    condition
     #         })
 
-    #     regulator_map           = dict()
-    #     component_regulator_map = dict()
-        # for regulator_id, regulator_data in data["regulatorMap"].items():
-    #         regulator     = Regulator(id = int(regulator_id),
-    #             component = component_map[regulator_data["regulatorSpeciesId"]],
-    #             type      = lower(regulator_data["regulationType"]),
-    # #             conditions      = [data["condition"]
-    # #                 for _, data in condition_map.items()
-    # #                     if data["regulator_id"] == int(regulator_id)
-    # #             ]
-    #         )
+        regulator_map           = dict()
+        component_regulator_map = dict()
+        for regulator_id, regulator_data in iteritems(data["regulatorMap"]):
+            regulator = Regulator(id = int(regulator_id),
+                component = component_map[regulator_data["regulatorSpeciesId"]],
+                type      = lower(regulator_data["regulationType"]),
+                # conditions      = [data["condition"]
+                #     for _, data in condition_map.items()
+                #         if data["regulator_id"] == int(regulator_id)
+                # ]
+            )
 
-    #         component_regulator_map[regulator.id] = dict({
-    #             "component": component_map[regulator_data["speciesId"]],
-    #             "regulator": regulator
-    #         })
+            component_regulator_map[regulator.id] = dict({
+                "component": component_map[regulator_data["speciesId"]],
+                "regulator": regulator
+            })
 
-    #         regulator_map[regulator.id] = regulator
+            # regulator_map[regulator.id] = regulator
 
-    #     for i, component in enumerate(model.components):
-    #         if isinstance(component, InternalComponent):
-    #             for regulator_id, component_regulator_data in iteritems(component_regulator_map):
-    #                 if component == component_regulator_data["component"]:
-    #                     model.components[i].regulators.append(
-    #                         component_regulator_data["regulator"]
-    #                     )
+        for i, component in enumerate(model.components):
+            if isinstance(component, InternalComponent):
+                for regulator_id, component_regulator_data in iteritems(component_regulator_map):
+                    if component == component_regulator_data["component"]:
+                        model.components[i].regulators.append(
+                            component_regulator_data["regulator"]
+                        )
 
-    #     model.users         = [ ]
-    #     for _, share_data in data["shareMap"].items():
-    #         user = client.get("user", id = share_data["userId"])
-    #         model.users.append(user)
+        meta["users"] = [ ]
+        for _, share_data in iteritems(data["shareMap"]):
+            user = client.get("user", id = share_data["userId"])
+            meta["users"].append(user)
 
-        return model
+        return model, meta
 
 def _model_response_to_model(client, response):
     data              = response["model"]
@@ -229,24 +234,23 @@ def _model_response_to_model(client, response):
     model.permissions = response["modelPermissions"]
     
     for version in iterkeys(data["modelVersionMap"]):
-        content = client.get("model", id = model.id, version = version,
+        content         = client.get("model", id = model.id, version = version,
             hash = model.hash, raw = True)
-        version = _model_version_response_to_boolean_model(client, content)
+        
+        version, meta   = _model_version_response_to_boolean_model(client, content)
+
+        model           = _merge_metadata_to_model(model, meta)
 
         model.add_version(version)
 
-    # if response["uploadMap"]:
-    #     for _, upload_data in iteritems(response["uploadMap"]):
-    #         document = Document(
-    #             name        = upload_data["uploadName"],
-    #             user        = client.get("user", id = upload_data["userId"]),
-    #             created     = cc_datetime_to_python_datetime(
-    #                 upload_data["uploadDate"]
-    #             ),
-    #             token       = upload_data["token"],
-    #             client      = client
-    #         )
+    if response["uploadMap"]:
+        for _, upload_data in iteritems(response["uploadMap"]):
+            document = Document(name = upload_data["uploadName"], client = client)
 
-    #         model.documents.append(document)
+            document.user       = client.get("user", id = upload_data["userId"])
+            document.created    = cc_datetime_to_datetime(upload_data["uploadDate"])
+            document._token     = upload_data["token"]
+
+            model.documents.append(document)
 
     return model

@@ -1,5 +1,6 @@
 # imports - standard imports
 import re
+import uuid
 
 _REGEX_ANSI_ESCAPE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 _REGEX_HTML        = re.compile("<.*?>")
@@ -74,3 +75,10 @@ def ellipsis(string, threshold = 50, pattern = "..."):
         string = "%s%s" % (string, pattern)
 
     return string
+
+def get_random_str(string):
+    uuid_   = uuid.uuid4()
+    string  = str(uuid_)
+    string  = string.replace("-", "")
+
+    return string 

@@ -32,12 +32,7 @@ def get_ginsim_executable(version = None):
         with requests.get(url, stream = True) as response:
             response.raise_for_status()
             
-            with open(executable, "wb") as f:
-                for chunk in response.iter_content(
-                    chunk_size = config.max_chunk_download_bytes
-                ):
-                    if chunk:
-                        f.write(chunk)
+            executable = response_download(response, executable)
     
     return executable
 

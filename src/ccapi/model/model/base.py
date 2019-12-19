@@ -107,6 +107,8 @@ class Model(Resource, JupyterHTMLViewMixin):
         class_              = _MODEL_TYPE_CLASS[default_type]
         self._versions      = QueryList([class_(model = self, *args, **kwargs)])
 
+        self._documents     = QueryList()
+
         Resource.__init__(self, name = name, *args, **kwargs)
 
     @property
@@ -166,6 +168,20 @@ class Model(Resource, JupyterHTMLViewMixin):
             raise TypeError("Versions must be of type (list, tuple, QueryList).")
         else:
             self._versions = versions
+
+    @property
+    def documents(self):
+        """
+        Documents.
+        """
+        return getattr(self, "_documents", QueryList())
+
+    @documents.setter
+    def documents(self, value):
+        if self.documents == value:
+            pass
+        else:
+            self._documents = value
 
     def _repr_html_(self):
         html = render_template("model.html", context = dict({
