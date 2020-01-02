@@ -8,7 +8,6 @@ from ccapi.model import (
     BooleanModel, InternalComponent, ExternalComponent,
     Regulator,
     Condition, ConditionType, ConditionState, ConditionRelation,
-    SubCondition,
     Document
 )
 from ccapi.util.datetime   import now
@@ -119,74 +118,60 @@ def _model_version_response_to_boolean_model(client, response):
 
             model.add_component(component)
 
-    #     sub_condition_map   = dict()
-    #     for sub_condition_id, sub_condition_data in data["subConditionMap"].items():
-    #         species         = [ ]
-    #         for _, sub_condition_species_data in data["subConditionSpeciesMap"].items():
-    #             if sub_condition_species_data["subConditionId"] == int(sub_condition_id):
-    #                 species_id = sub_condition_species_data["speciesId"]
-    #                 species.append(component_map[species_id])
+        sub_condition_map   = dict()
+        for sub_condition_id, sub_condition_data in iteritems(data["subConditionMap"]):
+            components      = [ ]
+            for _, sub_condition_species_data in iteritems(data["subConditionSpeciesMap"]):
+                if sub_condition_species_data["subConditionId"] == int(sub_condition_id):
+                    species_id = sub_condition_species_data["speciesId"]
+                    components.append(component_map[species_id])
 
-    #         sub_condition   = SubCondition(
-    #             id          = int(sub_condition_id),
-    #             type        = lower(sub_condition_data["type"]),
-    #             operator    = lower(sub_condition_data["speciesRelation"])
-    #                 if sub_condition_data.get("speciesRelation") else None,
-    #             state       = lower(sub_condition_data["state"]),
-    #             species     = species
-    #         )
+            sub_condition   = Condition(id = int(sub_condition_id),
+                components  = components
+            )
 
-    #         sub_condition_map[sub_condition.id] = dict({
-    #             "condition_id":     sub_condition_data["conditionId"],
-    #             "sub_condition":    sub_condition
-    #         })
+            sub_condition_map[sub_condition.id] = dict({
+                "condition_id":     sub_condition_data["conditionId"],
+                "sub_condition":    sub_condition
+            })
 
-    #     condition_map   = dict()
-    #     for condition_id, condition_data in iteritems(data["conditionMap"]):
-    #         species     = [ ]
-    #         for _, condition_species_data in iteritems(data["conditionSpeciesMap"]):
-    #             if condition_species_data["conditionId"] == int(condition_id):
-    #                 species_id = condition_species_data["speciesId"]
-    #                 species.append(component_map[species_id])
+        condition_map   = dict()
+        for condition_id, condition_data in iteritems(data["conditionMap"]):
+            components  = [ ]
+            for _, condition_species_data in iteritems(data["conditionSpeciesMap"]):
+                if condition_species_data["conditionId"] == int(condition_id):
+                    species_id = condition_species_data["speciesId"]
+                    components.append(component_map[species_id])
 
-    #         condition   = Condition(
-    #             id                      = int(condition_id),
-    #             sub_conditions          = [data["sub_condition"]
-    #                 for _, data in sub_condition_map.items()
-    #                     if data["condition_id"] == int(condition_id)
-    #             ],
-    #             type                    = lower(condition_data["type"]),
-    #             operator                = lower(condition_data["speciesRelation"])
-    #                 if condition_data.get("speciesRelation") else None,
-    #             sub_condition_operator  = lower(condition_data["subConditionRelation"])
-    #                 if condition_data.get("subConditionRelation") else None,
-    #             state                   = lower(condition_data["state"]),
-    #             species                 = species
-    #         )
+            condition   = Condition(id = int(condition_id),
+                components      = components,
+                sub_conditions  = [data["sub_condition"]
+                    for _, data in iteritems(sub_condition_map)
+                        if data["condition_id"] == int(condition_id)
+                ]
+            )
 
-    #         condition_map[condition.id] = dict({
-    #             "regulator_id": condition_data["regulatorId"],
-    #             "condition":    condition
-    #         })
+            condition_map[condition.id] = dict({
+                "regulator_id": condition_data["regulatorId"],
+                "condition":    condition
+            })
 
         regulator_map           = dict()
         component_regulator_map = dict()
         for regulator_id, regulator_data in iteritems(data["regulatorMap"]):
             regulator = Regulator(id = int(regulator_id),
-                component = component_map[regulator_data["regulatorSpeciesId"]],
-                type      = lower(regulator_data["regulationType"]),
-                # conditions      = [data["condition"]
-                #     for _, data in condition_map.items()
-                #         if data["regulator_id"] == int(regulator_id)
-                # ]
+                component   = component_map[regulator_data["regulatorSpeciesId"]],
+                type        = lower(regulator_data["regulationType"]),
+                conditions  = [data["condition"]
+                    for _, data in iteritems(condition_map)
+                        if data["regulator_id"] == int(regulator_id)
+                ]
             )
 
             component_regulator_map[regulator.id] = dict({
                 "component": component_map[regulator_data["speciesId"]],
                 "regulator": regulator
             })
-
-            # regulator_map[regulator.id] = regulator
 
         for i, component in enumerate(model.components):
             if isinstance(component, InternalComponent):

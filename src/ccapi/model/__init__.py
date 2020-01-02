@@ -13,8 +13,7 @@ from ccapi.model.model.boolean  import (
     BooleanModel,
     Component, InternalComponent, ExternalComponent,
     Regulator, PositiveRegulator, NegativeRegulator,
-    Condition, ConditionType, ConditionState, ConditionRelation,
-    SubCondition
+    Condition, ConditionType, ConditionState, ConditionRelation
 )
 
 # imports - constraint-based model imports

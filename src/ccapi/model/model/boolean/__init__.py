@@ -32,7 +32,6 @@ from ccapi.model.model.boolean.condition    import (
     Type     as ConditionType,
     Relation as ConditionRelation
 )
-from ccapi.model.model.boolean.subcondition import SubCondition
 
 _ACCEPTED_COMPONENT_CLASSES = tuple([InternalComponent, ExternalComponent])
 

@@ -1,2 +1,3 @@
 class Operator:
-    OR  = 2
+    OR  = "or"
+    AND = "and"
