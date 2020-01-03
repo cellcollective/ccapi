@@ -5,7 +5,7 @@ import random
 import collections
 
 # imports - third-party imports
-import requests
+import requests, grequests as greq
 from   requests_cache.core     import CachedSession
 from   grequests               import AsyncRequest
 
@@ -330,21 +330,16 @@ class Client:
 
         if   _resource == "model":
             url     = self._build_url("_api","model","get", prefix = False)
+            urls    = [ ]
             params  = None
 
             version = kwargs.get("version")
             hash_   = kwargs.get("hash")
 
-            # if isinstance(version, (list, tuple)):
-                
             if id_:
-                urls = [self._build_url(url, str(i), prefix = False) for i in id_]
-                url  = self._build_url(url, str(id_[0]), prefix = False)
-
-
-                responses = greq[self.request("GET", url, params = params, async = True) \
-                    for url in urls]
-                print(responses)
+                for i in id_:
+                    uri = self._build_url(url, str(i), prefix = False)
+                    urls.append(uri)
 
                 if version:
                     params = dict({
@@ -360,22 +355,27 @@ class Client:
                     ("name",   query)
                 ]
 
-            response = self.request("GET", url, params = params)
-            content  = response.json()
+            if urls:
+                responses = greq.map((self.request("GET", url, params = params,
+                    async = True) for url in urls))
+                contents  = [response.json() for response in responses]
+            else:
+                response = self.request("GET", url, params = params)
+                content  = response.json()
 
             if id_:
-                id_       = squash(id_)
-
                 models    = self.get("model", size = sys.maxsize, raw = True)
-                
-                model     = squash([model for model in models \
-                    if model["model"]["id"] == id_])
 
-                if not model:
-                    raise ValueError("Model with ID %s not found." % id_)
-                else:
-                    resources = content if raw else \
-                        _model_response_to_model(self, model)
+                for i, model_id in enumerate(id_):
+                    model     = squash([model for model in models \
+                        if model["model"]["id"] == model_id])
+
+                    if not model:
+                        raise ValueError("Model with ID %s not found." % model_id)
+                    else:
+                        resource = content if raw else \
+                            _model_response_to_model(self, model)
+                        resources.append(resource)
             else:
                 if filters:
                     if "user" in filters:
