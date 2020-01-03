@@ -7,6 +7,7 @@ import collections
 # imports - third-party imports
 import requests
 from   requests_cache.core     import CachedSession
+from   grequests               import AsyncRequest
 
 # imports - module imports
 from ccapi.api.helper          import (
@@ -132,6 +133,7 @@ class Client:
         data        = kwargs.get("params",      kwargs.get("data"))
         prefix      = kwargs.get("prefix",      True)
         user_agent  = kwargs.get("user_agent",  config.user_agent)
+        async_      = kwargs.pop("async",       False)
 
         headers.update({
             "User-Agent": user_agent
@@ -155,16 +157,25 @@ class Client:
 
         logger.info("Dispatching a %s request to URL: %s with Arguments - %s" \
             % (method, url, kwargs))
-        response = self._session.request(method, url,
-            headers = headers, proxies = proxies, *args, **kwargs)
 
-        if not response.ok and raise_error:
-            if response.text:
-                logger.error("Error recieved from the server: %s" % response.text)
+        return_ = None
 
-            response.raise_for_status()
+        if async_:
+            return_ = AsyncRequest(method, url, session = self._session, 
+                headers = headers, proxies = proxies, *args, **kwargs)
+        else:
+            response = self._session.request(method, url,
+                headers = headers, proxies = proxies, *args, **kwargs)
 
-        return response
+            if not response.ok and raise_error:
+                if response.text:
+                    logger.error("Error recieved from the server: %s" % response.text)
+
+                response.raise_for_status()
+
+            return_ = response
+
+        return return_
 
     def post(self, url, *args, **kwargs):
         """
@@ -324,8 +335,16 @@ class Client:
             version = kwargs.get("version")
             hash_   = kwargs.get("hash")
 
+            # if isinstance(version, (list, tuple)):
+                
             if id_:
-                url = self._build_url(url, str(id_[0]), prefix = False)
+                urls = [self._build_url(url, str(i), prefix = False) for i in id_]
+                url  = self._build_url(url, str(id_[0]), prefix = False)
+
+
+                responses = greq[self.request("GET", url, params = params, async = True) \
+                    for url in urls]
+                print(responses)
 
                 if version:
                     params = dict({

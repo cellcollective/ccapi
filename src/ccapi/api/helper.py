@@ -218,15 +218,22 @@ def _model_response_to_model(client, response):
 
     model.permissions = response["modelPermissions"]
     
-    for version in iterkeys(data["modelVersionMap"]):
-        content         = client.get("model", id = model.id, version = version,
-            hash = model.hash, raw = True)
+    versions          = iterkeys(data["modelVersionMap"])
+
+    # contents = { "1": { }, "2": { } }
+
+    contents          = client.get("model", id = model.id, version = versions,
+
+    )    
         
-        version, meta   = _model_version_response_to_boolean_model(client, content)
+        # content         = client.get("model", id = model.id, version = version,
+        #     hash = model.hash, raw = True)
+        
+        # version, meta   = _model_version_response_to_boolean_model(client, content)
 
-        model           = _merge_metadata_to_model(model, meta)
+        # model           = _merge_metadata_to_model(model, meta)
 
-        model.add_version(version)
+        # model.add_version(version)
 
     if response["uploadMap"]:
         for _, upload_data in iteritems(response["uploadMap"]):
