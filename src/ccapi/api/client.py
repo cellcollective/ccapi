@@ -4,9 +4,16 @@ import os.path as osp
 import random
 import collections
 
+#avoid "RecursionError: maximum recursion depth exceeded while calling a Python object" error
+import gevent.monkey
+gevent.monkey.patch_all()
+
 # imports - third-party imports
 import requests
 from   requests_cache.core     import CachedSession
+
+import grequests
+from grequests import AsyncRequest
 
 # imports - module imports
 from ccapi.api.helper          import (
@@ -132,6 +139,7 @@ class Client:
         data        = kwargs.get("params",      kwargs.get("data"))
         prefix      = kwargs.get("prefix",      True)
         user_agent  = kwargs.get("user_agent",  config.user_agent)
+        async_request = kwargs.pop("async_request",  False)
 
         headers.update({
             "User-Agent": user_agent
@@ -155,6 +163,9 @@ class Client:
 
         logger.info("Dispatching a %s request to URL: %s with Arguments - %s" \
             % (method, url, kwargs))
+        if async_request:
+            return AsyncRequest(method, url, session=self._session, headers = headers, proxies = proxies, **kwargs)
+
         response = self._session.request(method, url,
             headers = headers, proxies = proxies, *args, **kwargs)
 
@@ -319,13 +330,19 @@ class Client:
 
         if   _resource == "model":
             url     = self._build_url("_api","model","get", prefix = False)
+            urls    = None
             params  = None
 
             version = kwargs.get("version")
             hash_   = kwargs.get("hash")
 
+            if version:
+                if isinstance(version, string_types) and version.isdigit():
+                    version = int(version)
+                version = sequencify(version)
+
             if id_:
-                url = self._build_url(url, str(id_[0]), prefix = False)
+                urls = [self._build_url(url, str(id), prefix = False) for id in id_]
 
                 if version:
                     params = dict({
@@ -341,22 +358,33 @@ class Client:
                     ("name",   query)
                 ]
 
-            response = self.request("GET", url, params = params)
-            content  = response.json()
+            if urls:
+                req_map = None
+                if version:
+                    assert len(urls) == 1
+                    req_map = (self.request("GET", urls[0],  params = dict({
+                        "version": str(v) + \
+                            ("&%s" % hash_ if hash_ else "")
+                    }), async_request=True) for v in version)
+                else:
+                    req_map = (self.request("GET", u,  params = params, async_request=True) for u in urls)
+                
+                response = grequests.map(req_map)
+                content = [ ]
+                for r in response:
+                    try:
+                        content.append(r.json())
+                        if r.json().get('status') and r.json()['status'] is 400: raise ValueError(r.message)
+                    except:
+                        raise ValueError(r._content)
+            else:
+                response = self.request("GET", url, params = params)
+                content  = response.json()
 
             if id_:
-                id_       = squash(id_)
-
                 models    = self.get("model", size = sys.maxsize, raw = True)
-                
-                model     = squash([model for model in models \
-                    if model["model"]["id"] == id_])
-
-                if not model:
-                    raise ValueError("Model with ID %s not found." % id_)
-                else:
-                    resources = content if raw else \
-                        _model_response_to_model(self, model)
+                filtered_model     = [model for model in models if  model["model"]["id"] in id_]
+                resources = content if raw else [_model_response_to_model(self, m) for m in filtered_model]
             else:
                 if filters:
                     if "user" in filters:

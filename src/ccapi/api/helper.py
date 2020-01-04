@@ -17,6 +17,11 @@ from ccapi.util.string     import (
     sanitize_text,
     lower
 )
+
+from ccapi.util.array          import (
+    sequencify
+)
+
 from ccapi._compat         import iteritems, iterkeys
 
 def cc_datetime_to_datetime(datetime_, default = None, raise_err = False):
@@ -233,10 +238,13 @@ def _model_response_to_model(client, response):
 
     model.permissions = response["modelPermissions"]
     
-    for version in iterkeys(data["modelVersionMap"]):
-        content         = client.get("model", id = model.id, version = version,
-            hash = model.hash, raw = True)
-        
+    versions = list(data["modelVersionMap"].keys())
+    versions_content = sequencify(client.get("model", 
+                                    id = model.id, 
+                                    version =  versions,
+                                    raw=True))
+
+    for content in versions_content:
         version, meta   = _model_version_response_to_boolean_model(client, content)
 
         model           = _merge_metadata_to_model(model, meta)
