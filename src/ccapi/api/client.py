@@ -9,8 +9,9 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 # imports - third-party imports
-import requests
+import requests, grequests as greq
 from   requests_cache.core     import CachedSession
+from   grequests               import AsyncRequest
 
 import grequests
 from grequests import AsyncRequest
@@ -169,13 +170,24 @@ class Client:
         response = self._session.request(method, url,
             headers = headers, proxies = proxies, *args, **kwargs)
 
-        if not response.ok and raise_error:
-            if response.text:
-                logger.error("Error recieved from the server: %s" % response.text)
+        return_ = None
 
-            response.raise_for_status()
+        if async_:
+            return_ = AsyncRequest(method, url, session = self._session, 
+                headers = headers, proxies = proxies, *args, **kwargs)
+        else:
+            response = self._session.request(method, url,
+                headers = headers, proxies = proxies, *args, **kwargs)
 
-        return response
+            if not response.ok and raise_error:
+                if response.text:
+                    logger.error("Error recieved from the server: %s" % response.text)
+
+                response.raise_for_status()
+
+            return_ = response
+
+        return return_
 
     def post(self, url, *args, **kwargs):
         """

@@ -1,3 +1,3 @@
 class Type:
-    IF      = 1
-    UNLESS  = 2
+    IF      = "if"
+    UNLESS  = "unless"
