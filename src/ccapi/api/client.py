@@ -165,29 +165,20 @@ class Client:
         logger.info("Dispatching a %s request to URL: %s with Arguments - %s" \
             % (method, url, kwargs))
         if async_request:
-            return AsyncRequest(method, url, session=self._session, headers = headers, proxies = proxies, **kwargs)
+            return AsyncRequest(method, url, session=self._session, 
+                                                headers = headers, proxies = proxies,  
+                                                **kwargs)
 
         response = self._session.request(method, url,
             headers = headers, proxies = proxies, *args, **kwargs)
 
-        return_ = None
+        if not response.ok and raise_error:
+            if response.text:
+                logger.error("Error recieved from the server: %s" % response.text)
 
-        if async_:
-            return_ = AsyncRequest(method, url, session = self._session, 
-                headers = headers, proxies = proxies, *args, **kwargs)
-        else:
-            response = self._session.request(method, url,
-                headers = headers, proxies = proxies, *args, **kwargs)
+            response.raise_for_status()
 
-            if not response.ok and raise_error:
-                if response.text:
-                    logger.error("Error recieved from the server: %s" % response.text)
-
-                response.raise_for_status()
-
-            return_ = response
-
-        return return_
+        return response
 
     def post(self, url, *args, **kwargs):
         """
@@ -381,7 +372,7 @@ class Client:
                 else:
                     req_map = (self.request("GET", u,  params = params, async_request=True) for u in urls)
                 
-                response = grequests.map(req_map)
+                response = grequests.map(req_map, exception_handler = lambda req, ex : print("request failed"))
                 content = [ ]
                 for r in response:
                     try:
