@@ -5,8 +5,15 @@ import random
 import collections
 
 # imports - third-party imports
+# https://github.com/gevent/gevent/issues/1016#issuecomment-328529454
+# Monkey-Patch
+from gevent import monkey as curious_george
+curious_george.patch_all(thread = False, select = False)
+
 import requests
-from   requests_cache.core     import CachedSession
+from   requests_cache.core      import CachedSession
+import grequests as greq
+from   grequests                import AsyncRequest
 
 # imports - module imports
 from ccapi.api.helper          import (
@@ -132,6 +139,7 @@ class Client:
         data        = kwargs.get("params",      kwargs.get("data"))
         prefix      = kwargs.get("prefix",      True)
         user_agent  = kwargs.get("user_agent",  config.user_agent)
+        async_      = kwargs.pop("async_",      False)
 
         headers.update({
             "User-Agent": user_agent
@@ -155,14 +163,19 @@ class Client:
 
         logger.info("Dispatching a %s request to URL: %s with Arguments - %s" \
             % (method, url, kwargs))
-        response = self._session.request(method, url,
-            headers = headers, proxies = proxies, *args, **kwargs)
 
-        if not response.ok and raise_error:
-            if response.text:
-                logger.error("Error recieved from the server: %s" % response.text)
+        if async_:
+            response = AsyncRequest(method, url, session = self._session,
+                headers = headers, proxies = proxies, *args, **kwargs)
+        else:
+            response = self._session.request(method, url,
+                headers = headers, proxies = proxies, *args, **kwargs)
 
-            response.raise_for_status()
+            if not response.ok and raise_error:
+                if response.text:
+                    logger.error("Error recieved from the server: %s" % response.text)
+
+                response.raise_for_status()
 
         return response
 
