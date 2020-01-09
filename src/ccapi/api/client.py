@@ -4,10 +4,17 @@ import os.path as osp
 import random
 import collections
 
+#avoid "RecursionError: maximum recursion depth exceeded while calling a Python object" error
+import gevent.monkey
+gevent.monkey.patch_all()
+
 # imports - third-party imports
 import requests, grequests as greq
 from   requests_cache.core     import CachedSession
 from   grequests               import AsyncRequest
+
+import grequests
+from grequests import AsyncRequest
 
 # imports - module imports
 from ccapi.api.helper          import (
@@ -133,7 +140,7 @@ class Client:
         data        = kwargs.get("params",      kwargs.get("data"))
         prefix      = kwargs.get("prefix",      True)
         user_agent  = kwargs.get("user_agent",  config.user_agent)
-        async_      = kwargs.pop("async",       False)
+        async_request = kwargs.pop("async_request",  False)
 
         headers.update({
             "User-Agent": user_agent
@@ -157,25 +164,21 @@ class Client:
 
         logger.info("Dispatching a %s request to URL: %s with Arguments - %s" \
             % (method, url, kwargs))
+        if async_request:
+            return AsyncRequest(method, url, session=self._session, 
+                                                headers = headers, proxies = proxies,  
+                                                **kwargs)
 
-        return_ = None
+        response = self._session.request(method, url,
+            headers = headers, proxies = proxies, *args, **kwargs)
 
-        if async_:
-            return_ = AsyncRequest(method, url, session = self._session, 
-                headers = headers, proxies = proxies, *args, **kwargs)
-        else:
-            response = self._session.request(method, url,
-                headers = headers, proxies = proxies, *args, **kwargs)
+        if not response.ok and raise_error:
+            if response.text:
+                logger.error("Error recieved from the server: %s" % response.text)
 
-            if not response.ok and raise_error:
-                if response.text:
-                    logger.error("Error recieved from the server: %s" % response.text)
+            response.raise_for_status()
 
-                response.raise_for_status()
-
-            return_ = response
-
-        return return_
+        return response
 
     def post(self, url, *args, **kwargs):
         """
@@ -330,16 +333,19 @@ class Client:
 
         if   _resource == "model":
             url     = self._build_url("_api","model","get", prefix = False)
-            urls    = [ ]
+            urls    = None
             params  = None
 
             version = kwargs.get("version")
             hash_   = kwargs.get("hash")
 
+            if version:
+                if isinstance(version, string_types) and version.isdigit():
+                    version = int(version)
+                version = sequencify(version)
+
             if id_:
-                for i in id_:
-                    uri = self._build_url(url, str(i), prefix = False)
-                    urls.append(uri)
+                urls = [self._build_url(url, str(id), prefix = False) for id in id_]
 
                 if version:
                     params = dict({
@@ -356,26 +362,32 @@ class Client:
                 ]
 
             if urls:
-                responses = greq.map((self.request("GET", url, params = params,
-                    async = True) for url in urls))
-                contents  = [response.json() for response in responses]
+                req_map = None
+                if version:
+                    assert len(urls) == 1
+                    req_map = (self.request("GET", urls[0],  params = dict({
+                        "version": str(v) + \
+                            ("&%s" % hash_ if hash_ else "")
+                    }), async_request=True) for v in version)
+                else:
+                    req_map = (self.request("GET", u,  params = params, async_request=True) for u in urls)
+                
+                response = grequests.map(req_map, exception_handler = lambda req, ex : print("request failed"))
+                content = [ ]
+                for r in response:
+                    try:
+                        content.append(r.json())
+                        if r.json().get('status') and r.json()['status'] is 400: raise ValueError(r.message)
+                    except:
+                        raise ValueError(r._content)
             else:
                 response = self.request("GET", url, params = params)
                 content  = response.json()
 
             if id_:
                 models    = self.get("model", size = sys.maxsize, raw = True)
-
-                for i, model_id in enumerate(id_):
-                    model     = squash([model for model in models \
-                        if model["model"]["id"] == model_id])
-
-                    if not model:
-                        raise ValueError("Model with ID %s not found." % model_id)
-                    else:
-                        resource = content if raw else \
-                            _model_response_to_model(self, model)
-                        resources.append(resource)
+                filtered_model     = [model for model in models if  model["model"]["id"] in id_]
+                resources = content if raw else [_model_response_to_model(self, m) for m in filtered_model]
             else:
                 if filters:
                     if "user" in filters:
