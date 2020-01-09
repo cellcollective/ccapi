@@ -73,7 +73,7 @@ $ pip install ccapi
 
 ### Documentation
 
-Visit [ccapi.readthedocs.org](ccapi.readthedocs.org) for documentation.
+Visit [https://ccapi.readthedocs.org](https://ccapi.readthedocs.org) for documentation.
 
 #### License
 
