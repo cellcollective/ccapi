@@ -183,6 +183,22 @@ class Model(Resource, JupyterHTMLViewMixin):
         else:
             self._documents = value
 
+    @property
+    def default_version(self):
+        """
+        Default Version.
+        """
+        return getattr(self, "_default_version", None)
+
+    @default_version.setter
+    def default_version(self, value):
+        if self.default_version == value:
+            pass
+        elif not isinstance(value, _ACCEPTED_MODEL_CLASSES):
+            raise TypeError("%s is not a valid model type." % value)
+        else:
+            self._default_type = value
+
     def _repr_html_(self):
         html = render_template("model.html", context = dict({
             "id":                   self.id,

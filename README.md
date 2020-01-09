@@ -2,7 +2,6 @@
     <h1>
       ccapi
     </h1>
-    <h4><i>Cell Collective Python API Wrapper</i></h4>
     <h4>
       A Python Library to interact with the 
       <a href="https://cellcollective.org">Cell Collective</a> API v2
@@ -22,6 +21,9 @@
   <a href="https://pypi.org/project/ccapi/">
     <img src="https://img.shields.io/pypi/v/ccapi.svg?style=flat-square">
   </a>
+  <a href="https://pypi.org/project/pipupgrade/">
+		<img src="https://img.shields.io/pypi/l/pipupgrade.svg?style=flat-square">
+	</a>
   <a href="https://hub.docker.com/r/achillesrasquinha/ccapi">
     <img src="https://img.shields.io/docker/build/achillesrasquinha/ccapi.svg?style=flat-square&logo=docker">
   </a>
@@ -35,6 +37,10 @@
     <img src="https://img.shields.io/badge/donate-💵-f44336.svg?style=flat-square">
   </a>
 </p>
+
+<div align="center">
+  <img src=".github/assets/demo.gif">
+</div>
 
 **ccapi** is a Python Package that provides a simple interface to 
 [Cell Collective](https://cellcollective.org) for modelling and analysis of 

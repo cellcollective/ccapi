@@ -341,8 +341,16 @@ class Client:
 
         if   _resource == "model":
             url         = self._build_url("_api/model/get", prefix = False)
+            params      = None
 
-            response    = self.request("GET", url)
+            if query:
+                params  = (
+                    ("search", "species"),
+                    ("search", "knowledge"),
+                    ("name",   query)
+                )
+
+            response    = self.request("GET", url, params = params)
             content     = response.json()
 
             if id_:

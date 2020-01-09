@@ -198,7 +198,7 @@ else
 	$(TWINE) upload --repository-url https://upload.pypi.org/legacy/ $(BASEDIR)/dist/* 
 endif
 
-jupyter: ## Launch Notebooks
+notebooks: ## Launch Notebooks
 	$(JUPYTER) notebook --notebook-dir $(NOTEBOOKSDIR)
 
 help: ## Show help and exit.
