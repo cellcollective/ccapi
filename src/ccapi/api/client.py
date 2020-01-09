@@ -17,6 +17,7 @@ from   grequests                import AsyncRequest
 
 # imports - module imports
 from ccapi.api.helper          import (
+    _build_model_urls,
     _user_response_to_user,
     _model_response_to_model,
     _model_version_response_to_boolean_model,
@@ -35,11 +36,14 @@ from ccapi.constant            import (
 from ccapi._compat             import (
     string_types,
     iteritems,
-    iterkeys
+    iterkeys,
+    itervalues,
+    urlencode
 )
 from ccapi.util.array          import (
     sequencify,
-    squash
+    squash,
+    find
 )
 from ccapi.util._dict          import merge_dict
 from ccapi.exception           import (
@@ -121,13 +125,18 @@ class Client:
         return equals
 
     def _build_url(self, *args, **kwargs):
-        prefix = kwargs.get("prefix", True)
-        parts  = [ ]
+        params  = kwargs.pop("params", None) 
+        prefix  = kwargs.get("prefix", True)
+        parts   = [ ]
 
         if prefix:
             parts.append(self.base_url)
 
         url = "/".join(map(str, sequencify(parts) + sequencify(args)))
+
+        if params:
+            encoded  = urlencode(params)
+            url     += "?%s" % encoded
 
         return url
 
@@ -331,45 +340,69 @@ class Client:
             id_ = sequencify(id_)
 
         if   _resource == "model":
-            url     = self._build_url("_api","model","get", prefix = False)
-            params  = None
+            url         = self._build_url("_api/model/get", prefix = False)
 
-            version = kwargs.get("version")
-            hash_   = kwargs.get("hash")
-
-            if id_:
-                url = self._build_url(url, str(id_[0]), prefix = False)
-
-                if version:
-                    params = dict({
-                        "version": str(version) + \
-                            ("&%s" % hash_ if hash_ else "")
-                    })
-
-            if query:
-                url     = self._build_url(url, prefix = False)
-                params  = [
-                    ("search", "species"),
-                    ("search", "knowledge"),
-                    ("name",   query)
-                ]
-
-            response = self.request("GET", url, params = params)
-            content  = response.json()
+            response    = self.request("GET", url)
+            content     = response.json()
 
             if id_:
-                id_       = squash(id_)
+                urls    = dict()
 
-                models    = self.get("model", size = sys.maxsize, raw = True)
-                
-                model     = squash([model for model in models \
-                    if model["model"]["id"] == id_])
+                version = kwargs.get("version")
+                hash_   = kwargs.get("hash")
 
-                if not model:
-                    raise ValueError("Model with ID %s not found." % id_)
-                else:
-                    resources = content if raw else \
-                        _model_response_to_model(self, model)
+                if isinstance(hash_, str):
+                    if not len(id_) == 1:
+                        raise ValueError((
+                            "Hash provided cannot be a string. ",
+                            "To provide multiple hashes, pass a dict of the ",
+                            "format { id: hash }"
+                        ))
+
+                models  = dict()
+
+                for i in id_:
+                    model = find(content, lambda x: x["model"]["id"] == i)
+                    
+                    if not model:
+                        raise ValueError("Model with ID %s not found." % i)
+                    else:
+                        models[i]   = dict({
+                            "metadata": model,
+                            "versions": dict()
+                        })
+
+                        versions    = [ ]
+
+                        if not version:
+                            versions = list(iterkeys(model["model"]["modelVersionMap"]))
+
+                        hash_def = None
+                        if not hash_:
+                            hash_def = model.get("hash", None)
+
+                        urls.update(_build_model_urls(self,
+                            id_ = i, version = version if version else versions,
+                            hash_ = hash_ if hash_ else hash_def
+                        ))
+
+                arequests   = (self.request("GET", url, async_ = True) for url in itervalues(urls))
+                responses   = greq.imap(arequests)
+
+                keys        = list(iterkeys(urls))
+
+                for i, response in enumerate(responses):
+                    _id, _version   = list(map(int, keys[i].split("/")))
+
+                    if response.ok:
+                        json = response.json()
+                        models[_id]["versions"].update({
+                            _version: json
+                        })
+                    else:
+                        logger.warn("Unable to fetch model %s with version %s." % (_id, _version))
+                    
+                resources = models
             else:
                 if filters:
                     if "user" in filters:
@@ -379,7 +412,8 @@ class Client:
                             user = self.get("user", id = user)
 
                         if not isinstance(user, User):
-                            raise TypeError("Expected type for user is User or ID, type %s found." % type(user))
+                            raise TypeError("Expected type for user is User \
+                                or ID, type %s found." % type(user))
 
                         content = list(filter(lambda x: x["model"]["userId"] == user.id, content))
 
@@ -391,14 +425,78 @@ class Client:
                         else:
                             content = list(filter(lambda x: x["model"]["type"] == domain, content))
 
-                from_, to = since - 1, min(len(content), size)
-                content   = content[from_ : from_ + to]
+                from_, to   = since - 1, min(len(content), size)
+                
+                content     = content[from_ : from_ + to]
+                ids         = [data["model"]["id"] for data in content]
+                
+                resources   = self.get("model", id = ids)
 
-                resources = content if raw else \
-                    QueryList([
-                        _model_response_to_model(self, obj)
-                            for obj in content
-                    ])
+            # version = kwargs.get("version")
+            # hash_   = kwargs.get("hash")
+
+            # if id_:
+            #     url = self._build_url(url, str(id_[0]), prefix = False)
+
+            #     if version:
+            #         params = dict({
+            #             "version": str(version) + \
+            #                 ("&%s" % hash_ if hash_ else "")
+            #         })
+
+            # if query:
+            #     url     = self._build_url(url, prefix = False)
+            #     params  = [
+            #         ("search", "species"),
+            #         ("search", "knowledge"),
+            #         ("name",   query)
+            #     ]
+
+            # response = self.request("GET", url, params = params)
+            # content  = response.json()
+
+            # if id_:
+            #     id_       = squash(id_)
+
+            #     models    = self.get("model", size = sys.maxsize, raw = True)
+                
+            #     model     = squash([model for model in models \
+            #         if model["model"]["id"] == id_])
+
+            #     if not model:
+            #         raise ValueError("Model with ID %s not found." % id_)
+            #     else:
+            #         resources = content if raw else \
+            #             _model_response_to_model(self, model)
+            # else:
+            #     if filters:
+            #         if "user" in filters:
+            #             user = filters["user"]
+
+            #             if isinstance(user, int):
+            #                 user = self.get("user", id = user)
+
+            #             if not isinstance(user, User):
+            #                 raise TypeError("Expected type for user is User or ID, type %s found." % type(user))
+
+            #             content = list(filter(lambda x: x["model"]["userId"] == user.id, content))
+
+            #         if "domain" in filters:
+            #             domain = filters["domain"]
+
+            #             if domain not in _ACCEPTED_MODEL_DOMAIN_TYPES:
+            #                 raise TypeError("Not a valid domain type: %s" % domain)
+            #             else:
+            #                 content = list(filter(lambda x: x["model"]["type"] == domain, content))
+
+            #     from_, to = since - 1, min(len(content), size)
+            #     content   = content[from_ : from_ + to]
+
+            #     resources = content if raw else \
+            #         QueryList([
+            #             _model_response_to_model(self, obj)
+            #                 for obj in content
+            #         ])
         elif _resource == "user":
             if not id_:
                 raise ValueError("id required.")

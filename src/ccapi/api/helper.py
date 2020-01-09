@@ -1,6 +1,7 @@
 # imports - standard imports
 import re
 import datetime as dt
+import collections
 
 from ccapi.model import (
     User,
@@ -10,13 +11,14 @@ from ccapi.model import (
     Condition, ConditionType, ConditionState, ConditionRelation,
     Document
 )
-from ccapi.util.datetime   import now
-from ccapi.util.string     import (
+from ccapi.util.datetime    import now
+from ccapi.util.string      import (
     sanitize_html,
     sanitize_text,
     lower
 )
-from ccapi._compat         import iteritems, iterkeys
+from ccapi.util.array       import sequencify
+from ccapi._compat          import iteritems, iterkeys
 
 def cc_datetime_to_datetime(datetime_, default = None, raise_err = False):
     datetime_object = default
@@ -239,3 +241,38 @@ def _model_response_to_model(client, response):
             model.documents.append(document)
 
     return model
+
+def _build_model_urls(client, id_, version, hash_ = None):
+    urls = dict()
+
+    ids  = sequencify(id_)
+    
+    for id_ in ids:
+        base_url = client._build_url("_api/model/get", id_, prefix = False)
+        url      = None
+
+        versions = [ ]
+
+        if isinstance(version, collections.Mapping):
+            if id_ in version:
+                versions = sequencify(version[id_])
+        else:
+            versions = sequencify(version)
+
+        for v in versions:
+            params  = dict(version = v)
+            url     = client._build_url(base_url, params = params, prefix = False)
+            
+            if hash_:
+                if isinstance(hash_, str):
+                    hash_ = dict({ id_: hash_ })
+                
+                for hash_id, hash_hash in iteritems(hash_):
+                    if hash_id == id_:
+                        url = "%s&%s" % (url, hash_hash)
+            
+            key         = "%s/%s" % (id_, v)
+
+            urls[key]   = url
+
+    return urls

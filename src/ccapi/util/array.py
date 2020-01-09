@@ -29,3 +29,23 @@ def flatten(arr):
     flattened = list(chainer(*arr))
 
     return flattened
+
+def find(arr, kind, default = None, raise_err = False):
+    obj = kind
+
+    if not callable(kind):
+        kind = lambda x: x == obj
+    
+    found = list(filter(kind, arr))
+
+    if not found:
+        if raise_err:
+            raise ValueError("%s not found in array." % obj)
+        else:
+            found = default
+    else:
+        found = squash(found)
+
+    return found
+
+    
