@@ -19,7 +19,7 @@ from   grequests                import AsyncRequest
 from ccapi.api.helper          import (
     _build_model_urls,
     _user_response_to_user,
-    _model_response_to_model,
+    _model_content_to_model,
     _model_version_response_to_boolean_model,
     _merge_metadata_to_model
 )
@@ -311,7 +311,7 @@ class Client:
         
         response = self.request("GET", "_api/user/getProfile", *args, **kwargs)
         content  = response.json()
-        user     = _user_response_to_user(self, content)
+        user     = _user_response_to_user(content, client = self)
 
         return user
 
@@ -392,7 +392,7 @@ class Client:
                 keys        = list(iterkeys(urls))
 
                 for i, response in enumerate(responses):
-                    _id, _version   = list(map(int, keys[i].split("/")))
+                    _id, _version = list(map(int, keys[i].split("/")))
 
                     if response.ok:
                         json = response.json()
@@ -401,8 +401,35 @@ class Client:
                         })
                     else:
                         logger.warn("Unable to fetch model %s with version %s." % (_id, _version))
-                    
-                resources = models
+
+                user_ids    = [ ]
+                for id_, model in iteritems(models):
+                    metadata    = model["metadata"]
+                    user_id     = metadata["model"]["userId"]
+
+                    user_ids.append(user_id)
+
+                    for version_id, version_data in iteritems(model["versions"]):
+                        version_data = next(iter(itervalues(version_data)))
+
+                        for _, share_data in iteritems(version_data["shareMap"]):
+                            user_id = share_data["userId"]
+                            user_ids.append(user_id)
+
+                    if metadata["uploadMap"]:
+                        for upload_id, upload_data in iteritems(metadata["uploadMap"]):
+                            user_id = upload_data["userId"]
+                            user_ids.append(user_id)
+
+                user_ids    = set(user_ids)
+
+                users       = QueryList(sequencify(self.get("user", id = user_ids)))
+
+                resources   = QueryList([
+                    _model_content_to_model(model,
+                        users = users, client = self) \
+                            for _, model in iteritems(models)
+                ])
             else:
                 if filters:
                     if "user" in filters:
@@ -431,72 +458,6 @@ class Client:
                 ids         = [data["model"]["id"] for data in content]
                 
                 resources   = self.get("model", id = ids)
-
-            # version = kwargs.get("version")
-            # hash_   = kwargs.get("hash")
-
-            # if id_:
-            #     url = self._build_url(url, str(id_[0]), prefix = False)
-
-            #     if version:
-            #         params = dict({
-            #             "version": str(version) + \
-            #                 ("&%s" % hash_ if hash_ else "")
-            #         })
-
-            # if query:
-            #     url     = self._build_url(url, prefix = False)
-            #     params  = [
-            #         ("search", "species"),
-            #         ("search", "knowledge"),
-            #         ("name",   query)
-            #     ]
-
-            # response = self.request("GET", url, params = params)
-            # content  = response.json()
-
-            # if id_:
-            #     id_       = squash(id_)
-
-            #     models    = self.get("model", size = sys.maxsize, raw = True)
-                
-            #     model     = squash([model for model in models \
-            #         if model["model"]["id"] == id_])
-
-            #     if not model:
-            #         raise ValueError("Model with ID %s not found." % id_)
-            #     else:
-            #         resources = content if raw else \
-            #             _model_response_to_model(self, model)
-            # else:
-            #     if filters:
-            #         if "user" in filters:
-            #             user = filters["user"]
-
-            #             if isinstance(user, int):
-            #                 user = self.get("user", id = user)
-
-            #             if not isinstance(user, User):
-            #                 raise TypeError("Expected type for user is User or ID, type %s found." % type(user))
-
-            #             content = list(filter(lambda x: x["model"]["userId"] == user.id, content))
-
-            #         if "domain" in filters:
-            #             domain = filters["domain"]
-
-            #             if domain not in _ACCEPTED_MODEL_DOMAIN_TYPES:
-            #                 raise TypeError("Not a valid domain type: %s" % domain)
-            #             else:
-            #                 content = list(filter(lambda x: x["model"]["type"] == domain, content))
-
-            #     from_, to = since - 1, min(len(content), size)
-            #     content   = content[from_ : from_ + to]
-
-            #     resources = content if raw else \
-            #         QueryList([
-            #             _model_response_to_model(self, obj)
-            #                 for obj in content
-            #         ])
         elif _resource == "user":
             if not id_:
                 raise ValueError("id required.")
@@ -506,11 +467,12 @@ class Client:
             )
             content     = response.json()
 
-            for user_id, user_data in iteritems(content):
-                user = _user_response_to_user(self, 
-                    merge_dict({ "id": user_id }, user_data)
-                )
-                resources.append(user)
+            resources   = QueryList([
+                _user_response_to_user(
+                    merge_dict({ "id": user_id }, user_data),
+                    client = self
+                ) for user_id, user_data in iteritems(content)
+            ])
 
         return squash(resources)
 
@@ -530,7 +492,9 @@ class Client:
 
         model           = Model(client = self)
 
-        boolean, meta   = _model_version_response_to_boolean_model(self, content)
+        boolean, meta   = _model_version_response_to_boolean_model(content,
+            client = self
+        )
         
         model           = _merge_metadata_to_model(model, meta)
 

@@ -35,15 +35,6 @@ def cc_datetime_to_datetime(datetime_, default = None, raise_err = False):
 
     return datetime_object
 
-def _user_response_to_user(client, response):
-    user = User(id = int(response["id"]), first_name = response["firstName"],
-        last_name = response["lastName"], client = client)
-
-    user.email       = response.get("email")
-    user.institution = response.get("institution")
-
-    return user
-
 def _section_type_to_dict_key(section_type):
     splits  = re.findall("[A-Z][^A-Z]*", section_type)
     key     = "_".join([s.lower() for s in splits])
@@ -55,8 +46,8 @@ def _merge_metadata_to_model(model, meta):
         setattr(model, attr, value)
     return model
 
-def _model_version_response_to_boolean_model(client, response):
-    meta = { }
+def _model_version_response_to_boolean_model(response, users = None, client = None):
+    metadata = { }
 
     for key, data in iteritems(response):
         if "/" in key:
@@ -68,7 +59,7 @@ def _model_version_response_to_boolean_model(client, response):
         model = BooleanModel(version = model_version_id, client = client)
 
         if "score" in data:
-            meta["score"] = data["score"]["score"]
+            metadata["score"] = data["score"]["score"]
 
         component_map = dict()
         for component_id, component_data in iteritems(data["speciesMap"]):
@@ -183,15 +174,16 @@ def _model_version_response_to_boolean_model(client, response):
                             component_regulator_data["regulator"]
                         )
 
-        meta["users"] = [ ]
+        metadata["users"] = [ ]
         for _, share_data in iteritems(data["shareMap"]):
-            user = client.get("user", id = share_data["userId"])
-            meta["users"].append(user)
+            user = users.get_by_id(share_data["userId"])
+            metadata["users"].append(user)
 
-        return model, meta
+        return model, metadata
 
-def _model_response_to_model(client, response):
-    data              = response["model"]
+def _model_content_to_model(content, users, client = None):
+    metadata          = content["metadata"]
+    data              = metadata["model"]
 
     model             = Model(id = int(data["id"]), name = data["name"],
         domain = data["type"], client = client)
@@ -214,27 +206,27 @@ def _model_response_to_model(client, response):
 
     model.public      = data["published"]
 
-    model.user        = client.get("user", id = data["userId"])
+    model.user        = users.get_by_id(data["userId"])
 
     model.hash        = data.get("hash")
 
-    model.permissions = response["modelPermissions"]
+    model.permissions = metadata["modelPermissions"]
     
-    for version in iterkeys(data["modelVersionMap"]):
-        content         = client.get("model", id = model.id, version = version,
-            hash = model.hash, raw = True)
-        
-        version, meta   = _model_version_response_to_boolean_model(client, content)
-
+    for version_id, version_data in iteritems(content["versions"]):
+        version, meta   = _model_version_response_to_boolean_model(
+            response    = version_data,
+            users       = users,
+            client      = client,
+        )
         model           = _merge_metadata_to_model(model, meta)
 
         model.add_version(version)
 
-    if response["uploadMap"]:
-        for _, upload_data in iteritems(response["uploadMap"]):
+    if metadata["uploadMap"]:
+        for _, upload_data in iteritems(metadata["uploadMap"]):
             document = Document(name = upload_data["uploadName"], client = client)
 
-            document.user       = client.get("user", id = upload_data["userId"])
+            document.user       = users.get_by_id(upload_data["userId"])
             document.created    = cc_datetime_to_datetime(upload_data["uploadDate"])
             document._token     = upload_data["token"]
 
@@ -242,13 +234,23 @@ def _model_response_to_model(client, response):
 
     return model
 
+def _user_response_to_user(response, client = None):
+    user = User(id = int(response["id"]), first_name = response["firstName"],
+        last_name = response["lastName"], client = client)
+
+    user.email       = response.get("email")
+    user.institution = response.get("institution")
+
+    return user
+
 def _build_model_urls(client, id_, version, hash_ = None):
     urls = dict()
 
     ids  = sequencify(id_)
     
     for id_ in ids:
-        base_url = client._build_url("_api/model/get", id_, prefix = False)
+        base_url = client._build_url("_api/model/get", id_,
+            prefix = False)
         url      = None
 
         versions = [ ]
@@ -261,7 +263,8 @@ def _build_model_urls(client, id_, version, hash_ = None):
 
         for v in versions:
             params  = dict(version = v)
-            url     = client._build_url(base_url, params = params, prefix = False)
+            url     = client._build_url(base_url, params = params,
+                prefix = False)
             
             if hash_:
                 if isinstance(hash_, str):
