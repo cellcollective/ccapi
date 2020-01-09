@@ -49,10 +49,10 @@ biological networks.
 ### Table of Contents
 * [Features](#Features)
 * [Installation](#installation)
-* [Usage](#usage)
+* [Usage](#Documentation)
 * [License](#license)
 
-#### Features
+### Features
 
 **ccapi** attempts to be an all-in-one toolbox for modelling biological systems.
 
@@ -65,14 +65,15 @@ biological networks.
 
 **ccapi** officially supports Python 2.7+ and 3.4+.
 
-#### Installation
+### Installation
 
 ```shell
 $ pip install ccapi
 ```
 
-#### Documentation
+### Documentation
 
+Visit [ccapi.readthedocs.org]() for documentation.
 
 #### License
 
