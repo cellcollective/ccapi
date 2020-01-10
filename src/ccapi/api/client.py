@@ -492,24 +492,37 @@ class Client:
         :param save: Save model after importing.
         """
         type_           = type or config.model_type["value"]
-
-        files           = dict({ "upload": (filename, open(filename, "rb")) })
-
-        response        = self.post("_api/model/import", files = files)
-        content         = response.json()
-
-        model           = Model(client = self)
-
-        boolean, meta   = _model_version_response_to_boolean_model(content,
-            client = self
-        )
         
-        model           = _merge_metadata_to_model(model, meta)
-
+        model           = Model(client = self)
         # HACK: remove default version provided.
         model.versions.pop()
 
-        model.add_version(boolean)
+        if   type_ == "boolean":
+            files           = dict({ "upload": (filename, open(filename, "rb")) })
+
+            response        = self.post("_api/model/import", files = files)
+            content         = response.json()
+
+            boolean, meta   = _model_version_response_to_boolean_model(content,
+                client = self
+            )
+
+            model           = _merge_metadata_to_model(model, meta)
+            
+            model.add_version(boolean)
+        elif type_ == "metabolic":
+            data            = dict(type = type_)
+            files           = dict({ "model": (filename, open(filename, "rb")) })
+
+            response        = self.post("api/model/import", data = data,
+                files = files)
+            content         = response.json()
+
+            model           = Model(client = self)
+
+            # metabolic       = 
+        else:
+            raise TypeError("Unknown type %s." % type_)
         
         if save:
             model.save()

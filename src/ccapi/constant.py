@@ -11,9 +11,20 @@ PATH["BASE"]      = pardir(__file__)
 PATH["DATA"]      = osp.join(PATH["BASE"], "data")
 PATH["TEMPLATES"] = osp.join(PATH["DATA"], "templates")
 PATH["CACHE"]     = osp.join(osp.expanduser("~"), ".%s" % __name__)
-PATH["MODELS"]    = dict({
-    "fibroblasts": osp.join(PATH["DATA"], "models", "boolean", "sbml", "fibroblasts.sbml"),
-     "lac-operon": osp.join(PATH["DATA"], "models", "boolean", "sbml", "lac-operon.sbml") 
+
+MODELS            = dict({
+    "fibroblasts": dict({
+        "path": osp.join(PATH["DATA"], "models", "boolean", "sbml", "fibroblasts.sbml"),
+        "type": "boolean"
+    }),
+    "lac-operon": dict({
+        "path": osp.join(PATH["DATA"], "models", "boolean", "sbml", "lac-operon.sbml"),
+        "type": "boolean"
+    }),
+    "dehalococcoides": dict({
+        "path": osp.join(PATH["DATA"], "models", "metabolic", "sbml", "dehalococcoides.sbml"),
+        "type": "metabolic"
+    })
 })
 makedirs(PATH["CACHE"], exist_ok = True)
 
@@ -24,8 +35,8 @@ MODEL_TYPE                      = dict({
     "BOOLEAN": {
         "value": "boolean"
     },
-    "CONSTRAINT": {
-        "value": "constraint"
+    "METABOLIC": {
+        "value": "metabolic"
     }
 })
 MODEL_DOMAIN_TYPE               = dict({

@@ -17,7 +17,7 @@ from ccapi.model.model.boolean  import (
 )
 
 # imports - constraint-based model imports
-from ccapi.model.model.cbm import (
+from ccapi.model.model.metabolic import (
     ConstraintBasedModel,
     Gene,
     Metabolite,

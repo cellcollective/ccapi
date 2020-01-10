@@ -197,7 +197,7 @@ class Model(Resource, JupyterHTMLViewMixin):
         elif not isinstance(value, _ACCEPTED_MODEL_CLASSES):
             raise TypeError("%s is not a valid model type." % value)
         else:
-            self._default_type = value
+            self._default_version = value
 
     def _repr_html_(self):
         html = render_template("model.html", context = dict({

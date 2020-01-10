@@ -42,5 +42,5 @@ class ModelVersion(Resource):
     def summary(self):
         raise NotImplementedError
 
-    def export(self):
+    def write(self):
         raise NotImplementedError
