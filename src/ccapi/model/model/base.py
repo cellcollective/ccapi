@@ -111,6 +111,8 @@ class Model(Resource, JupyterHTMLViewMixin):
 
         Resource.__init__(self, name = name, *args, **kwargs)
 
+        self._parent_id     = None
+
     @property
     def default_type(self):
         """
@@ -351,3 +353,17 @@ class Model(Resource, JupyterHTMLViewMixin):
         self.client.post("_api/model/save", json = data)
         
         return self
+
+    def parent(self):
+        """
+        Provides the Parent Model.
+        """
+        model = None
+
+        if self._parent_id:
+            try:
+                model = self.client.get("model", id = self._parent_id)
+            except:
+                raise ValueError("Unable to access parent model with ID: %s." % self._parent_id)
+        
+        return model

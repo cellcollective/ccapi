@@ -210,6 +210,8 @@ def _model_content_to_model(content, users, client = None):
 
     model.hash        = data.get("hash")
 
+    model._parent_id  = data["originId"]
+
     model.permissions = metadata["modelPermissions"]
     
     for version_id, version_data in iteritems(content["versions"]):

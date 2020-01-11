@@ -60,14 +60,14 @@ class Service:
 
     def _build_service_function(self, api, request_args = None):
         def fn(**kwargs):
-            reqargs = kwargs.get("request_args", { })
+            # reqargs = kwargs.get("request_args", { })
             args    = iterkeys(kwargs)
             
-            if "headers" in reqargs:
-                headers = reqargs.get("headers", { })
-                headers.update()
+            # if "headers" in reqargs:
+            #     headers = reqargs.get("headers", { })
+            #     headers.update()
 
-            for arg, value in iteritems(kwargs):
+            if "parameters" in api:
                 for param in api["parameters"]:
                     if isinstance(param, string_types):
                         param = dict({
@@ -80,14 +80,14 @@ class Service:
 
                     if required and name not in args:
                         raise ValueError("Required parameter: %s" % name)
-                    
+                
                     if arg == name:
                         if not isinstance(value, type_):
                             raise TypeError("%s is not of type %s, expected %s" % (arg, name, type_))
 
-                response = self.request("GET", path, params = kwargs, **reqargs)
+            response = self.request("GET", path, params = kwargs)
 
-                return response
+            return response
         
         return fn
 
@@ -99,6 +99,8 @@ class Service:
                 for api in API["paths"]:
                     path    = api["path"]
                     method  = self._path_to_method(path)
+
+                    setattr(self, method, self._build_service_function(api))
 
             # if API:
             #     for api in API["paths"]:
