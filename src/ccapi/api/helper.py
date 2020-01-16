@@ -224,6 +224,11 @@ def _model_content_to_model(content, users, client = None):
 
         model.add_version(version)
 
+    current_version   = data["currentVersion"]
+    for version in model.versions:
+        if version.version == current_version:
+            model.default_version = version
+
     if metadata["uploadMap"]:
         for _, upload_data in iteritems(metadata["uploadMap"]):
             document = Document(name = upload_data["uploadName"], client = client)

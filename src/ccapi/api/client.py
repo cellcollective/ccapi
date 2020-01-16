@@ -23,7 +23,7 @@ from ccapi.api.helper          import (
     _model_version_response_to_boolean_model,
     _merge_metadata_to_model
 )
-from ccapi.model.model.base    import Model, _ACCEPTED_MODEL_DOMAIN_TYPES
+from ccapi.model.model.base     import Model, _ACCEPTED_MODEL_DOMAIN_TYPES
 from ccapi.model.user          import User
 from ccapi.core.querylist      import QueryList
 from ccapi.core.config         import Configuration
@@ -53,6 +53,12 @@ from ccapi.log                 import get_logger
 
 logger = get_logger()
 config = Configuration()
+
+from ccapi.model.model.metabolic import (
+    ConstraintBasedModel,
+    Metabolite,
+    Reaction
+)
 
 class Client:
     """
@@ -518,9 +524,41 @@ class Client:
                 files = files)
             content         = response.json()
 
-            model           = Model(client = self)
+            data            = content["data"]
 
-            # metabolic       = 
+            model           = Model(id = data["id"], name = data["name"],
+                client = self)
+            model._response = data
+
+            # HACK: remove default version provided.
+            model.versions.pop()
+
+            for version in data["versions"]:
+                if version["type"] == "metabolic":
+                    metabolic = ConstraintBasedModel(version = version["id"],
+                        client = self)
+
+                    for metabolite in version["metabolites"]:
+                        m = Metabolite(
+                            id          = metabolite["id"],
+                            name        = metabolite["name"],
+                            compartment = metabolite["compartment"],
+                            charge      = metabolite["charge"],
+                            client      = self
+                        )
+                        metabolic.add_metabolite(m)
+
+                    for reaction in version["reactions"]:
+                        r = Reaction(
+                            id          = reaction["id"],
+                            name        = reaction["name"],
+                            lower_bound = reaction["lowerBound"],
+                            upper_bound = reaction["upperBound"],
+                            client      = self
+                        )
+                        metabolic.add_reaction(r)
+
+                    model.add_version(metabolic)
         else:
             raise TypeError("Unknown type %s." % type_)
         

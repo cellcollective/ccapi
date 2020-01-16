@@ -4,10 +4,13 @@ from ccapi.core.config         import Configuration
 from ccapi.core.querylist      import QueryList
 from ccapi.core.mixins         import JupyterHTMLViewMixin
 from ccapi.model.model         import BooleanModel, InternalComponent
-from ccapi.model.model.boolean import (
+from ccapi.model.model.boolean      import (
     ConditionType,
     ConditionState,
     ConditionRelation
+)
+from ccapi.model.model.metabolic    import (
+    ConstraintBasedModel
 )
 from ccapi.config              import DEFAULT
 from ccapi.constant            import MODEL_TYPE, MODEL_DOMAIN_TYPE
@@ -28,7 +31,8 @@ _ACCEPTED_MODEL_DOMAIN_TYPES    = tuple([t["value_api"] \
         for t in itervalues(MODEL_DOMAIN_TYPE)
 ])
 
-_MODEL_TYPE_CLASS               = dict({ "boolean": BooleanModel })
+_MODEL_TYPE_CLASS               = dict({ "boolean": BooleanModel,
+    "metabolic": ConstraintBasedModel })
 _ACCEPTED_MODEL_CLASSES         = tuple(itervalues(_MODEL_TYPE_CLASS))
 
 _API_CONDITION_TYPE             = dict({
@@ -190,7 +194,12 @@ class Model(Resource, JupyterHTMLViewMixin):
         """
         Default Version.
         """
-        return getattr(self, "_default_version", None)
+        if len(self.versions):
+            default_version = self.versions[0]
+        else:
+            raise ValueError("No default version found.")
+
+        return getattr(self, "_default_version", default_version)
 
     @default_version.setter
     def default_version(self, value):

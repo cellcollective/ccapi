@@ -20,8 +20,8 @@ class Component(Species, JupyterHTMLViewMixin):
         object used to fetch this resource.
     """
 
-    def __init__(self, name="", id=None, client=None):
-        Species.__init__(self, id = id, name = name, client = client)
+    def __init__(self, *args, **kwargs):
+        Species.__init__(self, *args, **kwargs)
 
         self._model = None
 
