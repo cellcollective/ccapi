@@ -8,7 +8,6 @@ from ccapi._compat      import string_types, iterkeys, iteritems
 import requests
 
 # imports - module imports
-from ccapi.config       import DEFAULT
 from ccapi.util.array   import (
     sequencify
 )

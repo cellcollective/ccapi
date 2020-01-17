@@ -144,3 +144,6 @@ class Resource:
     def delete(self):
         self._before_crud()
         raise NotImplementedError
+
+    def __hash__(self):
+        return id(self)

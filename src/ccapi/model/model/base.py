@@ -12,7 +12,6 @@ from ccapi.model.model.boolean      import (
 from ccapi.model.model.metabolic    import (
     ConstraintBasedModel
 )
-from ccapi.config              import DEFAULT
 from ccapi.constant            import MODEL_TYPE, MODEL_DOMAIN_TYPE
 from ccapi.template            import render_template
 from ccapi.util.string         import ellipsis, upper
@@ -376,3 +375,34 @@ class Model(Resource, JupyterHTMLViewMixin):
                 raise ValueError("Unable to access parent model with ID: %s." % self._parent_id)
         
         return model
+
+    def to_json(self):
+        data                = dict()
+
+        data["id"]          = self.id
+        data["name"]        = self.name
+
+        versions            = [ ]
+
+        for version in self.versions:
+            if isinstance(version, ConstraintBasedModel):
+                json = version.to_json()
+                json["type"] = "metabolic"
+                versions.append(json)
+        
+        data["versions"]    = versions
+
+        return data
+
+    def save3(self):
+        data        = self.to_json()
+        response    = self._client.post("api/model", json = data)
+        
+        content     = response.json()
+
+        data        = content["data"]
+
+        self.id     = data["id"]
+        self.name   = data["name"]
+
+        return self

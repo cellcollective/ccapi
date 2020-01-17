@@ -14,8 +14,23 @@ class Metabolite(Species, JupyterHTMLViewMixin):
         })
     ]
 
-    def __init__(self, compartment = None, charge = None, *args, **kwargs):
-        Species.__init__(self, *args, **kwargs)
+    def __init__(self, name = "", formula = None,
+        compartment = None, charge = None, *args, **kwargs):
+        Species.__init__(self, name = name, *args, **kwargs)
 
+        self.formula        = formula
         self.compartment    = compartment
         self.charge         = charge
+
+    def to_json(self):
+        data                    = dict()
+
+        data["id"]              = self.id
+        data["name"]            = self.name
+        
+        data["compartment"]     = self.compartment
+
+        data["formula"]         = self.formula
+        data["charge"]          = self.charge
+
+        return data

@@ -27,7 +27,6 @@ from ccapi.model.model.base     import Model, _ACCEPTED_MODEL_DOMAIN_TYPES
 from ccapi.model.user          import User
 from ccapi.core.querylist      import QueryList
 from ccapi.core.config         import Configuration
-from ccapi.config              import DEFAULT
 from ccapi.constant            import (
     PATH,
     AUTHENTICATION_HEADER,
@@ -535,8 +534,8 @@ class Client:
 
             for version in data["versions"]:
                 if version["type"] == "metabolic":
-                    metabolic = ConstraintBasedModel(version = version["id"],
-                        client = self)
+                    metabolic = ConstraintBasedModel(
+                        id = model.id, version = version["id"], client = self)
 
                     for metabolite in version["metabolites"]:
                         m = Metabolite(

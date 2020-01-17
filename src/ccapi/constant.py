@@ -77,3 +77,22 @@ BOOLEAN_MODEL_EXPORT_TYPE       = dict({
         "value_api": "GML"
     }
 })
+
+CONSTRAINT_BASED_MODEL_EXPORT_TYPE  = dict({
+    "sbml": {
+         "name": "SBML",
+        "value": "sbml"
+    },
+    "json": {
+         "name": "CobraPy JSON Format",
+        "value": "json"
+    },
+    "yaml": {
+         "name": "CobraPy YAML Format",
+        "value": "yaml"
+    },
+    "matlab": {
+         "name": "MATLAB",
+        "value": "matlab"
+    }
+})

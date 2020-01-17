@@ -7,11 +7,17 @@ from ccapi.core.querylist       import QueryList
 from ccapi.core.mixins          import JupyterHTMLViewMixin
 from ccapi.template             import render_template
 from ccapi.util.string          import ellipsis
+from ccapi.util.system          import makepath
+from ccapi.util.request         import response_download
+from ccapi.constant             import CONSTRAINT_BASED_MODEL_EXPORT_TYPE
+from ccapi.core.config          import Configuration
 
 # imports - constraint-based model imports
 from ccapi.model.model.metabolic.metabolite  import Metabolite
 from ccapi.model.model.metabolic.gene        import Gene
 from ccapi.model.model.metabolic.reaction    import Reaction
+
+config = Configuration()
 
 class ConstraintBasedModel(ModelVersion, JupyterHTMLViewMixin):
     _REPR_ATTRIBUTES = [
@@ -129,5 +135,37 @@ class ConstraintBasedModel(ModelVersion, JupyterHTMLViewMixin):
         for reaction in reactions:
             self.add_reaction(reaction)
 
-    def write(self):
-        pass
+    def write(self, path = None, type = "sbml", **kwargs):
+        type_           = CONSTRAINT_BASED_MODEL_EXPORT_TYPE[type]["value"]
+        params          = { "version": self.version, "type": type_ }
+
+        response        = self.client.request("GET", "api/model/%s/export" % self.id,
+            params = params)
+
+        if not path:
+            header  = response.headers["content-disposition"]
+            name    = re.findall("filename=(.+)", header)[0]
+            path    = abspath(name)
+
+        nchunk      = kwargs.get("nchunk", config.max_chunk_download_bytes)
+
+        makepath(path)
+
+        path        = response_download(response, path, chunk_size = nchunk)
+
+        return path
+
+    def to_json(self):
+        data                = dict()
+
+        data["metabolites"] = [ ]
+        for metabolite in self.metabolites:
+            json = metabolite.to_json()
+            data["metabolites"].append(json)
+
+        data["reactions"]   = [ ]
+        for reaction in self.reactions:
+            json = reaction.to_json()
+            data["reactions"].append(json)
+
+        return data

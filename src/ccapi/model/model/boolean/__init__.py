@@ -12,7 +12,6 @@ from ccapi.util.system              import read
 from ccapi.table                    import Table
 from ccapi.template                 import render_template
 from ccapi.constant                 import BOOLEAN_MODEL_EXPORT_TYPE
-from ccapi.config                   import DEFAULT
 from ccapi.util.system              import makepath
 from ccapi.util.imports             import import_handler
 from ccapi.util.request             import response_download

@@ -21,3 +21,5 @@ class Configuration(JupyterHTMLViewMixin, metaclass = Singleton):
         self.display_max_cols            = 20
 
         self.ginsim_version              = "2.4"
+
+        self.verbose                     = False

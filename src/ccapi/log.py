@@ -2,7 +2,8 @@
 import logging
 
 # imports - module imports
-from ccapi.__attr__   import __name__ as NAME
+from ccapi.core.config  import Configuration
+from ccapi.__attr__     import __name__ as NAME
 
 NOTSET      = logging.NOTSET
 DEBUG       = logging.DEBUG

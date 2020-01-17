@@ -11,7 +11,6 @@ import re
 from   itertools import islice
 
 # imports - module imports
-from ccapi.config       import DEFAULT
 from ccapi.util.string  import ellipsis
 from ccapi.core.mixins  import JupyterHTMLViewMixin
 from ccapi.core.config  import Configuration

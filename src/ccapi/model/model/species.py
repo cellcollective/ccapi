@@ -14,7 +14,7 @@ class Species(Resource, JupyterHTMLViewMixin):
     :param client: A :class:`ccapi.Client` object. A reference to the client
         object used to fetch this resource.
     """
-    def __init__(self, id=None, name="", client=None):
+    def __init__(self, name="", id=None, client=None):
         Resource.__init__(self, id = id, name = name, client = client)
 
     def _repr_html_(self):
