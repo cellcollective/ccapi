@@ -1,8 +1,11 @@
 # imports - module imports
-from ccapi.__attr__         import __version__
+from ccapi.__attr__         import __name__ as NAME, __version__
 from ccapi.constant         import MODEL_TYPE, MODEL_DOMAIN_TYPE
 from ccapi.core.singleton   import Singleton
 from ccapi.core.mixins      import JupyterHTMLViewMixin
+
+# imports - standard imports
+import logging
 
 class Configuration(JupyterHTMLViewMixin, metaclass = Singleton):
     def __init__(self, *args, **kwargs):
@@ -21,5 +24,20 @@ class Configuration(JupyterHTMLViewMixin, metaclass = Singleton):
         self.display_max_cols            = 20
 
         self.ginsim_version              = "2.4"
+        
+        self._verbose                    = False
 
-        self.verbose                     = False
+    @property
+    def verbose(self):
+        return getattr(self, "_verbose", True)
+
+    @verbose.setter
+    def verbose(self, value):
+        self._verbose = value
+
+        logger = logging.getLogger(NAME)
+
+        if value:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.WARNING)

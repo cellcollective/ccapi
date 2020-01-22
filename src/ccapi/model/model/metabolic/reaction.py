@@ -1,9 +1,10 @@
 # imports - module imports
-from ccapi.model.resource import Resource
-from ccapi.core.mixins    import JupyterHTMLViewMixin
-from ccapi._compat        import iteritems
+from ccapi.model.resource       import Resource
+from ccapi.core.mixins          import JupyterHTMLViewMixin
+from ccapi._compat              import iteritems
+from ccapi.model.model.boolean  import InternalComponent
 
-class Reaction(Resource, JupyterHTMLViewMixin):
+class Reaction(InternalComponent, JupyterHTMLViewMixin):
     _REPR_ATTRIBUTES = [
         dict({
              "name": "subsystem",
@@ -21,31 +22,29 @@ class Reaction(Resource, JupyterHTMLViewMixin):
 
     def __init__(self, name = "", subsystem = None, lower_bound = None,
         upper_bound = None, *args, **kwargs):
-        Resource.__init__(self, name = name, *args, **kwargs)
+        self.super                  = super(Reaction, self)
+        self.super.__init__(name = name, *args, **kwargs)
         
-        self.subsystem          = subsystem
-        self.lower_bound        = lower_bound
-        self.upper_bound        = upper_bound
+        self.subsystem              = subsystem
+        self.lower_bound            = lower_bound
+        self.upper_bound            = upper_bound
 
-        self._coefficient_map   = { }
+        self._coefficient_map       = { }
 
     def add_metabolites(self, metabolites):
         for metabolite, coefficient in iteritems(metabolites):
             self._coefficient_map[metabolite] = coefficient
 
     def to_json(self):
-        data                = dict()
+        data                        = self.super.to_json()
 
-        data["id"]          = self.id
-        data["name"]        = self.name
-
-        data["subsystem"]   = self.subsystem
+        data["subsystem"]           = self.subsystem
         
-        data["lower_bound"] = self.lower_bound
-        data["upper_bound"] = self.upper_bound
+        data["lower_bound"]         = float(self.lower_bound)
+        data["upper_bound"]         = float(self.upper_bound)
 
         if self._coefficient_map:
-            data["metabolites"] = { }
+            data["metabolites"]     = { }
 
             for metabolite, coefficient in iteritems(self._coefficient_map):
                 data["metabolites"][metabolite.id] = coefficient

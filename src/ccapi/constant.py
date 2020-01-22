@@ -24,6 +24,10 @@ MODELS            = dict({
     "dehalococcoides": dict({
         "path": osp.join(PATH["DATA"], "models", "metabolic", "sbml", "dehalococcoides.sbml"),
         "type": "metabolic"
+    }),
+    "stm_1.0": dict({
+        "path": osp.join(PATH["DATA"], "models", "metabolic", "json", "stm_1.0.json"),
+        "type": "metabolic"
     })
 })
 makedirs(PATH["CACHE"], exist_ok = True)

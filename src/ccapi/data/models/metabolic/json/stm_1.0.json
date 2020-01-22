@@ -1,0 +1,60 @@
+{
+    "metabolites": [
+        {
+            "id": "malACP_c",
+            "name": "Malonyl-acyl-carrier-protein",
+            "compartment": "c",
+            "formula": "C14H22N2O10PRS"
+        },
+        {
+            "id": "ACP_c",
+            "name": "acyl-carrier-protein",
+            "compartment": "c",
+            "formula": "C11H21N2O7PRS"
+        },
+        {
+            "id": "h_c",
+            "name": "H",
+            "compartment": "c",
+            "formula": "H"
+        },
+        {
+            "id": "ddcaACP_c",
+            "name": "Dodecanoyl-ACP-n-C120ACP",
+            "compartment": "c",
+            "formula": "C23H43N2O8PRS"
+        },
+        {
+            "id": "co2_c",
+            "name": "CO2",
+            "compartment": "c",
+            "formula": "CO2"
+        },
+        {
+            "id": "omrsACP_c",
+            "name": "3-Oxotetradecanoyl-acyl-carrier-protein",
+            "compartment": "c",
+            "formula": "C25H45N2O9PRS"
+        }
+    ],
+    "reactions": [
+        {
+            "id": "3OAS140",
+            "name": "3 oxoacyl acyl carrier protein synthase n C140",
+            "subsystem": "Cell Envelope Biosynthesis",
+            "lower_bound": 0,
+            "upper_bound": 1000,
+            "metabolites": {
+                "malACP_c": -1,
+                "h_c": -1,
+                "ddcaACP_c": -1,
+                "co2_c": 1,
+                "ACP_c": 1,
+                "omrsACP_c": 1
+            },
+            "gene_reaction_rule": "(STM2378 or STM1197)"
+        }
+    ],
+    "genes": [ ],
+    "name": "STM_1.0"
+}

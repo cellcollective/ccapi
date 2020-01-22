@@ -147,3 +147,15 @@ class Resource:
 
     def __hash__(self):
         return id(self)
+
+    def to_json(self):
+        data            = dict()
+
+        data["id"]      = str(self.id)
+        data["name"]    = self.name
+
+        return data
+
+    @property
+    def dirty(self):
+        return self.id < 0

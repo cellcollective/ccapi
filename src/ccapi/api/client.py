@@ -212,6 +212,13 @@ class Client:
         response = self.request("POST", url, *args, **kwargs)
         return response
 
+    def put(self, url, *args, **kwargs):
+        """
+        Dispatch a PUT request to the server.
+        """
+        response = self.request("PUT", url, *args, **kwargs)
+        return response
+
     def ping(self, *args, **kwargs):
         """
         Check if the URL is alive.

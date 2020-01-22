@@ -29,7 +29,8 @@ class ConstraintBasedModel(ModelVersion, JupyterHTMLViewMixin):
     ]
 
     def __init__(self, *args, **kwargs):
-        ModelVersion.__init__(self, *args, **kwargs)
+        self.super          = super(ConstraintBasedModel, self)
+        self.super.__init__(*args, **kwargs)
 
         self._metabolites   = QueryList()
         self._reactions     = QueryList()
@@ -156,7 +157,9 @@ class ConstraintBasedModel(ModelVersion, JupyterHTMLViewMixin):
         return path
 
     def to_json(self):
-        data                = dict()
+        data                = self.super.to_json()
+
+        data["id"]          = str(self.version)
 
         data["metabolites"] = [ ]
         for metabolite in self.metabolites:
@@ -168,4 +171,17 @@ class ConstraintBasedModel(ModelVersion, JupyterHTMLViewMixin):
             json = reaction.to_json()
             data["reactions"].append(json)
 
+        data["genes"]       = [ ]
+        
+
         return data
+
+    def analyse(self, type_ = "fba"):
+        model               = self.to_json()
+        data                = dict(type = "metabolic", model = model,
+            analysis = type_)
+
+        response            = self.client.post("api/model/analyse", json = data)
+        content             = response.json()
+
+        return content
