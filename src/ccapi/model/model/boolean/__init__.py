@@ -231,14 +231,7 @@ class BooleanModel(ModelVersion, Module, JupyterHTMLViewMixin):
         response        = self.client.request("GET", "_api/model/export/%s" % self.id,
             params = params)
 
-        if not path:
-            header  = response.headers["content-disposition"]
-            name    = re.findall("filename=(.+)", header)[0]
-            path    = abspath(name)
-
         nchunk      = kwargs.get("nchunk", config.max_chunk_download_bytes)
-
-        makepath(path)
 
         path        = response_download(response, path, chunk_size = nchunk)
 
