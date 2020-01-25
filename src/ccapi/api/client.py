@@ -524,13 +524,15 @@ class Client:
             model.add_version(boolean)
         elif type_ == "metabolic":
             data            = dict(type = type_)
-            files           = [("file", open(filename, "rb"))]
+            files           = dict({ "file": open(filename, "rb") })
 
             response        = self.post("api/model/import", data = data,
                 files = files)
             content         = response.json()
 
             data            = content["data"]
+
+            return data
 
             model           = Model(id = data["id"], name = data["name"],
                 client = self)
