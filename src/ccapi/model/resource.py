@@ -59,7 +59,10 @@ class Resource:
         if self.name == value:
             pass
         elif not isinstance(value, str):
-            raise TypeError("Name must be a string.")
+            if not value:
+                self._name = ""
+            else:
+                self._name = str(value)
         else:
             self._name = value
 

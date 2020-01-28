@@ -583,3 +583,29 @@ class Client:
         :param query: Search a query string.
         """
         return self.get(resource, query = query, *args, **kwargs)
+
+    def sign_up(self, *args, **kwargs):
+        not_found       = [ ]
+        passed_params   = iterkeys(kwargs) 
+
+        for parameter in ("email",
+            "password", "first_name", "last_name", "institution"):
+            if parameter not in passed_params:
+                not_found.append(parameter)
+            else:
+                value = kwargs.get(parameter)
+                if not value:
+                    raise ValueError("%s cannot be %s." % (parameter, value))
+        
+        if not_found:
+            raise ValueError("Parameters %s not found." % not_found)
+        else:
+            data = dict(
+                email       = kwargs.get("email"),
+                password    = kwargs.get("password"),
+                vpassword   = kwargs.get("password"),
+                firstName   = kwargs.get("first_name"),
+                lastName    = kwargs.get("last_name"),
+                institution = kwargs.get("institution")
+            )
+            self.post("_api/user/register", data = data)
