@@ -19,12 +19,21 @@ class Regulator(Resource):
 
         self.conditions = QueryList(conditions)
 
+    def to_json(self):
+        pass
+
 class PositiveRegulator(Regulator):
     def __init__(self, species, conditions = [ ], *args, **kwargs):
         Regulator.__init__(self, species, 'positive',
             conditions = conditions, *args, **kwargs)
 
+    def to_json(self):
+        pass
+
 class NegativeRegulator(Regulator):
     def __init__(self, species, conditions = [ ], *args, **kwargs):
         Regulator.__init__(self, species, 'negative',
             conditions = conditions, *args, **kwargs)
+
+    def to_json(self):
+        pass

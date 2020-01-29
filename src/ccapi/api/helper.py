@@ -120,7 +120,7 @@ def _model_version_response_to_boolean_model(response, users = None, client = No
                     components.append(component_map[species_id])
 
             sub_condition   = Condition(id = int(sub_condition_id),
-                components  = components
+                species     = components
             )
 
             sub_condition_map[sub_condition.id] = dict({
@@ -137,7 +137,7 @@ def _model_version_response_to_boolean_model(response, users = None, client = No
                     components.append(component_map[species_id])
 
             condition   = Condition(id = int(condition_id),
-                components      = components,
+                species         = components,
                 sub_conditions  = [data["sub_condition"]
                     for _, data in iteritems(sub_condition_map)
                         if data["condition_id"] == int(condition_id)
@@ -153,7 +153,7 @@ def _model_version_response_to_boolean_model(response, users = None, client = No
         component_regulator_map = dict()
         for regulator_id, regulator_data in iteritems(data["regulatorMap"]):
             regulator = Regulator(id = int(regulator_id),
-                component   = component_map[regulator_data["regulatorSpeciesId"]],
+                species     = component_map[regulator_data["regulatorSpeciesId"]],
                 type        = lower(regulator_data["regulationType"]),
                 conditions  = [data["condition"]
                     for _, data in iteritems(condition_map)

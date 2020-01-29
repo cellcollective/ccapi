@@ -1,12 +1,13 @@
 # imports - module imports
-from ccapi.model.resource                      import Resource
-from ccapi.model.user                          import User
-from ccapi.model.document                      import Document
+from ccapi.model.resource                       import Resource
+from ccapi.model.user                           import User
+from ccapi.model.document                       import Document
 
 # imports - model imports
-from ccapi.model.model.base                    import Model
-from ccapi.model.model.version                 import ModelVersion
-from ccapi.model.model.species                 import Species
+from ccapi.model.model.base                     import Model
+from ccapi.model.model.version                  import ModelVersion
+from ccapi.model.model.species                  import Species
+from ccapi.model.model.compartment              import Compartment
 
 # imports - boolean model imports
 from ccapi.model.model.boolean  import (

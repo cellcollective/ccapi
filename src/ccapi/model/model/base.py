@@ -86,20 +86,20 @@ class Model(Resource, JupyterHTMLViewMixin):
         >>> from ccapi.model import Model
         >>> model = Model('Cortical Area Development')
     """
-    def __init__(self, name = None, default_type = None, domain = None,
+    def __init__(self, name = None, type_ = None, domain = None,
         *args, **kwargs):
         """
         A model instance.
         """
         name            = name          or config.model_name
-        default_type    = default_type  or config.model_type["value"]
+        type_           = type_         or config.model_type["value"]
         domain          = domain        or config.model_domain_type["value"] 
 
-        if not default_type in _ACCEPTED_MODEL_TYPES:
+        if not type_ in _ACCEPTED_MODEL_TYPES:
             raise TypeError("Cannot find model type %s. Accepted types are %s."
-                % (default_type, _ACCEPTED_MODEL_TYPES))
+                % (type_, _ACCEPTED_MODEL_TYPES))
         
-        self._default_type  = default_type
+        self._type      = type_
 
         if not domain in _ACCEPTED_MODEL_DOMAIN_TYPES:
             raise TypeError("Cannot find model domain type %s. Accepted \
@@ -107,7 +107,7 @@ class Model(Resource, JupyterHTMLViewMixin):
 
         self._domain        = domain
         
-        class_              = _MODEL_TYPE_CLASS[default_type]
+        class_              = _MODEL_TYPE_CLASS[type_]
         self._versions      = QueryList([class_(model = self, *args, **kwargs)])
 
         self._documents     = QueryList()
@@ -118,22 +118,22 @@ class Model(Resource, JupyterHTMLViewMixin):
         self._parent_id     = None
 
     @property
-    def default_type(self):
+    def type(self):
         """
         The default model type.
         """
-        return getattr(self, "_default_type", config.model_type["value"])
+        return getattr(self, "_type", config.model_type["value"])
 
-    @default_type.setter
-    def default_type(self, value):
-        if self.default_type == value:
+    @type.setter
+    def type(self, value):
+        if self.type == value:
             pass
         elif not value in _ACCEPTED_MODEL_TYPES:
             raise TypeError("%s is not a valid model type. Accepted types are %s."
                 % (value, _ACCEPTED_MODEL_TYPES)
             )
         else:
-            self._default_type = value
+            self._type = value
 
     @property
     def domain(self):
@@ -157,7 +157,7 @@ class Model(Resource, JupyterHTMLViewMixin):
         """
         List of model versions.
         """
-        class_ = _MODEL_TYPE_CLASS[self.default_type]
+        class_ = _MODEL_TYPE_CLASS[self.type]
         return getattr(self, "_versions",
             QueryList([class_(model = self)]))
 
@@ -292,7 +292,7 @@ class Model(Resource, JupyterHTMLViewMixin):
                                     "speciesRelation": _API_CONDITION_RELATION[condition.relation]
                                 })
 
-                                for component in condition.components:
+                                for component in condition.species:
                                     id_ = get_temporary_id()
                                     condition_species_map[id_] = dict({
                                         "conditionId": condition.id,
@@ -378,15 +378,15 @@ class Model(Resource, JupyterHTMLViewMixin):
         return model
 
     def to_json(self):
-        data     = self.super.to_json()
+        data         = self.super.to_json()
 
-        versions = [ ]
+        data["type"] = self.type 
+
+        versions     = [ ]
 
         for version in self.versions:
-            if isinstance(version, ConstraintBasedModel):
-                json = version.to_json()
-                json["type"] = "metabolic"
-                versions.append(json)
+            json     = version.to_json()
+            versions.append(json)
         
         data["versions"]    = versions
 
@@ -395,31 +395,40 @@ class Model(Resource, JupyterHTMLViewMixin):
     def save3(self):
         data        = self.to_json()
 
-        method      = "POST" if self.dirty else "PUT"
+        if self.dirty:
+            method, url = ("POST", "api/model")
+        else:
+            method, url = ("PUT",  "api/model/%s" % self.id)
 
-        response    = self._client.request(method, "api/model", json = data)
+        response    = self.client.request(method, url, json = data)
         content     = response.json()
-        
+
+        if not self.dirty:
+            url         = ("api/model/%s" % self.id)
+            response    = self.client.request("GET", url)
+            content     = response.json()
+
         data        = content["data"]
 
         self.id     = data["id"]
         self.name   = data["name"]
 
-        for i, version in enumerate(self.versions):
-            for previous_version_id, next_version_id in iteritems(data["versionMap"]):
-                if int(previous_version_id) == version.version:
-                    self.versions[i].id         = self.id
-                    self.versions[i].version    = next_version_id
+        if "versionMap" in data:
+            for i, version in enumerate(self.versions):
+                for previous_version_id, next_version_id in iteritems(data["versionMap"]):
+                    if int(previous_version_id) == version.version:
+                        self.versions[i].id         = self.id
+                        self.versions[i].version    = next_version_id
 
-                    if isinstance(version, ConstraintBasedModel):
-                        for j, metabolite in enumerate(version.metabolites):
-                            for previous_metabolite_id, next_metabolite_id in iteritems(data["metaboliteMap"]):
-                                if int(previous_metabolite_id) == metabolite.id:
-                                    self.versions[i].metabolites[j].id = next_metabolite_id
+                        if isinstance(version, ConstraintBasedModel):
+                            for j, metabolite in enumerate(version.metabolites):
+                                for previous_metabolite_id, next_metabolite_id in iteritems(data["metaboliteMap"]):
+                                    if int(previous_metabolite_id) == metabolite.id:
+                                        self.versions[i].metabolites[j].id = next_metabolite_id
 
-                        for k, reaction in enumerate(version.reactions):
-                            for previous_reaction_id, next_reaction_id in iteritems(data["reactionMap"]):
-                                if int(previous_reaction_id) == reaction.id:
-                                    self.versions[i].reactions[k].id = next_reaction_id
+                            for k, reaction in enumerate(version.reactions):
+                                for previous_reaction_id, next_reaction_id in iteritems(data["reactionMap"]):
+                                    if int(previous_reaction_id) == reaction.id:
+                                        self.versions[i].reactions[k].id = next_reaction_id
 
         return self

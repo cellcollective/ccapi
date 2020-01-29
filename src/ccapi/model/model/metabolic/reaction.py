@@ -1,7 +1,7 @@
 # imports - module imports
 from ccapi.model.resource       import Resource
 from ccapi.core.mixins          import JupyterHTMLViewMixin
-from ccapi._compat              import iteritems
+from ccapi._compat              import iterkeys, iteritems
 from ccapi.model.model.boolean  import InternalComponent
 
 class Reaction(InternalComponent, JupyterHTMLViewMixin):
@@ -22,8 +22,8 @@ class Reaction(InternalComponent, JupyterHTMLViewMixin):
 
     def __init__(self, name = "", subsystem = None, lower_bound = None,
         upper_bound = None, *args, **kwargs):
-        self.super                  = super(Reaction, self)
-        self.super.__init__(name = name, *args, **kwargs)
+        super_                  = super(Reaction, self)
+        super_.__init__(name = name, *args, **kwargs)
         
         self.subsystem              = subsystem
         self.lower_bound            = lower_bound
@@ -31,17 +31,23 @@ class Reaction(InternalComponent, JupyterHTMLViewMixin):
 
         self._coefficient_map       = { }
 
+    @property
+    def metabolites(self):
+        metabolites = list(iterkeys(self._coefficient_map))
+        return metabolites
+
     def add_metabolites(self, metabolites):
         for metabolite, coefficient in iteritems(metabolites):
             self._coefficient_map[metabolite] = coefficient
 
     def to_json(self):
-        data                        = self.super.to_json()
+        super_                      = super(Reaction, self)
+        data                        = super_.to_json()
 
         data["subsystem"]           = self.subsystem
         
-        data["lower_bound"]         = float(self.lower_bound)
-        data["upper_bound"]         = float(self.upper_bound)
+        data["lowerBound"]          = float(self.lower_bound)
+        data["upperBound"]          = float(self.upper_bound)
 
         if self._coefficient_map:
             data["metabolites"]     = { }

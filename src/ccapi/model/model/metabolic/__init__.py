@@ -1,5 +1,6 @@
 # imports - standard imports
 from os.path import join
+from copy    import deepcopy
 
 # imports - module imports
 from ccapi.model.model.version  import ModelVersion
@@ -17,6 +18,8 @@ from ccapi.model.model.metabolic.metabolite  import Metabolite
 from ccapi.model.model.metabolic.gene        import Gene
 from ccapi.model.model.metabolic.reaction    import Reaction
 
+from ccapi._compat              import itervalues
+
 config = Configuration()
 
 class ConstraintBasedModel(ModelVersion, JupyterHTMLViewMixin):
@@ -29,11 +32,15 @@ class ConstraintBasedModel(ModelVersion, JupyterHTMLViewMixin):
     ]
 
     def __init__(self, *args, **kwargs):
-        self.super          = super(ConstraintBasedModel, self)
         self.super.__init__(*args, **kwargs)
 
         self._metabolites   = QueryList()
         self._reactions     = QueryList()
+
+    @property
+    def super(self):
+        super_ = super(ConstraintBasedModel, self)
+        return super_
 
     def _repr_html_(self):
         repr_ = render_template(join("metabolic", "model.html"), context = dict({
@@ -47,6 +54,17 @@ class ConstraintBasedModel(ModelVersion, JupyterHTMLViewMixin):
             "reactions":             ellipsis(", ".join([s.name for s in self.reactions]),   threshold = 500)
         }))
         return repr_
+
+    @property
+    def compartments(self):
+        compartments = dict()
+        for metabolite in self.metabolites:
+            compartment = metabolite.compartment
+            if compartment:
+                if compartment.id not in compartments:
+                    compartments[compartment.id] = compartment
+
+        return QueryList(itervalues(compartments))
 
     @property
     def metabolites(self):
@@ -157,22 +175,24 @@ class ConstraintBasedModel(ModelVersion, JupyterHTMLViewMixin):
         return path
 
     def to_json(self):
-        data                = self.super.to_json()
+        data                    = self.super.to_json()
 
-        data["id"]          = str(self.version)
+        data["id"]              = self.version
 
-        data["metabolites"] = [ ]
+        data["compartments"]    = [ ]
+        for compartment in self.compartments:
+            json = compartment.to_json()
+            data["compartments"].append(json)
+
+        data["metabolites"]     = [ ]
         for metabolite in self.metabolites:
             json = metabolite.to_json()
             data["metabolites"].append(json)
 
-        data["reactions"]   = [ ]
+        data["reactions"]       = [ ]
         for reaction in self.reactions:
             json = reaction.to_json()
             data["reactions"].append(json)
-
-        data["genes"]       = [ ]
-        
 
         return data
 
@@ -185,3 +205,7 @@ class ConstraintBasedModel(ModelVersion, JupyterHTMLViewMixin):
         content             = response.json()
 
         return content
+
+    def copy(self):
+        copy = deepcopy(self)
+        return copy

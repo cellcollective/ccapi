@@ -3,6 +3,7 @@ import sys
 import os.path as osp
 import random
 import collections
+import warnings
 
 # imports - third-party imports
 # https://github.com/gevent/gevent/issues/1016#issuecomment-328529454
@@ -53,7 +54,8 @@ from ccapi.log                 import get_logger
 logger = get_logger()
 config = Configuration()
 
-from ccapi.model.model.metabolic import (
+from ccapi.model.model.compartment  import Compartment
+from ccapi.model.model.metabolic    import (
     ConstraintBasedModel,
     Metabolite,
     Reaction
@@ -496,79 +498,101 @@ class Client:
 
         return squash(resources)
 
-    def read(self, filename, type = None, save = False):
+    def read(self, *files, type = None, save = False):
         """
         Read an SBML file.
 
         :param filename: Name of the file locally present to read an SBML file.
         :param save: Save model after importing.
         """
+
         type_           = type or config.model_type["value"]
         
+        data            = dict(type = type_)
+        files           = [("file", open(f, "rb")) for f in files]
+
+        response        = self.post("api/model/import", data = data,
+            files = files)
+        content         = response.json()
+
         model           = Model(client = self)
         # HACK: remove default version provided.
         model.versions.pop()
 
-        if   type_ == "boolean":
-            files           = dict({ "upload": (filename, open(filename, "rb")) })
+        data            = content["data"]
 
-            response        = self.post("_api/model/import", files = files)
-            content         = response.json()
+        for response_data in data:
+            if response_data["status"] == "error":
+                warnings.warn("Unable to read file %s. Error recieved from the server: %s" % (
+                    response_data["file"],
+                    response_data["error"]
+                ))
+            else:
+                data        = response_data["data"]
 
-            boolean, meta   = _model_version_response_to_boolean_model(content,
-                client = self
-            )
+                if   type_ == "boolean":
+                    boolean, meta   = _model_version_response_to_boolean_model(data,
+                        client = self
+                    )
 
-            model           = _merge_metadata_to_model(model, meta)
-            
-            model.add_version(boolean)
-        elif type_ == "metabolic":
-            data            = dict(type = type_)
-            files           = dict({ "file": open(filename, "rb") })
+                    model           = _merge_metadata_to_model(model, meta)
 
-            response        = self.post("api/model/import", data = data,
-                files = files)
-            content         = response.json()
+                    model.add_version(boolean)
 
-            data            = content["data"]
+                elif type_ == "metabolic":
+                    model.id        = data["id"]
+                    model.name      = data["name"]
 
-            return data
+                    for version in data["versions"]:
+                        if data["type"] == "metabolic":
+                            metabolic       = ConstraintBasedModel(
+                                id = model.id, version = version["id"], client = self)
 
-            model           = Model(id = data["id"], name = data["name"],
-                client = self)
-            model._response = data
+                            compartment_map = { }
+                            if "compartments" in version:
+                                for compartment in version["compartments"]:
+                                    compartment = Compartment(
+                                        id          = compartment["id"],
+                                        name        = compartment["name"]
+                                    )
 
-            # HACK: remove default version provided.
-            model.versions.pop()
+                                    compartment_map[compartment.id] = compartment
 
-            for version in data["versions"]:
-                if version["type"] == "metabolic":
-                    metabolic = ConstraintBasedModel(
-                        id = model.id, version = version["id"], client = self)
+                            if "metabolites" in version:
+                                for metabolite in version["metabolites"]:
+                                    compartment = compartment_map[metabolite["compartment"]]
 
-                    for metabolite in version["metabolites"]:
-                        m = Metabolite(
-                            id          = metabolite["id"],
-                            name        = metabolite["name"],
-                            compartment = metabolite["compartment"],
-                            charge      = metabolite["charge"],
-                            client      = self
-                        )
-                        metabolic.add_metabolite(m)
+                                    m           = Metabolite(
+                                        id          = metabolite["id"],
+                                        name        = metabolite["name"],
+                                        compartment = compartment,
+                                        formula     = metabolite["formula"],
+                                        charge      = metabolite["charge"],
+                                        client      = self
+                                    )
+                                    metabolic.add_metabolite(m)
+                            
+                            if "reactions" in version:
+                                for reaction in version["reactions"]:
+                                    r = Reaction(
+                                        id          = reaction["id"],
+                                        name        = reaction["name"],
+                                        lower_bound = reaction["lowerBound"],
+                                        upper_bound = reaction["upperBound"],
+                                        client      = self
+                                    )
 
-                    for reaction in version["reactions"]:
-                        r = Reaction(
-                            id          = reaction["id"],
-                            name        = reaction["name"],
-                            lower_bound = reaction["lowerBound"],
-                            upper_bound = reaction["upperBound"],
-                            client      = self
-                        )
-                        metabolic.add_reaction(r)
+                                    for metabolite_id, coefficient in iteritems(reaction["metabolites"]):
+                                        metabolite  = metabolic.metabolites.get_by_id(int(metabolite_id))
+                                        r.add_metabolites({
+                                            metabolite: coefficient
+                                        })
+                                        
+                                    metabolic.add_reaction(r)
 
-                    model.add_version(metabolic)
-        else:
-            raise TypeError("Unknown type %s." % type_)
+                            model.add_version(metabolic)
+                else:
+                    raise TypeError("Unknown type %s." % type_)
         
         if save:
             model.save()

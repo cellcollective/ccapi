@@ -13,15 +13,15 @@ from ccapi.model.model.boolean.condition.type      import Type
 from ccapi.model.model.boolean.condition.relation  import Relation
 
 class BaseCondition(Resource, JupyterHTMLViewMixin):
-    def __init__(self, type = Type.IF, state = State.ON,
-        relation = Relation.INDEPENDENT, components = [ ],
+    def __init__(self, species = [ ], type = Type.IF, state = State.ON,
+        relation = Relation.INDEPENDENT,
         *args, **kwargs):
         Resource.__init__(self, *args, **kwargs)
 
         self.type                   = type
         self.state                  = state
         self.relation               = relation
-        self.components             = QueryList(sequencify(components))
+        self.species                = QueryList(sequencify(species))
 
 class Condition(BaseCondition):
     def __init__(self, sub_condition_relation = Relation.INDEPENDENT,

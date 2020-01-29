@@ -1,4 +1,7 @@
 # imports - standard imports
+from copy import deepcopy
+
+# imports - module imports
 from ccapi.util.string     import ellipsis
 from ccapi._compat         import iteritems
 from ccapi.util.datetime   import now
@@ -19,7 +22,7 @@ class Resource:
     """
     Defines a common behaviour of all objects within the CC API
     """
-    def __init__(self, id = None, name = "", client = None):
+    def __init__(self, id = None, name = "", client = None, *args, **kwargs):
         """
         A resource object with an identifier and/or name.
 
@@ -154,7 +157,7 @@ class Resource:
     def to_json(self):
         data            = dict()
 
-        data["id"]      = str(self.id)
+        data["id"]      = self.id
         data["name"]    = self.name
 
         return data
@@ -162,3 +165,9 @@ class Resource:
     @property
     def dirty(self):
         return self.id < 0
+
+    def __deepcopy__(self, memo):
+        copy    = deepcopy(super(Resource, self), memo)
+        copy.id = get_temporary_id()
+
+        return copy

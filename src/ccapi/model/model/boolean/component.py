@@ -40,7 +40,7 @@ class InternalComponent(Component):
     ]
 
     def __init__(self, *args, **kwargs):
-        self.super = super(InternalComponent, self)
+        self.super       = super(Component, self)
         self.super.__init__(*args, **kwargs)
 
         self._regulators = QueryList()
