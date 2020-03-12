@@ -18,6 +18,7 @@ from ccapi.util.request             import response_download
 
 # imports - boolean-model imports
 from ccapi.model.resource                import Resource
+from ccapi.model.util                    import slugify_name
 from ccapi.model.model.boolean.component import (
     Component,
     InternalComponent, ExternalComponent
@@ -92,6 +93,15 @@ class BooleanModel(ModelVersion, Module, JupyterHTMLViewMixin):
     @property
     def external_components(self):
         return self.components.query(lambda c: isinstance(c, ExternalComponent))
+
+    @property
+    def url(self):
+        url = "/".join([
+            self.model.url,
+            slugify_name(self.name or "")
+        ])
+
+        return url
 
     def add_component(self, component):
         if not isinstance(component, _ACCEPTED_COMPONENT_CLASSES):

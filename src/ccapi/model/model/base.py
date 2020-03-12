@@ -1,3 +1,6 @@
+# imports - standard imports
+import re
+
 # imports - module imports
 from ccapi.model.resource      import Resource
 from ccapi.core.config         import Configuration
@@ -14,9 +17,9 @@ from ccapi.model.model.metabolic    import (
 )
 from ccapi.constant            import MODEL_TYPE, MODEL_DOMAIN_TYPE
 from ccapi.template            import render_template
-from ccapi.util.string         import ellipsis, upper
+from ccapi.util.string         import ellipsis, upper, lower
 from ccapi.util.array          import flatten
-from ccapi.model.util          import get_temporary_id
+from ccapi.model.util          import get_temporary_id, slugify_name
 from ccapi._compat             import itervalues, iteritems
 from ccapi.log                 import get_logger
 
@@ -208,6 +211,20 @@ class Model(Resource, JupyterHTMLViewMixin):
             raise TypeError("%s is not a valid model type." % value)
         else:
             self._default_version = value
+
+    @property
+    def url(self):
+        client  = self.client
+
+        name    = slugify_name(self.name or "")
+        
+        url     = client.base_url.rstrip("/")
+        url     = "/".join([
+            "%s/#%s:%s" % (url, self.id, self.default_version.version),
+            name,
+        ])
+
+        return url
 
     def _repr_html_(self):
         html = render_template("model.html", context = dict({

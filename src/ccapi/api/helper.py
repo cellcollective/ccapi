@@ -46,7 +46,8 @@ def _merge_metadata_to_model(model, meta):
         setattr(model, attr, value)
     return model
 
-def _model_version_response_to_boolean_model(response, users = None, client = None):
+def _model_version_response_to_boolean_model(response, meta = None,
+    users = None, parent = None, client = None):
     metadata = { }
 
     for key, data in iteritems(response):
@@ -56,7 +57,11 @@ def _model_version_response_to_boolean_model(response, users = None, client = No
             model_id         = None
             model_version_id = int(key)
 
-        model = BooleanModel(version = model_version_id, client = client)
+        model = BooleanModel(name = meta["name"],
+            version = model_version_id, client = client)
+
+        model.created       = cc_datetime_to_datetime(meta["creationDate"])
+        model.description   = meta["description"]
 
         if "score" in data:
             metadata["score"] = data["score"]["score"]
@@ -215,9 +220,12 @@ def _model_content_to_model(content, users, client = None):
     model.permissions = metadata["modelPermissions"]
     
     for version_id, version_data in iteritems(content["versions"]):
+        meta            = data["modelVersionMap"][str(version_id)]
         version, meta   = _model_version_response_to_boolean_model(
             response    = version_data,
+            meta        = meta,
             users       = users,
+            parent      = model,
             client      = client,
         )
         model           = _merge_metadata_to_model(model, meta)

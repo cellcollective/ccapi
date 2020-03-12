@@ -129,6 +129,26 @@ class Client:
 
         return equals
 
+    @property
+    def version(self):
+        """
+        Version of the Build Service.
+
+        Usage::
+
+            >>> import ccapi
+            >>> client = ccapi.Client()
+            >>> client.version
+            '2.6.2'
+        """
+        response = self.request("GET", "api/ping")
+
+        if response.ok:
+            content = response.json()
+            version = content.get("version")
+        else:
+            response.raise_for_status()
+
     def _build_url(self, *args, **kwargs):
         params  = kwargs.pop("params", None) 
         prefix  = kwargs.get("prefix", True)
