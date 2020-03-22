@@ -46,7 +46,7 @@ def _merge_metadata_to_model(model, meta):
         setattr(model, attr, value)
     return model
 
-def _model_version_response_to_boolean_model(response, meta = None,
+def _model_version_response_to_boolean_model(response, meta = { },
     users = None, parent = None, client = None):
     metadata = { }
 
@@ -57,11 +57,12 @@ def _model_version_response_to_boolean_model(response, meta = None,
             model_id         = None
             model_version_id = int(key)
 
-        model = BooleanModel(name = meta["name"],
+        model = BooleanModel(name = meta.get("name"),
             version = model_version_id, client = client)
 
-        model.created       = cc_datetime_to_datetime(meta["creationDate"])
-        model.description   = meta["description"]
+        if meta:
+            model.created       = cc_datetime_to_datetime(meta["creationDate"])
+            model.description   = meta["description"]
 
         if "score" in data:
             metadata["score"] = data["score"]["score"]

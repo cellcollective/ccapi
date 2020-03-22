@@ -529,8 +529,7 @@ class Client:
             content         = response.json()
 
             boolean, meta   = _model_version_response_to_boolean_model(content,
-                client = self
-            )
+                client = self)
 
             model           = _merge_metadata_to_model(model, meta)
             

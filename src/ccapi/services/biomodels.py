@@ -1,53 +1,29 @@
+# imports - standard imports
+import os.path as osp
+import tempfile
+
 # imports - module imports
-from ccapi.services.base import Service
+from ccapi.util.imports import import_handler
 
-class BioModels(Service):
-    BASE_URL = "https://www.ebi.ac.uk/biomodels"
-    VERSION  = "beta2"
+def read_id(client, id_, **kwargs):
+    BioModels   = import_handler("bioservices.biomodels.BioModels")
+    biomodels   = BioModels()
 
-    API      = dict({
-        "content-type": "application/json",
-        "paths": [
-            # dict({
-            #           "path": "/<modelId>",
-            #     "parameters": [
-            #         dict({
-            #                "name": "format",
-            #                "type": str,
-            #             "default": True
-            #         })
-            #     ]
-            # }),
-            dict({
-                        "path": "/search",
-                  "parameters": [
-                        dict({
-                            "name": "query",
-                            "required": True
-                        }),
-                        dict({
-                            "name": "offset",
-                            "type": int
-                        }),
-                        dict({
-                            "name": "numResults",
-                            "type": int
-                        }),
-                        "sort",
-                        "format"
-                ]
-            }),
-            dict({
-                      "path": "/search/download",
-                "parameters": [
-                    dict({
-                        "name": "models",
-                        "required": True
-                    })
-                ]
-            })
-        ]
-    })
+    model       = None
 
-    def __init__(self, *args, **kwargs):
-        Service.__init__(self, *args, **kwargs)
+    info        = biomodels.get_model_files(id_)
+
+    filename    = info["main"][0]["name"]
+
+    if ".xml" in filename:
+        with tempfile.TemporaryDirectory() as dir_:
+            output = osp.join(dir_, "model.sbml")
+
+            biomodels.get_model_download(id_, filename = filename,
+                output_filename = output)
+            
+            model = client.read(output, **kwargs)
+    else:
+        raise ValueError("No SBML found for BioModel ID %s." % id_)
+
+    return model
