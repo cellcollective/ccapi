@@ -115,7 +115,8 @@ class Model(Resource, JupyterHTMLViewMixin):
 
         self._documents     = QueryList()
 
-        Resource.__init__(self, name = name, *args, **kwargs)
+        self.super          = super(Model, self)
+        self.super.__init__(name = name, *args, **kwargs)
 
         self._parent_id     = None
 
@@ -394,12 +395,9 @@ class Model(Resource, JupyterHTMLViewMixin):
         return model
 
     def to_json(self):
-        data                = dict()
+        data     = self.super.to_json()
 
-        data["id"]          = self.id
-        data["name"]        = self.name
-
-        versions            = [ ]
+        versions = [ ]
 
         for version in self.versions:
             if isinstance(version, ConstraintBasedModel):
@@ -413,13 +411,32 @@ class Model(Resource, JupyterHTMLViewMixin):
 
     def save3(self):
         data        = self.to_json()
-        response    = self._client.post("api/model", json = data)
-        
-        content     = response.json()
 
+        method      = "POST" if self.dirty else "PUT"
+
+        response    = self._client.request(method, "api/model", json = data)
+        content     = response.json()
+        
         data        = content["data"]
 
         self.id     = data["id"]
         self.name   = data["name"]
+
+        for i, version in enumerate(self.versions):
+            for previous_version_id, next_version_id in iteritems(data["versionMap"]):
+                if int(previous_version_id) == version.version:
+                    self.versions[i].id         = self.id
+                    self.versions[i].version    = next_version_id
+
+                    if isinstance(version, ConstraintBasedModel):
+                        for j, metabolite in enumerate(version.metabolites):
+                            for previous_metabolite_id, next_metabolite_id in iteritems(data["metaboliteMap"]):
+                                if int(previous_metabolite_id) == metabolite.id:
+                                    self.versions[i].metabolites[j].id = next_metabolite_id
+
+                        for k, reaction in enumerate(version.reactions):
+                            for previous_reaction_id, next_reaction_id in iteritems(data["reactionMap"]):
+                                if int(previous_reaction_id) == reaction.id:
+                                    self.versions[i].reactions[k].id = next_reaction_id
 
         return self

@@ -16,17 +16,15 @@ class Metabolite(Species, JupyterHTMLViewMixin):
 
     def __init__(self, name = "", formula = None,
         compartment = None, charge = None, *args, **kwargs):
-        Species.__init__(self, name = name, *args, **kwargs)
+        self.super  = super(Metabolite, self)
+        self.super.__init__(name = name, *args, **kwargs)
 
         self.formula        = formula
         self.compartment    = compartment
         self.charge         = charge
 
     def to_json(self):
-        data                    = dict()
-
-        data["id"]              = self.id
-        data["name"]            = self.name
+        data                    = self.super.to_json()
         
         data["compartment"]     = self.compartment
 

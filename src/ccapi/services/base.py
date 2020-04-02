@@ -132,8 +132,8 @@ class Service:
         headers     = kwargs.pop("headers",     { })
         proxies     = kwargs.pop("proxies",     self._proxies)
         data        = kwargs.get("params",      kwargs.get("data"))
-        prefix      = kwargs.get("prefix",      True)
-        user_agent  = kwargs.get("user_agent",  config.user_agent)
+        prefix      = kwargs.pop("prefix",      True)
+        user_agent  = kwargs.pop("user_agent",  config.user_agent)
 
         headers.update({
             "User-Agent": user_agent

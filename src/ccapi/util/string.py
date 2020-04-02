@@ -76,7 +76,7 @@ def ellipsis(string, threshold = 50, pattern = "..."):
 
     return string
 
-def get_random_str(string):
+def get_random_str():
     uuid_   = uuid.uuid4()
     string  = str(uuid_)
     string  = string.replace("-", "")
