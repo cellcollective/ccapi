@@ -1,5 +1,6 @@
 # imports - standard imports
 import os.path as osp
+import tempfile
 
 # imports - module imports
 from ccapi.services.base    import Service
@@ -14,21 +15,6 @@ config = Configuration()
 class BiGGModels(Service):
     PREFIX_URL  = "http://bigg.ucsd.edu"
     BASE_URL    = "%s/api/v2" % PREFIX_URL
-    
-    _accepted_download_formats = dict({
-        "gzip": dict({
-            "extension": ".xml.gz"
-        }),
-        "sbml": dict({
-            "extension": ".xml"
-        }),
-        "json": dict({
-            "extension": ".json"
-        }),
-        "matlab": dict({
-            "extension": ".mat"
-        })
-    })
 
     def __init__(self, *args, **kwargs):
         self.super = super(BiGGModels, self)
@@ -48,30 +34,42 @@ class BiGGModels(Service):
         else:
             raise ValueError("Unknown resource type %s" % resource)
 
-    def download(self, model, location = ".", name = None, format_ = "json",
+    def download(self, model, location = ".", name = None, format_ = ".json.gz",
         **kwargs):
-        accepted_formats    = self._accepted_download_formats
-        
-        formats             = list(iterkeys(accepted_formats))
+        url         = self._build_url(self.PREFIX_URL,
+            "static", "models", "%s%s" % (model, format_), prefix = False)
 
-        if format_ in formats:
-            extension   = accepted_formats[format_]["extension"]
-            url         = self._build_url(self.PREFIX_URL,
-                "static", "models", "%s%s" % (model, extension),
-                prefix = False)
+        response    = self.request("GET", url = url, prefix = False)
 
-            response    = self.request("GET", url = url, prefix = False)
+        nchunk      = kwargs.get("nchunk", config.max_chunk_download_bytes)
 
-            nchunk      = kwargs.get("nchunk", config.max_chunk_download_bytes)
+        if not name:
+            name    = "%s%s" % (model, format_)
 
-            if not name:
-                name    = "%s%s" % (model, extension)
+        path        = osp.join(location, name)
 
-            path        = osp.join(location, name)
+        path        = response_download(response, path, chunk_size = nchunk)
 
-            path        = response_download(response, path, chunk_size = nchunk)
+        return path
 
-            return path
-        else:
-            raise ValueError("Unknown download format %s. Must be either of %s"
-                % (format_, formats))
+def read_id(client, id_, **kwargs):
+    bigg = BiGGModels()
+
+    model       = None
+
+    info        = bigg.get("model")
+
+    found       = False
+
+    for result in info["results"]:
+        if result["bigg_id"] == id_:
+            found = True
+    
+    if not found:
+        raise ValueError("No valid BiGG Model found with id - %s" % id_)
+    else:
+        with tempfile.TemporaryDirectory() as dir_:
+            path    = bigg.download(id_, location = dir_)
+            model   = client.read(path, type = "metabolic", **kwargs)
+
+    return model

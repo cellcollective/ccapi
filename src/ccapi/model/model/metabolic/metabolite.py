@@ -9,6 +9,10 @@ class Metabolite(Species, JupyterHTMLViewMixin):
             "title": "Compartment"
         }),
         dict({
+             "name": "formula",
+            "title": "Formula"
+        }),
+        dict({
              "name": "charge",
             "title": "Charge"
         })

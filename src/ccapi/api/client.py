@@ -551,39 +551,44 @@ class Client:
 
             data            = content["data"]
 
-            model           = Model(id = data["id"], name = data["name"],
-                client = self)
-            model._response = data
+            model           = Model(client = self)
 
             # HACK: remove default version provided.
             model.versions.pop()
 
-            for version in data["versions"]:
-                if version["type"] == "metabolic":
-                    metabolic = ConstraintBasedModel(
-                        id = model.id, version = version["id"], client = self)
+            for file_data in data:
+                model_data  = file_data["data"]
+                
+                model.id    = model_data["id"]
+                model.name  = model_data["name"]
 
-                    for metabolite in version["metabolites"]:
-                        m = Metabolite(
-                            id          = metabolite["id"],
-                            name        = metabolite["name"],
-                            compartment = metabolite["compartment"],
-                            charge      = metabolite["charge"],
-                            client      = self
-                        )
-                        metabolic.add_metabolite(m)
+                for version in model_data["versions"]:
+                    if model_data["modelType"] == "metabolic":
+                        metabolic = ConstraintBasedModel(
+                            id = model.id, version = version["id"], client = self)
 
-                    for reaction in version["reactions"]:
-                        r = Reaction(
-                            id          = reaction["id"],
-                            name        = reaction["name"],
-                            lower_bound = reaction["lowerBound"],
-                            upper_bound = reaction["upperBound"],
-                            client      = self
-                        )
-                        metabolic.add_reaction(r)
+                        for metabolite in version["metabolites"]:
+                            m = Metabolite(
+                                id          = metabolite["id"],
+                                name        = metabolite["name"],
+                                compartment = metabolite["compartment"],
+                                formula     = metabolite["formula"],
+                                charge      = metabolite["charge"],
+                                client      = self
+                            )
+                            metabolic.add_metabolite(m)
 
-                    model.add_version(metabolic)
+                        for reaction in version["reactions"]:
+                            r = Reaction(
+                                id          = reaction["id"],
+                                name        = reaction["name"],
+                                lower_bound = reaction["lowerBound"],
+                                upper_bound = reaction["upperBound"],
+                                client      = self
+                            )
+                            metabolic.add_reaction(r)
+
+                        model.add_version(metabolic)
         else:
             raise TypeError("Unknown type %s." % type_)
         
