@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   VERBOSE: true
-  TERM: ""
+  TERM: "xterm"
 
 jobs:
   test:
