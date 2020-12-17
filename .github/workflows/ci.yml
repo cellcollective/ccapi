@@ -30,7 +30,7 @@ jobs:
         name: Set up Python ${{ matrix.python-version }}
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: kamiazya/setup-graphviz@v1
+      - uses: ts-graphviz/setup-graphviz@v1
         name: Setup Graphviz
       - name: Make a Virtual Environment
         run: |
