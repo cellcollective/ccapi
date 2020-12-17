@@ -1,6 +1,6 @@
 # imports - module imports
 from ccapi.util.string import strip, strip_ansi, pluralize, kebab_case
-from cc import cli
+from ccapi import cli
 
 def test_strip():
     string = "foobar"

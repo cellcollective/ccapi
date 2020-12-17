@@ -1,5 +1,5 @@
 def test_imports():
-    from cc import (
+    from ccapi import (
         __name__    as _,
         __version__ as _,
         __author__  as _,
