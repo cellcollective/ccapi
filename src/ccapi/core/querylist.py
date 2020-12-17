@@ -221,7 +221,7 @@ class QueryList(list, JupyterHTMLViewMixin):
         current_length = len(self)
         list.extend(self, iterable)
         _dict = self._dict
-        if current_length is 0:
+        if current_length == 0:
             self._generate_index()
             return
         for i, obj in enumerate(islice(self, current_length, None),
