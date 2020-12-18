@@ -159,7 +159,7 @@ def _model_version_response_to_boolean_model(response, meta = { },
         component_regulator_map = dict()
         for regulator_id, regulator_data in iteritems(data["regulatorMap"]):
             regulator = Regulator(id = int(regulator_id),
-                component   = component_map[regulator_data["regulatorSpeciesId"]],
+                species     = component_map[regulator_data["regulatorSpeciesId"]],
                 type        = lower(regulator_data["regulationType"]),
                 conditions  = [data["condition"]
                     for _, data in iteritems(condition_map)
