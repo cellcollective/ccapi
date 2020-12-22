@@ -1,6 +1,13 @@
+# imports - compat imports
+from ccapi._compat import PY2
+
 # imports - standard imports
 import os.path as osp
-import cgi
+
+if PY2:
+    import cgi as module_escape
+else:
+    import html as module_escape
 
 # imports - module imports
 from ccapi.util.system import read
@@ -63,7 +70,7 @@ def render_template(template, dirs = [ ], context = None, **kwargs):
     if context:
         for name, item in iteritems(context):
             item = str(item)
-            item = cgi.escape(item)
+            item = module_escape.escape(item)
             
             context[name] = item
 

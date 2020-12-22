@@ -44,6 +44,7 @@ from ccapi.util.array          import (
 )
 from ccapi.util._dict          import merge_dict
 from ccapi.exception           import (
+    TypeError,
     AuthenticationError
 )
 from ccapi.log                 import get_logger
@@ -216,8 +217,8 @@ class Client:
         Dispatch a POST request to the server.
 
         :param url: URL part (does not include the base URL).
-        :param args: Arguments provided to ``client._request``
-        :param kwargs: Keyword Arguments provided to ``client._request``
+        :param args: Arguments provided to ``client.request``
+        :param kwargs: Keyword Arguments provided to ``client.request``
 
         Usage::
 
@@ -241,8 +242,8 @@ class Client:
         """
         Check if the URL is alive.
 
-        :param args: Arguments provided to ``client._request``
-        :param kwargs: Keyword Arguments provided to ``client._request``
+        :param args: Arguments provided to ``client.request``
+        :param kwargs: Keyword Arguments provided to ``client.request``
 
         Usage::
 

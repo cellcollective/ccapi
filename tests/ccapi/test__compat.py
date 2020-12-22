@@ -6,7 +6,8 @@ from ccapi._compat import (cmp, input, StringIO, iteritems, iterkeys,
     PYTHON_VERSION, _is_python_version)
 
 # imports - test imports
-from testutils import mock_input, assert_input
+from testutils import assert_input
+# from testutils import mock_input, assert_input
 
 def test_imports():
     from ccapi._compat import (

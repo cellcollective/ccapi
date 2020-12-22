@@ -1,10 +1,5 @@
 # imports - module imports
-from ccapi import cli
 from ccapi.table import _sanitize_string, Table
-
-def test__sanitize_string():
-    assert _sanitize_string(cli.format("foobar", cli.GREEN)) == "foobar"
-    assert _sanitize_string(cli.format("foobar", cli.BOLD))  == "foobar"
 
 def test_table():
     table  = Table()

@@ -163,8 +163,8 @@ class Service:
         Dispatch a POST request to the server.
 
         :param url: URL part (does not include the base URL).
-        :param args: Arguments provided to ``client._request``
-        :param kwargs: Keyword Arguments provided to ``client._request``
+        :param args: Arguments provided to ``client.request``
+        :param kwargs: Keyword Arguments provided to ``client.request``
 
         Usage::
 

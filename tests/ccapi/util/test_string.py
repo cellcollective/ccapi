@@ -1,6 +1,5 @@
 # imports - module imports
 from ccapi.util.string import strip, strip_ansi, pluralize, kebab_case
-from ccapi import cli
 
 def test_strip():
     string = "foobar"
@@ -11,10 +10,6 @@ def test_strip():
 
     string = "\n\n\n"
     assert strip(string) == ""
-
-def test_strip_ansi():
-    assert strip_ansi(cli.format("foobar", cli.GREEN)) == "foobar"
-    assert strip_ansi(cli.format("barfoo", cli.BOLD))  == "barfoo"
 
 def test_pluralize():
     assert pluralize("package",  1) == "package"
