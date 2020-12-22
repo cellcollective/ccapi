@@ -11,8 +11,8 @@ from   distutils.spawn import find_executable
 from ccapi.util.string import strip
 from ccapi._compat     import iteritems
 
-def read(fname):
-    with open(fname) as f:
+def read(fname, **kwargs):
+    with open(fname, **kwargs) as f:
         data = f.read()
     return data
 
