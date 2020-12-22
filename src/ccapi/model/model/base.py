@@ -297,7 +297,7 @@ class Model(Resource, JupyterHTMLViewMixin):
                         for regulator in component.regulators:
                             regulator_map[regulator.id] = dict({
                                     "regulationType": upper(regulator.type),
-                                "regulatorSpeciesId": regulator.component.id,
+                                "regulatorSpeciesId": regulator.species.id,
                                          "speciesId": component.id,
                             })
 

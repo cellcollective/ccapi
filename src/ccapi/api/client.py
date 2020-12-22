@@ -5,10 +5,8 @@ import random
 import collections
 
 # imports - third-party imports
-# https://github.com/gevent/gevent/issues/1016#issuecomment-328529454
-# Monkey-Patch
-from gevent import monkey as curious_george
-curious_george.patch_all(thread = False, select = False)
+from ccapi.util.gevent import patch
+patch()
 
 import requests
 from   requests_cache.core      import CachedSession

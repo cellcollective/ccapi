@@ -146,6 +146,10 @@ class BooleanModel(ModelVersion, Module, JupyterHTMLViewMixin):
                 err_str = error_string
             )
 
+            # https://github.com/miguelgrinberg/Flask-SocketIO/issues/65#issuecomment-60697013
+            patch  = import_handler("ccapi.util.gevent.patch")
+            patch()
+
             graph  = nx.DiGraph()
             graph.add_nodes_from([c.name for c in self.components])
 
