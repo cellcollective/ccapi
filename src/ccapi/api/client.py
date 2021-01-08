@@ -556,6 +556,8 @@ class Client:
             model.versions.pop()
 
             for file_data in data:
+                print(file_data)
+                
                 model_data  = file_data["data"]
                 
                 model.id    = model_data["id"]

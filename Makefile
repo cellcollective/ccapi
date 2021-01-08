@@ -15,16 +15,16 @@ NOTEBOOKSDIR			= ${DOCSDIR}/source/notebooks
 PYTHONPATH		 	   ?= python
 
 VIRTUAL_ENV			   ?= ${BASEDIR}/.venv
-VENVBIN					= ${VIRTUAL_ENV}/bin
+VENVBIN				   ?= ${VIRTUAL_ENV}/bin
 
-PYTHON				  	= ${VENVBIN}/python
+PYTHON				   ?= ${VENVBIN}/python
 IPYTHON					= ${VENVBIN}/ipython
-PIP					  	= ${VENVBIN}/pip
-JUPYTER					= ${VENVBIN}/jupyter
-PYTEST					= ${VENVBIN}/pytest
+PIP					   ?= ${VENVBIN}/pip
+PYTEST				   ?= ${VENVBIN}/pytest
 TOX						= ${VENVBIN}/tox
-COVERALLS				= ${VENVBIN}/coveralls
+COVERALLS			   ?= ${VENVBIN}/coveralls
 IPYTHON					= ${VENVBIN}/ipython
+JUPYTER					= ${VENVBIN}/jupyter
 SAFETY					= ${VENVBIN}/safety
 PRECOMMIT				= ${VENVBIN}/pre-commit
 SPHINXBUILD				= ${VENVBIN}/sphinx-build
@@ -84,13 +84,17 @@ ifneq (${PIPCACHEDIR},)
 endif
 
 	$(call log,INFO,Installing Requirements)
-	$(PIP) install -r $(BASEDIR)/requirements-dev.txt $(OUT)
+ifeq (${ENVIRONMENT},test)
+	$(PIP) install -r $(BASEDIR)/requirements-test.txt $(OUT)
+else
+	$(PIP) install -r $(BASEDIR)/requirements-dev.txt  $(OUT)
+endif
 
 	$(call log,INFO,Installing ${PROJECT} (${ENVIRONMENT}))
-ifeq (${ENVIRONMENT},production)
-	$(PYTHON) setup.py install $(OUT)
-else
+ifeq (${ENVIRONMENT},development)
 	$(PYTHON) setup.py develop $(OUT)
+else
+	$(PYTHON) setup.py install $(OUT)
 endif
 
 	$(call log,SUCCESS,Installation Successful)
@@ -111,11 +115,15 @@ ifneq (${ENVIRONMENT},test)
 		$(BASEDIR)/htmlcov \
 		$(BASEDIR)/dist \
 		$(BASEDIR)/build \
+		~/.config/$(PROJECT)
 
 	$(call log,SUCCESS,Cleaning Successful)
 else
 	$(call log,SUCCESS,Nothing to clean)
 endif
+
+console: install ## Open Console.
+	$(IPYTHON)
 
 test: install ## Run tests.
 	$(call log,INFO,Running Python Tests using $(JOBS) jobs.)
@@ -126,7 +134,7 @@ ifeq (${ENVIRONMENT},development)
 	$(eval IARGS := --cov-report html)
 endif
 
-	$(PYTEST) -n $(JOBS) --cov $(PROJDIR) $(IARGS) -vv $(ARGS)
+	$(PYTEST) -s -n $(JOBS) --cov $(PROJDIR) $(IARGS) -vv $(ARGS)
 
 ifeq (${ENVIRONMENT},development)
 	$(call browse,file:///${BASEDIR}/htmlcov/index.html)
