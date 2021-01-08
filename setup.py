@@ -4,10 +4,14 @@ import sys
 import os.path as osp
 import glob
 import io
+import shutil
 
 from setuptools import setup, find_packages
 
-import pip
+from setuptools.command.develop import develop
+from setuptools.command.install import install
+
+# import pip
 
 # try:
 #     from pip._internal.req import parse_requirements # pip 10
@@ -71,6 +75,30 @@ def get_dependencies(type_ = None):
 
 PKGINFO    = get_package_info()
 
+
+def remove_cache():
+    userdir = osp.expanduser("~")
+    pkgname = PKGINFO["__name__"]
+
+    paths = [
+        osp.join(userdir, ".%s" % pkgname), # backward-compatibility
+        osp.join(userdir, ".config", pkgname)
+    ]
+
+    for path in paths:
+        if osp.exists(path):
+            shutil.rmtree(path)
+
+class DevelopCommand(develop):
+    def run(self):
+        develop.run(self)
+        remove_cache()
+
+class InstallCommand(install):
+    def run(self):
+        install.run(self)
+        remove_cache()
+        
 setup(
     name                 = PKGINFO["__name__"],
     version              = PKGINFO["__version__"],
@@ -95,8 +123,7 @@ setup(
     # },
     install_requires     = get_dependencies(type_ = "production"),
     extras_require       = dict(
-        dev = get_dependencies(type_ = "development"),
-        all = get_dependencies(type_ = "all")
+        dev = get_dependencies(type_ = "development")
     ),
     include_package_data = True,
     classifiers          = [
@@ -113,7 +140,15 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy"
-    ]
+    ],
+    cmdclass = {
+        "install": InstallCommand,
+        "develop": DevelopCommand
+    }
 )
