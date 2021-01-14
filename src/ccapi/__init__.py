@@ -14,6 +14,12 @@ from ccapi.core.config  import Configuration
 from ccapi._compat      import iterkeys
 
 def load_model(name, *args, **kwargs):
+    """
+    Read a sample model.
+
+    :param name: Name of the model (Can be obtained by list(ccapi.constant.MODELS)).
+    :param client: Custom client object.
+    """
     if not name in iterkeys(MODELS):
         raise ValueError("Model %s not found." % name)
     else:

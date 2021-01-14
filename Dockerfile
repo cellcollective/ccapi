@@ -13,9 +13,8 @@ RUN apk add --no-cache --virtual \
 COPY . $CCAPI_PATH
 COPY ./docker/entrypoint.sh /entrypoint.sh
 
-RUN pip install $CCAPI_PATH[all]
-
-RUN apk del .build-deps
+RUN pip install $CCAPI_PATH[all] \
+    && apk del .build-deps
 
 WORKDIR $CCAPI_PATH
 

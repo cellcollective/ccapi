@@ -14,7 +14,8 @@ import grequests as greq
 from   grequests                import AsyncRequest
 
 # imports - module imports
-from ccapi.api.helper          import (
+from ccapi.util.environ         import getenv
+from ccapi.api.helper           import (
     _build_model_urls,
     _user_response_to_user,
     _model_content_to_model,
@@ -22,32 +23,32 @@ from ccapi.api.helper          import (
     _merge_metadata_to_model
 )
 from ccapi.model.model.base     import Model, _ACCEPTED_MODEL_DOMAIN_TYPES
-from ccapi.model.user          import User
-from ccapi.core.querylist      import QueryList
-from ccapi.core.config         import Configuration
-from ccapi.constant            import (
+from ccapi.model.user           import User
+from ccapi.core.querylist       import QueryList
+from ccapi.core.config          import Configuration
+from ccapi.constant             import (
     PATH,
     AUTHENTICATION_HEADER,
     _AUTHENTICATION_ERROR_STRING
 )
-from ccapi._compat             import (
+from ccapi._compat              import (
     string_types,
     iteritems,
     iterkeys,
     itervalues,
     urlencode
 )
-from ccapi.util.array          import (
+from ccapi.util.array           import (
     sequencify,
     squash,
     find
 )
-from ccapi.util._dict          import merge_dict
-from ccapi.exception           import (
+from ccapi.util._dict           import merge_dict
+from ccapi.exception            import (
     TypeError,
     AuthenticationError
 )
-from ccapi.log                 import get_logger
+from ccapi.log                  import get_logger
 
 logger = get_logger()
 config = Configuration()
@@ -284,8 +285,8 @@ class Client:
         token = kwargs.get("token", None)
 
         if not token:
-            email    = kwargs.get("email",    None)
-            password = kwargs.get("password", None)
+            email    = getenv("AUTH_EMAIL",    kwargs.get("email",    None))
+            password = getenv("AUTH_PASSWORD", kwargs.get("password", None))
 
             if not email:
                 raise ValueError("email not provided.")
@@ -339,7 +340,6 @@ class Client:
             >>> client.me()
             <User id=10887 name='Test Test'>
         """
-        
         response = self.request("GET", "_api/user/getProfile", *args, **kwargs)
         content  = response.json()
         user     = _user_response_to_user(content, client = self)
@@ -517,9 +517,9 @@ class Client:
 
     def read(self, filename, type = None, save = False):
         """
-        Read an SBML file.
+        Read a model file.
 
-        :param filename: Name of the file locally present to read an SBML file.
+        :param filename: Name of the file locally present to read a model file.
         :param save: Save model after importing.
         """
         type_           = type or config.model_type["value"]
@@ -529,9 +529,9 @@ class Client:
         model.versions.pop()
 
         if   type_ == "boolean":
-            files           = dict({ "upload": (filename, open(filename, "rb")) })
+            files           = dict({ "file": (filename, open(filename, "rb")) })
 
-            response        = self.post("_api/model/import", files = files)
+            response        = self.post("api/model/import", files = files)
             content         = response.json()
 
             boolean, meta   = _model_version_response_to_boolean_model(content,

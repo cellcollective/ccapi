@@ -4,7 +4,7 @@
     </h1>
     <h4>
       A Python Library to interact with the 
-      <a href="https://cellcollective.org">Cell Collective</a> API v2
+      <a href="https://cellcollective.org">Cell Collective</a> API v3
     </h4>
 </div>
 

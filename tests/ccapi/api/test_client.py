@@ -53,10 +53,13 @@ def test__build_url():
     _test(parts)
 
 def test_auth():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         _BASE_CLIENT.auth()
+        assert "email not provided." in str(e)
+
     with pytest.raises(ValueError):
         _BASE_CLIENT.auth(email = "foobar@gmail.com")
+        assert "password not provided." in str(e)
 
     assert not _BASE_CLIENT.authenticated
     _BASE_CLIENT.auth(email = _TEST_EMAIL, password = _TEST_PASSWORD)

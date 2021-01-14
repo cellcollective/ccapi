@@ -3,13 +3,14 @@ from ccapi.__attr__         import __name__ as NAME, __version__
 from ccapi.constant         import MODEL_TYPE, MODEL_DOMAIN_TYPE
 from ccapi.core.singleton   import Singleton
 from ccapi.core.mixins      import JupyterHTMLViewMixin
+from ccapi.util.environ     import getenv
 
 # imports - standard imports
 import logging
 
 class Configuration(JupyterHTMLViewMixin, metaclass = Singleton):
     def __init__(self, *args, **kwargs):
-        self.url                         = "https://cellcollective.org"
+        self.url                         = getenv("URL", "https://cellcollective.org")
 
         self.user_agent                  = "Python CCAPI / %s" % (__version__)
         
