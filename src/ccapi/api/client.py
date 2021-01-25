@@ -520,6 +520,7 @@ class Client:
         model.versions.pop()
 
         data            = content["data"]
+        print(data)
 
         for response_data in data:
             if response_data["status"] == "error":
