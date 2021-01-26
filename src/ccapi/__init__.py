@@ -20,6 +20,6 @@ def load_model(name, *args, **kwargs):
         model = MODELS[name]
 
     client = kwargs.get("client", Client())
-    model  = client.read(model["path"], type = model["type"])
+    model  = client.read(model["path"], type_ = model["type"])
 
     return model

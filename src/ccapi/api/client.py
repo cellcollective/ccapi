@@ -355,7 +355,9 @@ class Client:
         _resource = resource.lower()
         resources = [ ]
 
-        id_       = kwargs.get("id")
+        domain    = kwargs.get("domain", config.model_domain_type["value"])
+
+        id_       = kwargs.get("id_")
         query     = kwargs.get("query")
         raw       = kwargs.get("raw", False)
 
@@ -371,16 +373,20 @@ class Client:
             id_ = sequencify(id_)
 
         if   _resource == "model":
-            url         = self._build_url("_api/model/get", prefix = False)
-            params      = None
+            url         = self._build_url("api/model/cards/%s" % domain, prefix = False)
+            params      = {
+                "category": "published",
+                "modelTypes": "boolean",
+                "cards": size
+            }
 
-            if query:
-                params  = (
-                    ("search", "species"),
-                    ("search", "knowledge"),
-                    ("name",   query)
-                )
-
+            # if query:
+            #     params  = (
+            #         ("search", "species"),
+            #         ("search", "knowledge"),
+            #         ("name",   query)
+            #     )
+            
             response    = self.request("GET", url, params = params)
             content     = response.json()
 
@@ -402,16 +408,16 @@ class Client:
 
                 for i in id_:
                     model = find(content, lambda x: x["model"]["id"] == i)
-                    
+
                     if not model:
                         raise ValueError("Model with ID %s not found." % i)
                     else:
-                        models[i]   = dict({
+                        models[i] = dict({
                             "metadata": model,
                             "versions": dict()
                         })
 
-                        versions    = [ ]
+                        versions  = [ ]
 
                         if not version:
                             versions = list(iterkeys(model["model"]["modelVersionMap"]))
@@ -491,9 +497,9 @@ class Client:
                         else:
                             content = list(filter(lambda x: x["model"]["type"] == domain, content))
 
-                from_, to   = since - 1, min(len(content), size)
+                # from_, to   = since - 1, min(len(content), size)
                 
-                content     = content[from_ : from_ + to]
+                # content     = content[from_ : from_ + to]
                 ids         = [data["model"]["id"] for data in content]
                 
                 resources   = self.get("model", id = ids)
@@ -515,85 +521,92 @@ class Client:
 
         return squash(resources)
 
-    def read(self, filename, type = None, save = False):
+    def read(self, filename, type_ = None):
         """
-        Read an SBML file.
+        Read a Boolean-Based or Constraint-Based Model File.
 
-        :param filename: Name of the file locally present to read an SBML file.
-        :param save: Save model after importing.
+        :param filename: Name of the file locally present to read.
+        :parma type_: Type of Model ("boolean", "metabolic")
         """
-        type_           = type or config.model_type["value"]
+        type_           = type_ or config.model_type["value"]
         
         model           = Model(client = self)
         # HACK: remove default version provided.
         model.versions.pop()
 
-        if   type_ == "boolean":
-            files           = dict({ "upload": (filename, open(filename, "rb")) })
+        # if   type_ == "boolean":
+        files           = dict({ "file": (filename, open(filename, "rb")) })
 
-            response        = self.post("_api/model/import", files = files)
-            content         = response.json()
+        params          = dict({ "type": type_ })
+        response        = self.post("api/model/import", files = files, data = params)
+        content         = response.json()
+        
+        data            = content["data"]
+        output          = data[0]["data"]
 
-            boolean, meta   = _model_version_response_to_boolean_model(content,
+        if type_ == "boolean":
+            boolean, meta   = _model_version_response_to_boolean_model(data,
                 client = self)
 
             model           = _merge_metadata_to_model(model, meta)
-            
             model.add_version(boolean)
         elif type_ == "metabolic":
-            data            = dict(type = type_)
-            files           = [("file", open(filename, "rb"))]
+            pass
 
-            response        = self.post("api/model/import", data = data,
-                files = files)
-            content         = response.json()
+        #     data            = dict(type = type_)
+        #     files           = [("file", open(filename, "rb"))]
 
-            data            = content["data"]
+        #     response        = self.post("api/model/import", data = data,
+        #         files = files)
+        #     content         = response.json()
 
-            model           = Model(client = self)
+        #     data            = content["data"]
 
-            # HACK: remove default version provided.
-            model.versions.pop()
+        #     model           = Model(client = self)
 
-            for file_data in data:
-                model_data  = file_data["data"]
+        #     # HACK: remove default version provided.
+        #     model.versions.pop()
+
+        #     for file_data in data:
+        #         model_data  = file_data["data"]
                 
-                model.id    = model_data["id"]
-                model.name  = model_data["name"]
+        #         model.id    = model_data["id"]
+        #         model.name  = model_data["name"]
 
-                for version in model_data["versions"]:
-                    if model_data["modelType"] == "metabolic":
-                        metabolic = ConstraintBasedModel(
-                            id = model.id, version = version["id"], client = self)
+        #         for version in model_data["versions"]:
+        #             if model_data["modelType"] == "metabolic":
+        #                 metabolic = ConstraintBasedModel(
+        #                     id = model.id, version = version["id"], client = self)
 
-                        for metabolite in version["metabolites"]:
-                            m = Metabolite(
-                                id          = metabolite["id"],
-                                name        = metabolite["name"],
-                                compartment = metabolite["compartment"],
-                                formula     = metabolite["formula"],
-                                charge      = metabolite["charge"],
-                                client      = self
-                            )
-                            metabolic.add_metabolite(m)
+        #                 for metabolite in version["metabolites"]:
+        #                     m = Metabolite(
+        #                         id          = metabolite["id"],
+        #                         name        = metabolite["name"],
+        #                         compartment = metabolite["compartment"],
+        #                         formula     = metabolite["formula"],
+        #                         charge      = metabolite["charge"],
+        #                         client      = self
+        #                     )
+        #                     metabolic.add_metabolite(m)
 
-                        for reaction in version["reactions"]:
-                            r = Reaction(
-                                id          = reaction["id"],
-                                name        = reaction["name"],
-                                lower_bound = reaction["lowerBound"],
-                                upper_bound = reaction["upperBound"],
-                                client      = self
-                            )
-                            metabolic.add_reaction(r)
+        #                 for reaction in version["reactions"]:
+        #                     r = Reaction(
+        #                         id          = reaction["id"],
+        #                         name        = reaction["name"],
+        #                         lower_bound = reaction["lowerBound"],
+        #                         upper_bound = reaction["upperBound"],
+        #                         client      = self
+        #                     )
+        #                     metabolic.add_reaction(r)
 
-                        model.add_version(metabolic)
-        else:
-            raise TypeError("Unknown type %s." % type_)
+        #                 model.add_version(metabolic)
+        # else:
+        #     raise TypeError("Unknown type %s." % type_)
         
-        if save:
-            model.save()
+        # if save:
+        #     model.save()
 
+        # return model
         return model
 
     def search(self, resource, query, *args, **kwargs):
