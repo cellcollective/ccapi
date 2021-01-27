@@ -2,6 +2,7 @@ import sys
 import logging
 
 import ccapi
+from   ccapi.limits import MAX_UNSIGNED_SHORT
 
 logger = logging.getLogger("ccapi")
 logger.setLevel(logging.DEBUG)
@@ -12,7 +13,8 @@ def main():
 
     me     = client.me()
 
-    models = client.get("model", filters = { "user": me }, size = sys.maxsize)
+    models = client.get("model", filters = { "user": me },
+        size = MAX_UNSIGNED_SHORT)
     for model in models:
         model.delete()
 

@@ -296,3 +296,18 @@ def _build_model_urls(client, id_, version, hash_ = None):
             urls[key]   = url
 
     return urls
+
+def _filter_to_user(client, filters):
+    user = None
+    
+    if "user" in filters:
+        user = filters["user"]
+
+        if isinstance(user, int):
+            user = client.get("user", id_ = user)
+
+        if not isinstance(user, User):
+            raise TypeError("Expected type for user is User \
+                or ID, type %s found." % type(user))
+                
+    return user

@@ -21,6 +21,7 @@ coveralls
 requests
 grequests
 requests-cache
-python-socketio[client]
+python-engineio<4
+python-socketio[client]<5
 pylint
 autopep8

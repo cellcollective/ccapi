@@ -376,8 +376,8 @@ class Model(Resource, JupyterHTMLViewMixin):
         data = dict(("%s/%s" % (self.id, model.version), None)
             for model in self.versions
         )
-        self.client.post("_api/model/save", json = data)
-        
+        self.client.delete("api/model/%s" % self.id, json = data)
+
         return self
 
     def parent(self):

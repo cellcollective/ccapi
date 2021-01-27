@@ -13,6 +13,9 @@ from ccapi.model        import *
 from ccapi.core.config  import Configuration
 from ccapi._compat      import iterkeys
 
+from ccapi.util.gevent  import patch
+patch()
+
 def load_model(name, *args, **kwargs):
     """
     Read a sample model.

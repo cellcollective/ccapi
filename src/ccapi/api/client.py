@@ -4,23 +4,22 @@ import os.path as osp
 import random
 import collections
 
-# imports - third-party imports
-from ccapi.util.gevent import patch
-patch()
-
 import requests
 from   requests_cache.core      import CachedSession
 import grequests as greq
 from   grequests                import AsyncRequest
+import socketio
 
 # imports - module imports
+from ccapi.limits               import MAX_UNSIGNED_SHORT
 from ccapi.util.environ         import getenv
 from ccapi.api.helper           import (
     _build_model_urls,
     _user_response_to_user,
     _model_content_to_model,
     _model_version_response_to_boolean_model,
-    _merge_metadata_to_model
+    _merge_metadata_to_model,
+    _filter_to_user
 )
 from ccapi.model.model.base     import Model, _ACCEPTED_MODEL_DOMAIN_TYPES
 from ccapi.model.user           import User
@@ -95,6 +94,8 @@ class Client:
         else:
             self._session = requests.Session()
 
+        self._socket = socketio.Client()
+
         if proxies and \
             not isinstance(proxies, (collections.Mapping, list, tuple)):
             raise TypeError((
@@ -108,7 +109,11 @@ class Client:
         self._proxies = proxies
 
         if test:
-            self.ping()
+            self.connect()
+
+    def connect(self):
+        self.ping()
+        # self._socket.connect(self.base_url)
 
     def __repr__(self):
         repr_ = "<Client url='%s'>" % (self.base_url)
@@ -229,15 +234,19 @@ class Client:
             >>> response.content
             b'"First Name","Last Name","Email","Institution","Last Updated Date"\n'
         """
-        response = self.request("POST", url, *args, **kwargs)
-        return response
+        return self.request("POST", url, *args, **kwargs)
 
     def put(self, url, *args, **kwargs):
         """
         Dispatch a PUT request to the server.
         """
-        response = self.request("PUT", url, *args, **kwargs)
-        return response
+        return self.request("PUT", url, *args, **kwargs)
+
+    def delete(self, url, *args, **kwargs):
+        """
+        Dispatch a DELETE request to the server.
+        """
+        return self.request("DELETE", url, *args, **kwargs)
 
     def ping(self, *args, **kwargs):
         """
@@ -367,6 +376,10 @@ class Client:
         since     = kwargs.get("since", 1)
         since     = since if since > 0 else 1
 
+        user      = _filter_to_user(self, filters)
+
+        me        = self.me()
+
         if id_:
             if isinstance(id_, string_types) and id_.isdigit():
                 id_ = int(id_)
@@ -380,21 +393,26 @@ class Client:
                 "cards": size
             }
 
-            # if query:
-            #     params  = (
-            #         ("search", "species"),
-            #         ("search", "knowledge"),
-            #         ("name",   query)
-            #     )
-            
-            response    = self.request("GET", url, params = params)
-            content     = response.json()
+            if user == me:
+                params["category"] = "my"
+
+        #     # if query:
+        #     #     params  = (
+        #     #         ("search", "species"),
+        #     #         ("search", "knowledge"),
+        #     #         ("name",   query)
+        #     #     )
 
             if id_:
-                urls    = dict()
+                params["cards"] = MAX_UNSIGNED_SHORT
+                
+                response        = self.request("GET", url, params = params)
+                content         = response.json()
 
-                version = kwargs.get("version")
-                hash_   = kwargs.get("hash")
+                urls            = dict()
+
+                version         = kwargs.get("version")
+                hash_           = kwargs.get("hash")
 
                 if isinstance(hash_, str):
                     if not len(id_) == 1:
@@ -404,7 +422,7 @@ class Client:
                             "format { id: hash }"
                         ))
 
-                models  = dict()
+                models = dict()
 
                 for i in id_:
                     model = find(content, lambda x: x["model"]["id"] == i)
@@ -468,7 +486,7 @@ class Client:
 
                 user_ids    = set(user_ids)
 
-                users       = QueryList(sequencify(self.get("user", id = user_ids)))
+                users       = QueryList(sequencify(self.get("user", id_ = user_ids)))
 
                 resources   = QueryList([
                     _model_content_to_model(model,
@@ -476,33 +494,41 @@ class Client:
                             for _, model in iteritems(models)
                 ])
             else:
+                content = None
+
+                def _request():
+                    response = self.request("GET", url, params = params)
+                    content  = response.json()
+                    return content
+
                 if filters:
-                    if "user" in filters:
-                        user = filters["user"]
+                    user = _filter_to_user(self, filters)
 
-                        if isinstance(user, int):
-                            user = self.get("user", id = user)
-
-                        if not isinstance(user, User):
-                            raise TypeError("Expected type for user is User \
-                                or ID, type %s found." % type(user))
-
-                        content = list(filter(lambda x: x["model"]["userId"] == user.id, content))
-
-                    if "domain" in filters:
-                        domain = filters["domain"]
-
-                        if domain not in _ACCEPTED_MODEL_DOMAIN_TYPES:
-                            raise TypeError("Not a valid domain type: %s" % domain)
+                    if user:
+                        if user == me:
+                            params["category"] = "my"
+                            content = _request()
                         else:
-                            content = list(filter(lambda x: x["model"]["type"] == domain, content))
+                            content = _request()
+                            content = list(filter(lambda x: x["model"]["userId"] == user.id, content))
 
-                # from_, to   = since - 1, min(len(content), size)
+                    # if "domain" in filters:
+                    #     domain = filters["domain"]
+
+                    #     if domain not in _ACCEPTED_MODEL_DOMAIN_TYPES:
+                    #         raise TypeError("Not a valid domain type: %s" % domain)
+                    #     else:
+                    #         _request()
+                    #         content = list(filter(lambda x: x["model"]["type"] == domain, content))
+
+                if not content:
+                    content = _request()
+
+                from_, to   = since - 1, min(len(content), size)
                 
-                # content     = content[from_ : from_ + to]
+                content     = content[from_ : from_ + to]
                 ids         = [data["model"]["id"] for data in content]
-                
-                resources   = self.get("model", id = ids)
+                resources   = self.get("model", id_ = ids, filters = filters)
         elif _resource == "user":
             if not id_:
                 raise ValueError("id required.")
@@ -521,38 +547,41 @@ class Client:
 
         return squash(resources)
 
-    def read(self, filename, type_ = None):
+    def read(self, *filenames, type_ = None):
         """
-        Read a Boolean-Based or Constraint-Based Model File.
+        Read Boolean-Based or Constraint-Based Model File(s).
 
-        :param filename: Name of the file locally present to read.
+        :param filename: Name of the files locally present to read.
         :parma type_: Type of Model ("boolean", "metabolic")
         """
-        type_           = type_ or config.model_type["value"]
+        type_   = type_ or config.model_type["value"]
         
-        model           = Model(client = self)
+        model   = Model(client = self)
         # HACK: remove default version provided.
         model.versions.pop()
         
-        # if   type_ == "boolean":
-        files           = dict({ "file": (filename, open(filename, "rb")) })
+        files           = (
+            ("file", (filename, open(filename, "rb")))
+                for filename in filenames
+        )
 
-        params          = dict({ "type": type_ })
+        params          = { "type": type_ }
         response        = self.post("api/model/import", files = files, data = params)
         content         = response.json()
         
         data            = content["data"]
-        output          = data[0]["data"]
 
         if type_ == "boolean":
-            boolean, meta   = _model_version_response_to_boolean_model(data,
-                client = self)
+            for file_data in data:
+                model_data = file_data["data"]
 
-            model           = _merge_metadata_to_model(model, meta)
-            model.add_version(boolean)
+                boolean, meta = _model_version_response_to_boolean_model(model_data,
+                    client = self)
+
+                model = _merge_metadata_to_model(model, meta)
+                model.add_version(boolean)
         elif type_ == "metabolic":
             pass
-
         #     data            = dict(type = type_)
         #     files           = [("file", open(filename, "rb"))]
 
@@ -617,3 +646,6 @@ class Client:
         :param query: Search a query string.
         """
         return self.get(resource, query = query, *args, **kwargs)
+
+    def on(self, event):
+        pass
