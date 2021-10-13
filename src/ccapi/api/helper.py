@@ -9,7 +9,8 @@ from ccapi.model import (
     BooleanModel, InternalComponent, ExternalComponent,
     Regulator,
     Condition, ConditionType, ConditionState, ConditionRelation,
-    Document
+    Document,
+    ConstraintBasedModel
 )
 from ccapi.util.datetime    import now
 from ccapi.util.string      import (
@@ -22,16 +23,21 @@ from ccapi._compat          import iteritems, iterkeys
 
 def cc_datetime_to_datetime(datetime_, default = None, raise_err = False):
     datetime_object = default
+    formats_        = [
+        "%a, %d %b %Y %H:%M:%S %Z",
+        "%Y-%m-%dT%H:%M:%S.%fZ"
+    ]
 
     if datetime_:
-        try:
-            datetime_object = dt.datetime.strptime(
-                datetime_,
-                "%a, %d %b %Y %H:%M:%S %Z"
-            )
-        except ValueError:
-            if raise_err:
-                raise
+        for format_ in formats_:
+            try:
+                datetime_object = dt.datetime.strptime(
+                    datetime_,
+                    format_   
+                )
+            except ValueError:
+                if raise_err:
+                    raise
 
     return datetime_object
 
@@ -189,66 +195,134 @@ def _model_version_response_to_boolean_model(response, meta = { },
 
 def _model_content_to_model(content, users, client = None):
     metadata          = content["metadata"]
-    data              = metadata["model"]
 
-    model             = Model(id = int(data["id"]), name = data["name"],
-        domain = data["type"], client = client)
+    if "model" in metadata:
+        data              = metadata["model"]
 
-    # HACK: remove default version provided.
-    model.versions.pop()
+        model             = Model(id = int(data["id"]), name = data["name"],
+            domain = data["type"], client = client)
 
-    model.description = data["description"]
-    model.author      = data["author"]
-    model.tags        = data["tags"] and data["tags"].split(", ")
+        # HACK: remove default version provided.
+        model.versions.pop()
 
-    model.citations   = data["cited"]
+        model.description = data["description"]
+        model.author      = data["author"]
+        model.tags        = data["tags"] and data["tags"].split(", ")
 
-    model.created     = cc_datetime_to_datetime(data.get("creationDate")) or now()
+        model.citations   = data["cited"]
 
-    model.updated     = dict(
-        biologic  = cc_datetime_to_datetime(data.get("biologicUpdateDate")),
-        knowledge = cc_datetime_to_datetime(data.get("knowledgeBaseUpdateDate"))
-    )
+        model.created     = cc_datetime_to_datetime(data.get("creationDate")) or now()
 
-    model.public      = data["published"]
-
-    model.user        = users.get_by_id(data["userId"])
-
-    model.hash        = data.get("hash")
-
-    model._parent_id  = data["originId"]
-
-    model.permissions = metadata["modelPermissions"]
-    
-    for version_id, version_data in iteritems(content["versions"]):
-        meta            = data["modelVersionMap"][str(version_id)]
-        version, meta   = _model_version_response_to_boolean_model(
-            response    = version_data,
-            meta        = meta,
-            users       = users,
-            parent      = model,
-            client      = client,
+        model.updated     = dict(
+            biologic  = cc_datetime_to_datetime(data.get("biologicUpdateDate")),
+            knowledge = cc_datetime_to_datetime(data.get("knowledgeBaseUpdateDate"))
         )
-        model           = _merge_metadata_to_model(model, meta)
 
-        model.add_version(version)
+        model.public      = data["published"]
 
-    current_version   = data["currentVersion"]
-    for version in model.versions:
-        if version.version == current_version:
-            model.default_version = version
+        model.user        = users.get_by_id(data["userId"])
 
-    if metadata["uploadMap"]:
-        for _, upload_data in iteritems(metadata["uploadMap"]):
-            document = Document(name = upload_data["uploadName"], client = client)
+        model.hash        = data.get("hash")
 
-            document.user       = users.get_by_id(upload_data["userId"])
-            document.created    = cc_datetime_to_datetime(upload_data["uploadDate"])
-            document._token     = upload_data["token"]
+        model._parent_id  = data["originId"]
 
-            model.documents.append(document)
+        model.permissions = metadata["modelPermissions"]
+        
+        for version_id, version_data in iteritems(content["versions"]):
+            meta            = data["modelVersionMap"][str(version_id)]
+            version, meta   = _model_version_response_to_boolean_model(
+                response    = version_data,
+                meta        = meta,
+                users       = users,
+                parent      = model,
+                client      = client,
+            )
+            model           = _merge_metadata_to_model(model, meta)
 
-    return model
+            model.add_version(version)
+
+        current_version   = data["selectedVersion"]
+        for version in model.versions:
+            if version.version == current_version:
+                model.default_version = version
+
+        if metadata["uploadMap"]:
+            for _, upload_data in iteritems(metadata["uploadMap"]):
+                document = Document(name = upload_data["uploadName"], client = client)
+
+                document.user       = users.get_by_id(upload_data["userId"])
+                document.created    = cc_datetime_to_datetime(upload_data["uploadDate"])
+                document._token     = upload_data["token"]
+
+                model.documents.append(document)
+
+        return model
+    else:
+        data              = metadata
+
+        model             = Model(id = int(data["id"]), name = data["name"],
+            domain = data["domainType"], default_type = data["modelType"], client = client)
+
+        # HACK: remove default version provided.
+        model.versions.pop()
+
+        model.description = data.get("description")
+        model.score       = None
+        # model.author      = data["author"]
+        model.tags        = data["tags"] and data["tags"].split(", ")
+
+        # model.citations   = data["cited"]
+
+        model.created     = cc_datetime_to_datetime(data.get("_createdAt")) or now()
+        model.updated     = cc_datetime_to_datetime(data.get("_updatedAt")) or now()
+
+        # model.updated     = dict(
+        #     biologic  = cc_datetime_to_datetime(data.get("biologicUpdateDate")),
+        #     knowledge = cc_datetime_to_datetime(data.get("knowledgeBaseUpdateDate"))
+        # )
+
+        model.public      = data["public"]
+
+        model.user        = users.get_by_id(int(data["_createdBy"]))
+
+        # model.hash        = data.get("hash")
+
+        # model._parent_id  = data["originId"]
+
+        # model.permissions = metadata["modelPermissions"]
+
+        model.__versions = data
+
+        for version in data["versions"]:
+            metabolic = ConstraintBasedModel()
+
+            metabolic.description = data.get("description") or version.get("description") or None
+
+            model.add_version(metabolic)
+        
+        # for version_id, version_data in iteritems(content["versions"]):
+            # model.add_version(data)
+            # print(data)
+
+            
+            # meta            = data["modelVersionMap"][str(version_id)]
+            # version, meta   = _model_version_response_to_metabolic_model(
+            #     response    = version_data,
+            #     meta        = meta,
+            #     users       = users,
+            #     parent      = model,
+            #     client      = client,
+            # )
+            # model           = _merge_metadata_to_model(model, meta)
+
+            # model.add_version(version)
+
+        # current_version   = data["selectedVersion"]
+        # for version in model.versions:
+        #     if version.version == current_version:
+        #         model.default_version = version
+
+        return model
 
 def _user_response_to_user(response, client = None):
     user = User(id = int(response["id"]), first_name = response["firstName"],

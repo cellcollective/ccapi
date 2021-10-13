@@ -2,6 +2,7 @@
 from ccapi.model.resource       import Resource
 from ccapi.model.util           import get_temporary_id
 from ccapi.util.string          import ellipsis
+from ccapi.model.util           import slugify_name
 
 class ModelVersion(Resource):
     def __init__(self, name="", version=None, model = None, *args, **kwargs):
@@ -59,3 +60,12 @@ class ModelVersion(Resource):
 
     def write(self):
         raise NotImplementedError
+
+    @property
+    def url(self):
+        url = "/".join([
+            self.model.url,
+            slugify_name(self.name or "")
+        ])
+
+        return url

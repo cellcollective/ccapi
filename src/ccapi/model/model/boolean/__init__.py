@@ -94,15 +94,6 @@ class BooleanModel(ModelVersion, Module, JupyterHTMLViewMixin):
     def external_components(self):
         return self.components.query(lambda c: isinstance(c, ExternalComponent))
 
-    @property
-    def url(self):
-        url = "/".join([
-            self.model.url,
-            slugify_name(self.name or "")
-        ])
-
-        return url
-
     def add_component(self, component):
         if not isinstance(component, _ACCEPTED_COMPONENT_CLASSES):
             raise TypeError("Component must be of type %s, found %s." % 

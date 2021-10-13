@@ -9,7 +9,7 @@ from ccapi.util.gevent import patch
 patch()
 
 import requests
-from   requests_cache.core      import CachedSession
+# from   requests_cache.core      import CachedSession
 import grequests as greq
 from   grequests                import AsyncRequest
 
@@ -87,13 +87,13 @@ class Client:
         self.base_url    = base_url or config.url
         self._auth_token = None
         
-        if cache_timeout:
-            self._session = CachedSession(
-                cache_name   = osp.join(PATH["CACHE"], "requests"),
-                expire_after = cache_timeout
-            )
-        else:
-            self._session = requests.Session()
+        # if cache_timeout:
+        #     self._session = CachedSession(
+        #         cache_name   = osp.join(PATH["CACHE"], "requests"),
+        #         expire_after = cache_timeout
+        #     )
+        # else:
+        self._session = requests.Session()
 
         if proxies and \
             not isinstance(proxies, (collections.Mapping, list, tuple)):
@@ -146,6 +146,8 @@ class Client:
         if response.ok:
             content = response.json()
             version = content.get("version")
+
+            return version
         else:
             response.raise_for_status()
 
@@ -360,10 +362,15 @@ class Client:
         raw       = kwargs.get("raw", False)
 
         filters   = kwargs.get("filters", { })
+        domain    = filters.get("domain",   "research")
+        category  = filters.get("category", "published")
+        modelTypes = filters.get("modelTypes", ["boolean", "metabolic"])
 
         size      = kwargs.get("size",  config.max_api_resource_fetch)
         since     = kwargs.get("since", 1)
         since     = since if since > 0 else 1
+
+        orderBy    = "recent"
 
         if id_:
             if isinstance(id_, string_types) and id_.isdigit():
@@ -371,11 +378,16 @@ class Client:
             id_ = sequencify(id_)
 
         if   _resource == "model":
-            url         = self._build_url("_api/model/get", prefix = False)
-            params      = None
+            url         = self._build_url("api/model/cards/%s" % domain, prefix = False)
+            params      = [
+                ("modelTypes", "&".join(modelTypes)),
+                ("orderBy",    orderBy),
+                ("category",   category),
+                ("cards",      size)
+            ]
 
             if query:
-                params  = (
+                params  = params + (
                     ("search", "species"),
                     ("search", "knowledge"),
                     ("name",   query)
@@ -401,7 +413,7 @@ class Client:
                 models  = dict()
 
                 for i in id_:
-                    model = find(content, lambda x: x["model"]["id"] == i)
+                    model = find(content, lambda x: (x["model"]["id"] if "model" in x else x["id"]) == i)
                     
                     if not model:
                         raise ValueError("Model with ID %s not found." % i)
@@ -414,7 +426,8 @@ class Client:
                         versions    = [ ]
 
                         if not version:
-                            versions = list(iterkeys(model["model"]["modelVersionMap"]))
+                            versions = list(iterkeys(model["model"]["modelVersionMap"])) if "model" in model \
+                                else [model["version"] for model in model["versions"]]
 
                         hash_def = None
                         if not hash_:
@@ -444,21 +457,26 @@ class Client:
                 user_ids    = [ ]
                 for id_, model in iteritems(models):
                     metadata    = model["metadata"]
-                    user_id     = metadata["model"]["userId"]
 
-                    user_ids.append(user_id)
+                    if "model" in metadata:
+                        user_id     = metadata["model"]["userId"]
 
-                    for version_id, version_data in iteritems(model["versions"]):
-                        version_data = next(iter(itervalues(version_data)))
+                        user_ids.append(user_id)
 
-                        for _, share_data in iteritems(version_data["shareMap"]):
-                            user_id = share_data["userId"]
-                            user_ids.append(user_id)
+                        for version_id, version_data in iteritems(model["versions"]):
+                            version_data = next(iter(itervalues(version_data)))
 
-                    if metadata["uploadMap"]:
-                        for upload_id, upload_data in iteritems(metadata["uploadMap"]):
-                            user_id = upload_data["userId"]
-                            user_ids.append(user_id)
+                            for _, share_data in iteritems(version_data["shareMap"]):
+                                user_id = share_data["userId"]
+                                user_ids.append(user_id)
+
+                        if metadata["uploadMap"]:
+                            for upload_id, upload_data in iteritems(metadata["uploadMap"]):
+                                user_id = upload_data["userId"]
+                                user_ids.append(user_id)
+                    else:
+                        user_id = metadata["_createdBy"]
+                        user_ids.append(user_id)
 
                 user_ids    = set(user_ids)
 
@@ -489,14 +507,14 @@ class Client:
                         if domain not in _ACCEPTED_MODEL_DOMAIN_TYPES:
                             raise TypeError("Not a valid domain type: %s" % domain)
                         else:
-                            content = list(filter(lambda x: x["model"]["type"] == domain, content))
+                            content = list(filter(lambda x: (x["model"]["type"] if "model" in x else x["domainType"]) == domain, content))
 
                 from_, to   = since - 1, min(len(content), size)
                 
                 content     = content[from_ : from_ + to]
-                ids         = [data["model"]["id"] for data in content]
+                ids         = [(data["model"]["id"] if "model" in data else data["id"]) for data in content]
                 
-                resources   = self.get("model", id = ids)
+                resources   = self.get("model", id = ids, size = size)
         elif _resource == "user":
             if not id_:
                 raise ValueError("id required.")

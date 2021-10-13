@@ -15,7 +15,7 @@ CRITICAL    = logging.CRITICAL
 _FORMAT     = '%(asctime)s | %(levelname)s | %(message)s'
 _LOGGER     = None
 
-def get_logger(name = NAME, level = WARNING, format_ = _FORMAT):
+def get_logger(name = NAME, level = DEBUG, format_ = _FORMAT):
     global _LOGGER
 
     if not _LOGGER:
