@@ -191,6 +191,18 @@ def _model_version_response_to_boolean_model(response, meta = { },
             user = users.get_by_id(share_data["userId"])
             metadata["users"].append(user)
 
+        model._references = []
+
+        if "modelReferenceMap" in data:
+            for _, model_reference_map_data in iteritems(data["modelReferenceMap"]):
+                referenceId     = model_reference_map_data["referenceId"]
+                reference_data  = data["referenceMap"][str(referenceId)]
+                
+                model._references.append({
+                    "pmid": reference_data["pmid"],
+                     "doi": reference_data["doi"]
+                })
+
         return model, metadata
 
 def _model_content_to_model(content, users, client = None):
@@ -303,7 +315,6 @@ def _model_content_to_model(content, users, client = None):
         # for version_id, version_data in iteritems(content["versions"]):
             # model.add_version(data)
             # print(data)
-
             
             # meta            = data["modelVersionMap"][str(version_id)]
             # version, meta   = _model_version_response_to_metabolic_model(
