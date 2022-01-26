@@ -8,14 +8,18 @@
         "*.coverage.*": true,
         "requirements*.txt": true,
         "**/.tox": true,
-        ".venv*": true,
-        "**/build": true,
+        ".venv": true,
+        "build": true,
         "dist": true,
         "htmlcov": true,
+        "docs/build": true,
         "**/*.ipynb_checkpoints": true
     },
     "editor.rulers": [78],
     "editor.fontFamily": "Consolas",
     "editor.tabSize": 4,
-    "python.pythonPath": "/Users/achillesrasquinha/dev/ccapi/.venv/bin/python2.7"
+    "editor.renderWhitespace": "all",
+    "python.pythonPath": "${workspaceFolder}/.venv/bin/python",
+    "python.linting.pylintPath": "${workspaceFolder}/.venv/bin/pylint",
+    "python.linting.pylintEnabled": true
 }

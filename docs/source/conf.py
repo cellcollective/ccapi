@@ -12,7 +12,7 @@ DOCSDIR = osp.join(BASEDIR, "docs")
 SRCDIR  = osp.join(BASEDIR, "src")
 NOW     = dt.datetime.now()
 
-sys.path.insert(0, SRCDIR)
+sys.path.insert(0, BASEDIR)
 
 import ccapi
 
@@ -28,7 +28,7 @@ source_suffix       = [".rst"]
 master_doc          = "index"
 
 exclude_patterns    = [
-    osp.join(DOCSDIR,"source","notebooks",".ipynb_checkpoints")
+    osp.join(DOCSDIR, "source", "notebooks", ".ipynb_checkpoints")
 ]
 
 extensions          = [
@@ -37,13 +37,13 @@ extensions          = [
 ]
 
 templates_path      = [
-    osp.join(DOCSDIR,"source","_templates")
+    osp.join(DOCSDIR, "source", "_templates")
 ]
 
 html_theme          = "alabaster"
 
 html_static_path    = [
-    osp.join(DOCSDIR,"source","_static")
+    osp.join(DOCSDIR, "source", "_static")
 ]
 
 html_sidebars       = {

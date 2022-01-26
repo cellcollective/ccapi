@@ -1,5 +1,41 @@
-# imports - standard imports
-import os.path as osp
+
+from __future__ import absolute_import
+
+
+try:
+    import os
+
+    if os.environ.get("CCAPI_GEVENT_PATCH"):
+        from gevent import monkey
+        monkey.patch_all(threaded = False, select = False)
+except ImportError:
+    pass
+
+# imports - module imports
+from ccapi.__attr__ import (
+    __name__,
+    __version__,
+    __build__,
+
+    __description__,
+
+    __author__
+)
+from ccapi.config      import PATH
+from ccapi.__main__    import main
+
+from bpyutils.cache       import Cache
+from bpyutils.config      import Settings
+from bpyutils.util.jobs   import run_all as run_all_jobs, run_job
+
+cache = Cache(dirname = __name__)
+cache.create()
+
+settings = Settings()
+
+def get_version_str():
+    version = "%s%s" % (__version__, " (%s)" % __build__ if __build__ else "")
+    return version
 
 # imports - module imports
 from ccapi.__attr__     import (
@@ -10,7 +46,6 @@ from ccapi.__attr__     import (
 from ccapi.api          import Client
 from ccapi.constant     import MODELS
 from ccapi.model        import *
-from ccapi.core.config  import Configuration
 from ccapi._compat      import iterkeys
 
 def load_model(name, *args, **kwargs):

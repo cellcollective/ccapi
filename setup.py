@@ -29,7 +29,16 @@ def parse_requirements(filename, session = None):
             self.req = name
             
     def sanitize_line(line):
+        if "git+" in line:
+            line = line.replace("git+", "")
+
+            if "#egg=" in line:
+                _, name = line.split("#egg=")
+                name    = name.strip()
+                line    = "%s @ %s" % (name, line)
+
         line = line.strip()
+
         return line
 
     def check_line(line):
@@ -113,14 +122,16 @@ setup(
     packages             = find_packages(where = SRCDIR),
     package_dir          = { "": SRCDIR },
     zip_safe             = False,
-    # entry_points         = {
-    #     "console_scripts": [
-    #         "%s = %s.__main__:main" % (
-    #             PKGINFO["__command__"] if hasattr(PKGINFO, "__command__") else PKGINFO["__name__"],
-    #             PACKAGE
-    #         )
-    #     ]
-    # },
+    
+    entry_points         = {
+        "console_scripts": [
+            "%s = %s.__main__:main" % (
+                PKGINFO["__command__"] if hasattr(PKGINFO, "__command__") else PKGINFO["__name__"],
+                PACKAGE
+            )
+        ]
+    },
+    
     install_requires     = get_dependencies(type_ = "production"),
     extras_require       = dict(
         dev = get_dependencies(type_ = "development")
@@ -143,7 +154,6 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
-        
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy"
     ],

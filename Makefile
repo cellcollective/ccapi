@@ -1,4 +1,4 @@
-.PHONY: shell test help
+.PHONY: shell test help requirements
 
 BASEDIR					= $(shell pwd)
 -include ${BASEDIR}/.env
@@ -10,25 +10,38 @@ PROJECT					= ccapi
 PROJDIR					= ${BASEDIR}/src/ccapi
 TESTDIR					= ${BASEDIR}/tests
 DOCSDIR					= ${BASEDIR}/docs
+
 NOTEBOOKSDIR			= ${DOCSDIR}/source/notebooks
+
 
 PYTHONPATH		 	   ?= python
 
 VIRTUAL_ENV			   ?= ${BASEDIR}/.venv
-VENVBIN				   ?= ${VIRTUAL_ENV}/bin
+VENVBIN				   ?= ${VIRTUAL_ENV}/bin/
 
-PYTHON				   ?= ${VENVBIN}/python
-IPYTHON					= ${VENVBIN}/ipython
-PIP					   ?= ${VENVBIN}/pip
-PYTEST				   ?= ${VENVBIN}/pytest
-TOX						= ${VENVBIN}/tox
-COVERALLS			   ?= ${VENVBIN}/coveralls
-IPYTHON					= ${VENVBIN}/ipython
-JUPYTER				   ?= ${VENVBIN}/jupyter
-SAFETY					= ${VENVBIN}/safety
-PRECOMMIT				= ${VENVBIN}/pre-commit
-SPHINXBUILD				= ${VENVBIN}/sphinx-build
-TWINE					= ${VENVBIN}/twine
+PYTHON				   ?= ${VENVBIN}python
+IPYTHON					= ${VENVBIN}ipython
+PIP					   ?= ${VENVBIN}pip
+PYTEST				   ?= ${VENVBIN}pytest
+TOX						= ${VENVBIN}tox
+COVERALLS			   ?= ${VENVBIN}coveralls
+DOCSTR_COVERAGE		   ?= ${VENVBIN}docstr-coverage
+IPYTHON					= ${VENVBIN}ipython
+
+JUPYTER					= ${VENVBIN}jupyter
+
+SAFETY					= ${VENVBIN}safety
+PRECOMMIT				= ${VENVBIN}pre-commit
+SPHINXBUILD				= ${VENVBIN}sphinx-build
+SPHINXAUTOBUILD			= ${VENVBIN}sphinx-autobuild
+TWINE					= ${VENVBIN}twine
+
+DOCKER_IMAGE		   ?= ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${PROJECT}
+DOCKER_BUILDKIT		   ?= 1
+
+
+SQLITE				   ?= sqlite
+
 
 JOBS				   ?= $(shell $(PYTHON) -c "import multiprocessing as mp; print(mp.cpu_count())")
 PYTHON_ENVIRONMENT      = $(shell $(PYTHON) -c "import sys;v=sys.version_info;print('py%s%s'%(v.major,v.minor))")
@@ -68,13 +81,13 @@ endif
 info: ## Display Information
 	@echo "Python Environment: ${PYTHON_ENVIRONMENT}"
 
-build-requirements:
+requirements: ## Build Requirements
 	$(call log,INFO,Building Requirements)
-	@find $(BASEDIR)/requirements -maxdepth 1 -type f | xargs awk '{print}' > $(BASEDIR)/requirements-dev.txt
+	@find $(BASEDIR)/requirements -maxdepth 1 -type f | grep -v 'jobs' | xargs awk '{print}' > $(BASEDIR)/requirements-dev.txt
+	@find $(BASEDIR)/requirements -maxdepth 1 -type f | xargs awk '{print}' > $(BASEDIR)/requirements-jobs.txt
 	@cat $(BASEDIR)/requirements/production.txt  > $(BASEDIR)/requirements.txt
-	@cat $(BASEDIR)/requirements/all.txt		 > $(BASEDIR)/requirements-all.txt
 
-install: clean info build-requirements ## Install dependencies and module.
+install: clean info requirements ## Install dependencies and module.
 ifneq (${VERBOSE},true)
 	$(eval OUT = > /dev/null)
 endif
@@ -85,9 +98,9 @@ endif
 
 	$(call log,INFO,Installing Requirements)
 ifeq (${ENVIRONMENT},test)
-	$(PIP) install -r $(BASEDIR)/requirements-test.txt $(OUT)
+	$(PIP) install -r $(BASEDIR)/requirements-test.txt $(PIP_ARGS) $(OUT)
 else
-	$(PIP) install -r $(BASEDIR)/requirements-dev.txt  $(OUT)
+	$(PIP) install -r $(BASEDIR)/requirements-dev.txt  $(PIP_ARGS) $(OUT)
 endif
 
 	$(call log,INFO,Installing ${PROJECT} (${ENVIRONMENT}))
@@ -104,7 +117,7 @@ ifneq (${ENVIRONMENT},test)
 	@clear
 
 	$(call log,INFO,Cleaning Python Cache)
-	@find $(BASEDIR) | grep -E "__pycache__|\.pyc" | xargs rm -rf
+	@find $(BASEDIR) | grep -E "__pycache__|\.pyc|\.egg-info" | xargs rm -rf
 
 	@rm -rf \
 		$(BASEDIR)/*.egg-info \
@@ -112,9 +125,11 @@ ifneq (${ENVIRONMENT},test)
 		$(BASEDIR)/.tox \
 		$(BASEDIR)/*.coverage \
 		$(BASEDIR)/*.coverage.* \
+		$(BASEDIR)/.coverage.* \
 		$(BASEDIR)/htmlcov \
 		$(BASEDIR)/dist \
 		$(BASEDIR)/build \
+		$(BASEDIR)/*.log \
 		~/.config/$(PROJECT)
 
 	$(call log,SUCCESS,Cleaning Successful)
@@ -122,12 +137,9 @@ else
 	$(call log,SUCCESS,Nothing to clean)
 endif
 
-console: install ## Open Console.
-	$(IPYTHON)
-
 test: install ## Run tests.
 	$(call log,INFO,Running Python Tests using $(JOBS) jobs.)
-	$(TOX) --skip-missing-interpreters $(ARGS)
+	$(TOX) $(ARGS)
 
 coverage: install ## Run tests and display coverage.
 ifeq (${ENVIRONMENT},development)
@@ -135,6 +147,9 @@ ifeq (${ENVIRONMENT},development)
 endif
 
 	$(PYTEST) -s -n $(JOBS) --cov $(PROJDIR) $(IARGS) -vv $(ARGS)
+
+doc-coverage: install ## Display documentation coverage.
+	$(DOCSTR_COVERAGE) $(PROJDIR)
 
 ifeq (${ENVIRONMENT},development)
 	$(call browse,file:///${BASEDIR}/htmlcov/index.html)
@@ -144,10 +159,16 @@ ifeq (${ENVIRONMENT},test)
 	$(COVERALLS)
 endif
 
-shell: ## Launch an IPython shell.
+shell: install ## Launch an IPython shell.
 	$(call log,INFO,Launching Python Shell)
 	$(IPYTHON) \
 		--no-banner
+
+
+dbshell:
+	$(call log,INFO,Launching SQLite Shell)
+	$(SQLITE) ~/.config/${PROJECT}/db.db
+
 
 build: clean ## Build the Distribution.
 	$(PYTHON) setup.py sdist bdist_wheel
@@ -160,13 +181,15 @@ ifneq (${VERBOSE},true)
 	$(eval OUT = > /dev/null)
 endif
 
+	
 	$(call log,INFO,Building Notebooks)
 	@find $(DOCSDIR)/source/notebooks -type f -name '*.ipynb' -not -path "*/.ipynb_checkpoints/*" | \
-		xargs jupyter nbconvert \
+		xargs $(JUPYTER) nbconvert \
 			--to notebook 		\
 			--inplace 			\
 			--execute 			\
 			--ExecutePreprocessor.timeout=300
+	
 
 	$(call log,INFO,Building Documentation)
 	$(SPHINXBUILD) $(DOCSDIR)/source $(DOCSDIR)/build $(OUT)
@@ -180,10 +203,30 @@ ifeq (${launch},true)
 	$(call browse,file:///${DOCSDIR}/build/index.html)
 endif
 
-docker-build: clean pre-commit build-requirements ## Build the Docker Image.
+docker-pull: ## Pull Latest Docker Images
+	$(call log,INFO,Pulling latest Docker Image)
+
+	if [[ -d "${BASEDIR}/docker/files" ]]; then \
+		for folder in `ls ${BASEDIR}/docker/files`; do \
+			docker pull $(DOCKER_IMAGE):$$folder || true; \
+		done; \
+	fi
+
+	@docker pull $(DOCKER_IMAGE):latest || true
+
+docker-build: clean docker-pull ## Build the Docker Image.
 	$(call log,INFO,Building Docker Image)
 
-	@docker build $(BASEDIR) --tag $(DOCKER_HUB_USERNAME)/$(PROJECT) $(DOCKER_BUILD_ARGS)
+	if [[ -d "${BASEDIR}/docker/files" ]]; then \
+		for folder in `ls ${BASEDIR}/docker/files`; do \
+			docker build ${BASEDIR}/docker/files/$$folder --tag $(DOCKER_IMAGE):$$folder $(DOCKER_BUILD_ARGS) ; \
+		done \
+	fi
+
+	@docker build $(BASEDIR) --tag $(DOCKER_IMAGE) $(DOCKER_BUILD_ARGS)
+
+docker-push: ## Push Docker Image to Registry.
+	@docker push $(DOCKER_IMAGE)$(DOCKER_IMAGE_TAG)
 
 docker-tox: clean ## Test using Docker Tox Image.
 	$(call log,INFO,Running Tests using Docker Tox)
@@ -196,6 +239,12 @@ docker-tox: clean ## Test using Docker Tox Image.
 
 	@rm -rf  $(TMPDIR)
 
+bump: test ## Bump Version
+	$(BUMPVERSION) \
+		--current-version $(shell cat $(PROJDIR)/VERSION) \
+		$(TYPE) \
+		$(PROJDIR)/VERSION 
+
 release: ## Create a Release
 	$(PYTHON) setup.py sdist bdist_wheel
 
@@ -206,8 +255,11 @@ else
 	$(TWINE) upload --repository-url https://upload.pypi.org/legacy/ $(BASEDIR)/dist/* 
 endif
 
+start: ## Start app.
+	$(PYTHON) -m flask run
+
 notebooks: ## Launch Notebooks
-	$(JUPYTER) notebook --notebook-dir $(NOTEBOOKSDIR)
+	$(JUPYTER) notebook --notebook-dir $(NOTEBOOKSDIR) $(ARGS)
 
 help: ## Show help and exit.
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)

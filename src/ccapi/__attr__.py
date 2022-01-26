@@ -1,14 +1,13 @@
+from __future__ import absolute_import
+
 import sys
 import os, os.path as osp
 import subprocess
 
 PY2 = sys.version_info.major == 2
 
-try:
-    FileNotFoundError
-except NameError:
-    if PY2:
-        FileNotFoundError = OSError
+if PY2:
+    FileNotFoundError = OSError
 
 def read(fname):
     with open(fname) as f:
@@ -63,11 +62,11 @@ path["version"]             = osp.join(path["base"], "VERSION")
 
 __name__                    = "ccapi"
 __command__                 = "ccapi"
-__version__                 = strip(read(path["version"]))
-__build__                   = get_revision(pardir(path["base"], 2), short = True, raise_err = False)
-__url__                     = "https://github.com/achillesrasquinha/ccapi"
+__version__                 = read(osp.join(pardir(__file__), "VERSION"))
+__build__                   = get_revision(pardir(__file__, 2), short = True, raise_err = False)
 __author__                  = "Achilles Rasquinha"
 __email__                   = "achillesrasquinha@gmail.com"
 __description__             = "Python API for Cell Collective"
-__keywords__                = ["cell", "collective", "model"]
-__license__                 = "MIT"
+__keywords__                = ['ccapi', 'model', 'cell', 'collective']
+__url__                     = "https://github.com/cellcollective/ccapi"
+__license__                 = "MIT License"

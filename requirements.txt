@@ -2,3 +2,4 @@ requests
 grequests
 requests-cache
 python-socketio[client]
+git+https://github.com/achillesrasquinha/bpyutils.git@develop#egg=bpyutils
