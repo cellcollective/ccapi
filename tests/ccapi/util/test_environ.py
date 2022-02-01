@@ -2,7 +2,7 @@
 import pytest
 
 # imports - module imports
-from ccapi.util.environ import value_to_envval
+from bpyutils.util.environ import value_to_envval
 
 def test_value_to_envval():
     assert value_to_envval(True)     == "true"

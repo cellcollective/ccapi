@@ -4,8 +4,8 @@ import tempfile
 import gzip
 
 # imports - module imports
-from ccapi.util.imports import import_handler
-from ccapi.util.system  import read
+from bpyutils.util.imports import import_handler
+from bpyutils.util.system  import read
 
 def read_id(client, id_, **kwargs):
     BioModels   = import_handler("bioservices.biomodels.BioModels")

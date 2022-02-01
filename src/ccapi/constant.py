@@ -3,8 +3,8 @@ import os.path as osp
 
 # imports - module imports
 from ccapi.__attr__    import __name__
-from ccapi.util.system import pardir, makedirs
-from ccapi.util._dict  import autodict
+from bpyutils.util.system import pardir, makedirs
+from bpyutils.util._dict  import autodict
 
 PATH              = autodict()
 PATH["BASE"]      = pardir(__file__)

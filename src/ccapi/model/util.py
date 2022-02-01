@@ -4,8 +4,8 @@ import random
 import re
 
 # imports - module imports
-from ccapi.util.string  import lower
-from ccapi.limits       import MAX_UNSIGNED_SHORT
+from bpyutils.util.string  import lower
+from bpyutils.limits       import MAX_UNSIGNED_SHORT
 
 def get_temporary_id():
     id_ = random.randint(-MAX_UNSIGNED_SHORT, 0)

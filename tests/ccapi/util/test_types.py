@@ -1,5 +1,5 @@
 # imports - module imports
-from ccapi.util.types import (
+from bpyutils.util.types import (
     dict_from_list,
     get_function_arguments
 )

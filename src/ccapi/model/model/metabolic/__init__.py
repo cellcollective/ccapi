@@ -6,9 +6,9 @@ from ccapi.model.model.version  import ModelVersion
 from ccapi.core.querylist       import QueryList
 from ccapi.core.mixins          import JupyterHTMLViewMixin
 from ccapi.template             import render_template
-from ccapi.util.string          import ellipsis
-from ccapi.util.system          import makepath
-from ccapi.util.request         import response_download
+from bpyutils.util.string          import ellipsis
+from bpyutils.util.system          import makepath
+from bpyutils.util.request         import download_file
 from ccapi.constant             import CONSTRAINT_BASED_MODEL_EXPORT_TYPE
 from ccapi.core.config          import Configuration
 
@@ -152,7 +152,7 @@ class ConstraintBasedModel(ModelVersion, JupyterHTMLViewMixin):
 
         makepath(path)
 
-        path        = response_download(response, path, chunk_size = nchunk)
+        path        = download_file(response, path, chunk_size = nchunk)
 
         return path
 

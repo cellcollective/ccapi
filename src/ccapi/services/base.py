@@ -8,11 +8,11 @@ from ccapi._compat      import string_types, iterkeys, iteritems
 import requests
 
 # imports - module imports
-from ccapi.util.array   import (
+from bpyutils.util.array   import (
     sequencify
 )
 from ccapi.core.config  import Configuration
-from ccapi.log          import get_logger
+from bpyutils.log          import get_logger
 
 logger = get_logger()
 config = Configuration()

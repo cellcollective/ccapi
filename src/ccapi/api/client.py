@@ -4,17 +4,13 @@ import os.path as osp
 import random
 import collections
 
-# imports - third-party imports
-from ccapi.util.gevent import patch
-patch()
-
 import requests
 # from   requests_cache.core      import CachedSession
 import grequests as greq
 from   grequests                import AsyncRequest
 
 # imports - module imports
-from ccapi.util.environ         import getenv
+from bpyutils.util.environ         import getenv
 from ccapi.api.helper           import (
     _build_model_urls,
     _user_response_to_user,
@@ -38,17 +34,17 @@ from ccapi._compat              import (
     itervalues,
     urlencode
 )
-from ccapi.util.array           import (
+from bpyutils.util.array           import (
     sequencify,
     squash,
     find
 )
-from ccapi.util._dict           import merge_dict
+from bpyutils.util._dict           import merge_dict
 from ccapi.exception            import (
     TypeError,
     AuthenticationError
 )
-from ccapi.log                  import get_logger
+from bpyutils.log                  import get_logger
 
 logger = get_logger()
 config = Configuration()

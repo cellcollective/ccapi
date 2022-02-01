@@ -1,5 +1,5 @@
 # imports - module imports
-from ccapi.util.string import strip, strip_ansi, pluralize, kebab_case
+from bpyutils.util.string import strip, strip_ansi, pluralize, kebab_case
 
 def test_strip():
     string = "foobar"

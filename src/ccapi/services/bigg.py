@@ -4,9 +4,9 @@ import tempfile
 
 # imports - module imports
 from ccapi.services.base    import Service
-from ccapi.util.request     import response_download
+from bpyutils.util.request     import download_file
 from ccapi.core.config      import Configuration
-from ccapi.log              import get_logger
+from bpyutils.log              import get_logger
 from ccapi._compat          import iterkeys
 
 logger = get_logger()
@@ -48,7 +48,7 @@ class BiGGModels(Service):
 
         path        = osp.join(location, name)
 
-        path        = response_download(response, path, chunk_size = nchunk)
+        path        = download_file(response, path, chunk_size = nchunk)
 
         return path
 

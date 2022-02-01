@@ -1,5 +1,5 @@
 # imports - module imports
-from ccapi.table import _sanitize_string, Table
+from bpyutils.table import _sanitize_string, Table
 
 def test_table():
     table  = Table()

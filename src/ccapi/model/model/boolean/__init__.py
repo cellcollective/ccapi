@@ -8,13 +8,13 @@ from ccapi.core.querylist           import QueryList
 from ccapi.core.mixins              import JupyterHTMLViewMixin
 from ccapi.model.model.version      import ModelVersion
 from ccapi.model.model.education    import Module
-from ccapi.util.system              import read
-from ccapi.table                    import Table
+from bpyutils.util.system              import read
+from bpyutils.table                    import Table
 from ccapi.template                 import render_template
 from ccapi.constant                 import BOOLEAN_MODEL_EXPORT_TYPE
-from ccapi.util.system              import makepath
-from ccapi.util.imports             import import_handler
-from ccapi.util.request             import response_download
+from bpyutils.util.system              import makepath
+from bpyutils.util.imports             import import_handler
+from bpyutils.util.request             import download_file
 
 # imports - boolean-model imports
 from ccapi.model.resource                import Resource
@@ -138,7 +138,7 @@ class BooleanModel(ModelVersion, Module, JupyterHTMLViewMixin):
             )
 
             # https://github.com/miguelgrinberg/Flask-SocketIO/issues/65#issuecomment-60697013
-            patch  = import_handler("ccapi.util.gevent.patch")
+            patch  = import_handler("bpyutils.util.gevent.patch")
             patch()
 
             graph  = nx.DiGraph()
@@ -238,6 +238,6 @@ class BooleanModel(ModelVersion, Module, JupyterHTMLViewMixin):
 
         nchunk      = kwargs.get("nchunk", config.max_chunk_download_bytes)
 
-        path        = response_download(response, path, chunk_size = nchunk)
+        path        = download_file(response, path, chunk_size = nchunk)
 
         return path

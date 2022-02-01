@@ -3,7 +3,7 @@ from ccapi.core.querylist  import QueryList
 from ccapi.model.resource  import Resource
 from ccapi.core.mixins     import JupyterHTMLViewMixin
 from ccapi.template        import render_template
-from ccapi.util.string     import capitalize
+from bpyutils.util.string     import capitalize
 
 class Species(Resource, JupyterHTMLViewMixin):
     """

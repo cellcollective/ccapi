@@ -8,7 +8,7 @@ from ccapi.model.model.species             import Species
 from ccapi.model.model.boolean.regulator   import Regulator
 from ccapi.core.mixins                     import JupyterHTMLViewMixin
 from ccapi.template                        import render_template
-from ccapi.util.string                     import capitalize
+from bpyutils.util.string                     import capitalize
 
 class Component(Species, JupyterHTMLViewMixin):
     """

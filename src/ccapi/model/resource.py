@@ -1,7 +1,7 @@
 # imports - standard imports
-from ccapi.util.string     import ellipsis
+from bpyutils.util.string     import ellipsis
 from ccapi._compat         import iteritems
-from ccapi.util.datetime   import now
+from bpyutils.util.datetime   import now
 from ccapi.model.util      import get_temporary_id
 
 class Resource:

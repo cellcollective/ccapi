@@ -1,7 +1,7 @@
 # imports - module imports
 from ccapi.model.resource       import Resource
 from ccapi.model.util           import get_temporary_id
-from ccapi.util.string          import ellipsis
+from bpyutils.util.string          import ellipsis
 from ccapi.model.util           import slugify_name
 
 class ModelVersion(Resource):

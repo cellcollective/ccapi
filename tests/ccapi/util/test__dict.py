@@ -1,5 +1,5 @@
 # imports - module imports
-from ccapi.util._dict import (
+from bpyutils.util._dict import (
     merge_dict
 )
 

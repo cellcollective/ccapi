@@ -12,13 +12,13 @@ from ccapi.model import (
     Document,
     ConstraintBasedModel
 )
-from ccapi.util.datetime    import now
-from ccapi.util.string      import (
+from bpyutils.util.datetime    import now
+from bpyutils.util.string      import (
     sanitize_html,
     sanitize_text,
     lower
 )
-from ccapi.util.array       import sequencify
+from bpyutils.util.array       import sequencify
 from ccapi._compat          import iteritems, iterkeys
 
 def cc_datetime_to_datetime(datetime_, default = None, raise_err = False):

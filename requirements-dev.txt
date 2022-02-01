@@ -1,6 +1,6 @@
 matplotlib
 networkx
-pygraphviz
+# pygraphviz
 sphinx
 recommonmark
 sphinx-autobuild

@@ -4,8 +4,8 @@ import os.path as osp
 # imports - module imports
 from ccapi.model.resource   import Resource
 from ccapi.core.config      import Configuration
-from ccapi.util.request     import response_download
-from ccapi.log              import get_logger
+from bpyutils.util.request     import download_file
+from bpyutils.log              import get_logger
 
 config = Configuration()
 logger = get_logger()
@@ -32,6 +32,6 @@ class Document(Resource):
 
         path = osp.abspath(osp.join(location, name))
 
-        path = response_download(response, path, chunk_size = nchunk)
+        path = download_file(response, path, chunk_size = nchunk)
 
         return path

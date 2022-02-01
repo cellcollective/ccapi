@@ -11,10 +11,10 @@ import re
 from   itertools import islice
 
 # imports - module imports
-from ccapi.util.string  import ellipsis
+from bpyutils.util.string  import ellipsis
 from ccapi.core.mixins  import JupyterHTMLViewMixin
 from ccapi.core.config  import Configuration
-from ccapi.util.array   import squash
+from bpyutils.util.array   import squash
 
 config = Configuration()
 

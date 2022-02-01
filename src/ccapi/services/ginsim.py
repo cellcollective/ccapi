@@ -11,9 +11,9 @@ import grequests
 # imports - module imports
 from ccapi.core.config  import Configuration
 from ccapi.constant     import PATH, URL
-from ccapi.util         import iz
-from ccapi.util.system  import makedirs
-from ccapi.log          import get_logger
+from bpyutils.util         import iz
+from bpyutils.util.system  import makedirs
+from bpyutils.log          import get_logger
 
 logger = get_logger()
 config = Configuration()
@@ -32,7 +32,7 @@ def get_ginsim_executable(version = None):
         with requests.get(url, stream = True) as response:
             response.raise_for_status()
             
-            executable = response_download(response, executable)
+            executable = download_file(response, executable)
     
     return executable
 

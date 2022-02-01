@@ -10,11 +10,11 @@ else:
     import html as module_escape
 
 # imports - module imports
-from ccapi.util.system import read
-from ccapi.util.array  import sequencify
-from ccapi.log         import get_logger
+from bpyutils.util.system import read
+from bpyutils.util.array  import sequencify
+from bpyutils.log         import get_logger
 from ccapi.exception   import TemplateNotFoundError
-from ccapi.util.string import _REGEX_HTML
+from bpyutils.util.string import _REGEX_HTML
 from ccapi._compat     import iteritems
 from ccapi.constant    import PATH
 

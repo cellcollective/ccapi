@@ -7,7 +7,7 @@ from   distutils.spawn import find_executable
 import pytest
 
 # imports - module imports
-from ccapi.util.system import read, write, popen, which
+from bpyutils.util.system import read, write, popen, which
 
 def test_read(tmpdir):
     directory = tmpdir.mkdir("tmp")

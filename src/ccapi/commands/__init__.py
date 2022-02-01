@@ -9,7 +9,7 @@ import multiprocessing as mp
 from   functools import partial
 import traceback
 
-from ccapi.commands.util 	import cli_format
+from ccapi.commands.util 	    import cli_format
 from bpyutils.util.array    	import flatten, sequencify
 from bpyutils.util._dict        import merge_dict
 from bpyutils.util.system   	import (read, write, touch, popen, which)
@@ -17,11 +17,11 @@ from bpyutils.util.environ  	import getenvvar
 from bpyutils.util.datetime 	import get_timestamp_str
 from bpyutils.util.imports      import import_or_raise
 from bpyutils.config			import environment
-from bpyutils import request as req, log, parallel
-from ccapi 	import cli
+from bpyutils.exception         import DependencyNotFoundError
+from bpyutils                   import request as req, log, parallel
+from ccapi 	                    import cli
 from bpyutils._compat		    import builtins, iteritems
-from ccapi.__attr__      	import __name__
-from ccapi.exception      import DependencyNotFoundError
+from ccapi.__attr__      	    import __name__
 
 logger   = log.get_logger(level = log.DEBUG)
 

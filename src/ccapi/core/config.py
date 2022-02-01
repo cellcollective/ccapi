@@ -3,7 +3,7 @@ from ccapi.__attr__         import __name__ as NAME, __version__
 from ccapi.constant         import MODEL_TYPE, MODEL_DOMAIN_TYPE
 from ccapi.core.singleton   import Singleton
 from ccapi.core.mixins      import JupyterHTMLViewMixin
-from ccapi.util.environ     import getenv
+from bpyutils.util.environ     import getenv
 
 # imports - standard imports
 import logging

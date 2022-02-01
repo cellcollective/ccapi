@@ -6,7 +6,7 @@ from ccapi.core.querylist  import QueryList
 from ccapi.model.resource  import Resource
 from ccapi.core.mixins     import JupyterHTMLViewMixin
 from ccapi.template        import render_template
-from ccapi.util.array      import sequencify
+from bpyutils.util.array      import sequencify
 
 from ccapi.model.model.boolean.condition.state     import State
 from ccapi.model.model.boolean.condition.type      import Type

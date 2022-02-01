@@ -17,11 +17,11 @@ from ccapi.model.model.metabolic    import (
 )
 from ccapi.constant            import MODEL_TYPE, MODEL_DOMAIN_TYPE
 from ccapi.template            import render_template
-from ccapi.util.string         import ellipsis, upper, lower
-from ccapi.util.array          import flatten
+from bpyutils.util.string         import ellipsis, upper, lower
+from bpyutils.util.array          import flatten
 from ccapi.model.util          import get_temporary_id, slugify_name
 from ccapi._compat             import itervalues, iteritems
-from ccapi.log                 import get_logger
+from bpyutils.log                 import get_logger
 
 logger = get_logger()
 config = Configuration()
