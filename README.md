@@ -68,7 +68,7 @@ biological networks.
 ### Installation
 
 ```shell
-$ pip install ccapi
+$ pip install https://github.com/cellcollective/ccapi.git
 ```
 
 ### Documentation
