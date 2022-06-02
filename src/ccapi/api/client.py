@@ -1,3 +1,12 @@
+# try:
+#     import os
+
+#     if os.environ.get("CCAPI_GEVENT_PATCH", True):
+# from gevent import monkey
+# monkey.patch_all()
+# except ImportError:
+#     pass
+
 # imports - standard imports
 import sys
 import os.path as osp
