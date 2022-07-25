@@ -148,12 +148,17 @@ def _model_version_response_to_boolean_model(response, meta = { },
                     species_id = condition_species_data["speciesId"]
                     components.append(component_map[species_id])
 
+            print(condition_data)
+
             condition   = Condition(id = int(condition_id),
                 components      = components,
                 sub_conditions  = [data["sub_condition"]
                     for _, data in iteritems(sub_condition_map)
                         if data["condition_id"] == int(condition_id)
-                ]
+                ],
+                type            = ConditionType.IF  if condition_data["type"] == "IF_WHEN" else ConditionType.UNLESS,
+                state           = ConditionState.ON if condition_data["state"] == "ON" else ConditionState.OFF,
+                relation        = ConditionRelation.COOPERATIVE if condition_data.get("speciesRelation") == "AND" else ConditionRelation.INDEPENDENT 
             )
 
             condition_map[condition.id] = dict({

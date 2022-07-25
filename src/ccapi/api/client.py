@@ -6,11 +6,11 @@ import collections
 
 import requests
 # from   requests_cache.core      import CachedSession
-import grequests as greq
-from   grequests                import AsyncRequest
+# import grequests as greq
+# from   grequests                import AsyncRequest
 
 # imports - module imports
-from bpyutils.util.environ         import getenv
+from bpyutils.util.environ      import getenv
 from ccapi.api.helper           import (
     _build_model_urls,
     _user_response_to_user,
@@ -18,6 +18,7 @@ from ccapi.api.helper           import (
     _model_version_response_to_boolean_model,
     _merge_metadata_to_model
 )
+from bpyutils.util.imports      import import_handler
 from ccapi.model.model.base     import Model, _ACCEPTED_MODEL_DOMAIN_TYPES
 from ccapi.model.user           import User
 from ccapi.core.querylist       import QueryList
@@ -197,6 +198,7 @@ class Client:
             % (method, url, kwargs))
 
         if async_:
+            AsyncRequest = import_handler("grequests.AsyncRequest")
             response = AsyncRequest(method, url, session = self._session,
                 headers = headers, proxies = proxies, *args, **kwargs)
         else:
@@ -435,6 +437,7 @@ class Client:
                         ))
 
                 arequests   = (self.request("GET", url, async_ = True) for url in itervalues(urls))
+                greq        = import_handler("grequests")
                 responses   = greq.imap(arequests)
 
                 keys        = list(iterkeys(urls))

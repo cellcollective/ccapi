@@ -7,7 +7,7 @@ try:
 
     if os.environ.get("CCAPI_GEVENT_PATCH"):
         from gevent import monkey
-        monkey.patch_all(threaded = False, select = False)
+        monkey.patch_all(threaded = True, select = False)
 except ImportError:
     pass
 
