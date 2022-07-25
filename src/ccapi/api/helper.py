@@ -52,6 +52,13 @@ def _merge_metadata_to_model(model, meta):
         setattr(model, attr, value)
     return model
 
+def _format_condition_kwargs(data):
+    return dict(
+        type     = ConditionType.IF  if data["type"] == "IF_WHEN" else ConditionType.UNLESS,
+        state    = ConditionState.ON if data["state"] == "ON" else ConditionState.OFF,
+        relation = ConditionRelation.COOPERATIVE if data.get("speciesRelation") == "AND" else ConditionRelation.INDEPENDENT
+    )
+
 def _model_version_response_to_boolean_model(response, meta = { },
     users = None, parent = None, client = None):
     metadata = { }
@@ -125,14 +132,15 @@ def _model_version_response_to_boolean_model(response, meta = { },
 
         sub_condition_map   = dict()
         for sub_condition_id, sub_condition_data in iteritems(data["subConditionMap"]):
-            components      = [ ]
+            components = [ ]
             for _, sub_condition_species_data in iteritems(data["subConditionSpeciesMap"]):
                 if sub_condition_species_data["subConditionId"] == int(sub_condition_id):
                     species_id = sub_condition_species_data["speciesId"]
                     components.append(component_map[species_id])
 
             sub_condition   = Condition(id = int(sub_condition_id),
-                components  = components
+                components  = components,
+                **_format_condition_kwargs(sub_condition_data)
             )
 
             sub_condition_map[sub_condition.id] = dict({
@@ -148,17 +156,16 @@ def _model_version_response_to_boolean_model(response, meta = { },
                     species_id = condition_species_data["speciesId"]
                     components.append(component_map[species_id])
 
-            print(condition_data)
+            condition_kwargs = _format_condition_kwargs(condition_data)
 
             condition   = Condition(id = int(condition_id),
-                components      = components,
-                sub_conditions  = [data["sub_condition"]
+                components     = components,
+                sub_conditions = [data["sub_condition"]
                     for _, data in iteritems(sub_condition_map)
                         if data["condition_id"] == int(condition_id)
                 ],
-                type            = ConditionType.IF  if condition_data["type"] == "IF_WHEN" else ConditionType.UNLESS,
-                state           = ConditionState.ON if condition_data["state"] == "ON" else ConditionState.OFF,
-                relation        = ConditionRelation.COOPERATIVE if condition_data.get("speciesRelation") == "AND" else ConditionRelation.INDEPENDENT 
+                **condition_kwargs,
+                
             )
 
             condition_map[condition.id] = dict({
